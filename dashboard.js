@@ -260,6 +260,21 @@ function paymentRecordMethodLabel(method = "") {
   return value ? escapeHtml(method) : "Stripe";
 }
 
+function receiptAction(payment, receiptUrl, discount = 0) {
+  if (receiptUrl) {
+    return `<a class="secondary-btn compact" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูใบเสร็จ</a>`;
+  }
+  const amount = Number(payment.amount || 0);
+  const status = String(payment.status || "").toLowerCase();
+  if (amount <= 0 && discount > 0) {
+    return `<span class="receipt-pending">ส่วนลดเต็มจำนวน ไม่มีการตัดเงินจริง</span>`;
+  }
+  if (status === "paid") {
+    return `<span class="receipt-pending">กำลังรอใบเสร็จจาก Stripe</span>`;
+  }
+  return `<span class="receipt-pending">ยังไม่มีใบเสร็จ</span>`;
+}
+
 function renderContinueLearning(paid, courses = [], expired = false) {
   if (!continueLearningTitle || !continueLearningLink) return;
 
@@ -335,9 +350,7 @@ function renderPaymentHistory(payments = [], paid = false) {
         </div>
         <div class="payment-history-side">
           <strong>${formatMoney(payment.amount, payment.currency)}</strong>
-          ${receiptUrl
-            ? `<a class="secondary-btn compact" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูใบเสร็จ</a>`
-            : `<span class="receipt-pending">ยังไม่มีใบเสร็จ</span>`}
+          ${receiptAction(payment, receiptUrl, discount)}
         </div>
       </article>
     `;
