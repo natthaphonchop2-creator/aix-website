@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=payments-1">
 </head>
 <body>
   <header class="site-header">
@@ -20,6 +20,7 @@
       <nav class="main-nav" aria-label="Dashboard navigation">
         <a href="index.html#catalog">คอร์สเรียน</a>
         <a href="#payment">ชำระเงิน</a>
+        <a href="#payment-history">ประวัติชำระเงิน</a>
         <a href="#courses">ห้องเรียน</a>
         <a href="#schedule">ตารางเรียน</a>
         <a href="#tools">Tools</a>
@@ -34,6 +35,7 @@
     <div class="mobile-panel" id="dashboardMobilePanel">
       <a href="index.html#catalog">คอร์สเรียน</a>
       <a href="#payment">ชำระเงิน</a>
+      <a href="#payment-history">ประวัติชำระเงิน</a>
       <a href="#courses">ห้องเรียน</a>
       <a href="#schedule">ตารางเรียน</a>
       <a href="#tools">Tools</a>
@@ -84,6 +86,19 @@
           <small>คอร์สที่ปลดล็อก</small>
           <strong id="coursesCountText">0 คอร์ส</strong>
         </article>
+      </div>
+    </section>
+
+    <section class="section payment-history-section" id="payment-history">
+      <div class="container payment-history-wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Payment History</p>
+            <h2>ประวัติชำระเงินและใบเสร็จ</h2>
+            <p>รายการชำระเงินของสมาชิกและลิงก์ใบเสร็จจาก Stripe จะแสดงที่นี่</p>
+          </div>
+        </div>
+        <div class="payment-history-list" id="paymentHistory"></div>
       </div>
     </section>
 
@@ -141,6 +156,6 @@
   </main>
 
   <div class="toast" id="toast"></div>
-  <script src="dashboard.js"></script>
+  <script src="dashboard.js?v=payments-1"></script>
 </body>
 </html>

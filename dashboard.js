@@ -18,6 +18,7 @@ const coursesCountText = document.getElementById("coursesCountText");
 const memberResources = document.getElementById("memberResources");
 const memberAlerts = document.getElementById("memberAlerts");
 const memberSchedule = document.getElementById("memberSchedule");
+const paymentHistory = document.getElementById("paymentHistory");
 const toast = document.getElementById("toast");
 
 let toastTimer = null;
@@ -81,6 +82,23 @@ function formatDate(value) {
   return date.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function formatMoney(amount, currency = "THB") {
+  return new Intl.NumberFormat("th-TH", {
+    style: "currency",
+    currency: String(currency || "THB").toUpperCase()
+  }).format(Number(amount || 0) / 100);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
+
 function paymentMethodLabel(member) {
   const method = String(member.paymentMethod || member.payment || "").toLowerCase();
   if (method === "promptpay") return "PromptPay ผ่าน Stripe";
@@ -98,6 +116,65 @@ function resourceIcon(type = "") {
     link: "fa-solid fa-arrow-up-right-from-square"
   };
   return map[type] || "fa-solid fa-toolbox";
+}
+
+function paymentRecordStatusLabel(status = "") {
+  const value = String(status).toLowerCase();
+  if (value === "paid") return "ชำระแล้ว";
+  if (value === "unpaid") return "ยังไม่ชำระ";
+  if (value === "open" || value === "pending") return "รอดำเนินการ";
+  if (value === "refunded") return "คืนเงินแล้ว";
+  return value || "ไม่ทราบสถานะ";
+}
+
+function paymentRecordMethodLabel(method = "") {
+  const value = String(method).toLowerCase();
+  if (value === "promptpay") return "PromptPay";
+  if (value === "card") return "บัตรเครดิต / เดบิต";
+  if (value.includes("card")) return "บัตรเครดิต / เดบิต";
+  if (value.includes("promptpay")) return "PromptPay";
+  return value ? escapeHtml(method) : "Stripe";
+}
+
+function renderPaymentHistory(payments = [], paid = false) {
+  if (!paymentHistory) return;
+  if (!payments.length) {
+    paymentHistory.innerHTML = `
+      <article class="payment-history-empty">
+        <span><i class="fa-solid fa-receipt"></i></span>
+        <div>
+          <h3>${paid ? "ยังไม่มีรายการใบเสร็จ" : "ยังไม่มีประวัติชำระเงิน"}</h3>
+          <p>${paid ? "รายการเก่าจะถูกนำมาแสดงเมื่อ Stripe ส่งข้อมูล session กลับมา" : "หลังชำระเงินสำเร็จ ระบบจะแสดงรายการและลิงก์ใบเสร็จตรงนี้"}</p>
+        </div>
+      </article>
+    `;
+    return;
+  }
+
+  paymentHistory.innerHTML = payments.map((payment) => {
+    const receiptUrl = payment.receiptUrl || payment.invoiceUrl || "";
+    const paidAt = payment.paidAt || payment.createdAt;
+    const discount = Number(payment.amountDiscount || 0);
+    return `
+      <article class="payment-history-card">
+        <div class="payment-history-main">
+          <span class="payment-history-icon"><i class="fa-solid fa-receipt"></i></span>
+          <div>
+            <small>${escapeHtml(paymentRecordStatusLabel(payment.status))}</small>
+            <h3>${escapeHtml(payment.productName || "AiX Member")}</h3>
+            <p>${formatDate(paidAt)} · ${paymentRecordMethodLabel(payment.paymentMethod)}</p>
+            ${discount > 0 ? `<p class="payment-discount">ส่วนลด ${formatMoney(discount, payment.currency)}${payment.couponName ? ` · ${escapeHtml(payment.couponName)}` : ""}</p>` : ""}
+          </div>
+        </div>
+        <div class="payment-history-side">
+          <strong>${formatMoney(payment.amount, payment.currency)}</strong>
+          ${receiptUrl
+            ? `<a class="secondary-btn compact" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูใบเสร็จ</a>`
+            : `<span class="receipt-pending">ยังไม่มีใบเสร็จ</span>`}
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function renderResources(paid, resources = []) {
@@ -186,7 +263,7 @@ function formatDateTime(value) {
 }
 
 function renderDashboard(data) {
-  const { member, payment, courses, resources = [], schedule = [], notifications = [] } = data;
+  const { member, payment, courses, resources = [], schedule = [], notifications = [], payments = [] } = data;
   localStorage.setItem(SESSION_KEY, JSON.stringify(member));
 
   memberAvatar.src = member.avatarUrl || "AiX%20logo/iconblack.png";
@@ -214,6 +291,7 @@ function renderDashboard(data) {
     ? courses.map(renderCourseCard).join("")
     : `<article class="resource-card"><h3>ยังไม่ได้ปลดล็อกคอร์ส</h3><p>กดชำระเงินเพื่อเข้าเรียนคอร์ส AiX Club ทั้งหมดที่เปิดให้สมาชิก</p></article>`;
   renderNotifications(paid, notifications);
+  renderPaymentHistory(payments, paid);
   renderSchedule(paid, schedule);
   renderResources(paid, resources);
 }

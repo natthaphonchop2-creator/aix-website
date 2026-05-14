@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/styles.css?v=payment-success-1">
+  <link rel="stylesheet" href="/styles.css?v=payment-success-2">
 </head>
 <body>
   <header class="site-header">
@@ -34,6 +34,7 @@
           <p id="paymentResultCopy">ระบบกำลังตรวจสอบสถานะจาก Stripe และจะปลดล็อกคอร์สเมื่อชำระสำเร็จ</p>
           <div class="dashboard-actions">
             <a class="primary-btn" id="dashboardLink" href="/dashboard">ไป Dashboard</a>
+            <a class="secondary-btn" id="receiptLink" href="#" target="_blank" rel="noopener" hidden>ดูใบเสร็จ</a>
             <a class="secondary-btn" href="/payment">กลับหน้าชำระเงิน</a>
           </div>
         </article>
@@ -42,6 +43,6 @@
   </main>
 
   <div class="toast" id="toast"></div>
-  <script src="/payment-success.js?v=payment-success-1"></script>
+  <script src="/payment-success.js?v=payment-success-2"></script>
 </body>
 </html>

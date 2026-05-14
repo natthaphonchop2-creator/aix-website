@@ -6,6 +6,7 @@ const resultIcon = document.getElementById("paymentResultIcon");
 const resultTitle = document.getElementById("paymentResultTitle");
 const resultCopy = document.getElementById("paymentResultCopy");
 const dashboardLink = document.getElementById("dashboardLink");
+const receiptLink = document.getElementById("receiptLink");
 const toast = document.getElementById("toast");
 
 let toastTimer = null;
@@ -67,6 +68,11 @@ async function verifyPayment() {
     if (data.paymentStatus === "paid") {
       renderResult("success", "ชำระเงินสำเร็จ", "ระบบปลดล็อกคอร์สให้แล้ว คุณสามารถเข้าเรียนจาก Dashboard ได้ทันที");
       dashboardLink.textContent = "เข้า Dashboard";
+      const receiptUrl = data.payment?.receiptUrl || data.payment?.invoiceUrl || "";
+      if (receiptUrl && receiptLink) {
+        receiptLink.href = receiptUrl;
+        receiptLink.hidden = false;
+      }
       showToast("ปลดล็อกคอร์สเรียบร้อย");
       return;
     }

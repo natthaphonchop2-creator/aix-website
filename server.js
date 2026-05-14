@@ -369,6 +369,37 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_notifications_member ON notifications(memberId, status, createdAt);
+
+  CREATE TABLE IF NOT EXISTS payment_records (
+    id TEXT PRIMARY KEY,
+    memberId TEXT NOT NULL,
+    provider TEXT DEFAULT 'stripe',
+    status TEXT DEFAULT 'pending',
+    paymentMethod TEXT DEFAULT '',
+    productName TEXT DEFAULT 'AiX Member',
+    amount INTEGER DEFAULT 0,
+    amountSubtotal INTEGER DEFAULT 0,
+    amountDiscount INTEGER DEFAULT 0,
+    amountTax INTEGER DEFAULT 0,
+    currency TEXT DEFAULT 'thb',
+    stripeCustomerId TEXT DEFAULT '',
+    stripeSessionId TEXT DEFAULT '',
+    stripePaymentIntentId TEXT DEFAULT '',
+    stripeChargeId TEXT DEFAULT '',
+    receiptUrl TEXT DEFAULT '',
+    invoiceUrl TEXT DEFAULT '',
+    promotionCode TEXT DEFAULT '',
+    couponName TEXT DEFAULT '',
+    metadata TEXT DEFAULT '{}',
+    paidAt TEXT DEFAULT '',
+    createdAt TEXT DEFAULT (datetime('now')),
+    updatedAt TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_payment_records_member ON payment_records(memberId, createdAt);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_records_session ON payment_records(stripeSessionId) WHERE stripeSessionId != '';
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_records_intent ON payment_records(stripePaymentIntentId) WHERE stripePaymentIntentId != '';
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_records_charge ON payment_records(stripeChargeId) WHERE stripeChargeId != '';
 `);
 
 // ---- Seed Default Data ----
@@ -846,6 +877,257 @@ function paymentMethodLabelFromTypes(types = []) {
   return types.join(',') || 'stripe';
 }
 
+function stripeObjectId(value) {
+  return typeof value === 'string' ? value : value?.id || '';
+}
+
+function stripeDate(seconds) {
+  return Number(seconds) ? new Date(Number(seconds) * 1000).toISOString() : '';
+}
+
+function stripeLatestCharge(paymentIntent) {
+  const intent = typeof paymentIntent === 'object' && paymentIntent ? paymentIntent : null;
+  if (typeof intent?.latest_charge === 'object' && intent.latest_charge) return intent.latest_charge;
+  if (Array.isArray(intent?.charges?.data) && intent.charges.data.length) return intent.charges.data[0];
+  return null;
+}
+
+function stripeDiscountSummary(session = {}) {
+  const discount = Array.isArray(session.discounts) ? session.discounts[0] : null;
+  const coupon = discount?.coupon || discount?.discount?.coupon || {};
+  const promotion = discount?.promotion_code || discount?.discount?.promotion_code || {};
+  return {
+    promotionCode: typeof promotion === 'string' ? promotion : promotion?.code || '',
+    couponName: typeof coupon === 'string' ? coupon : coupon?.name || coupon?.id || ''
+  };
+}
+
+function paymentRecordFromStripeSession(session = {}) {
+  const charge = stripeLatestCharge(session.payment_intent);
+  const discount = stripeDiscountSummary(session);
+  const paid = session.payment_status === 'paid';
+  return {
+    memberId: memberIdFromStripeObject(session),
+    provider: 'stripe',
+    status: session.payment_status || session.status || 'pending',
+    paymentMethod: paymentMethodLabelFromTypes(session.payment_method_types || []),
+    productName: 'AiX Member',
+    amount: Number(session.amount_total || MEMBER_PRICE * 100),
+    amountSubtotal: Number(session.amount_subtotal || session.amount_total || MEMBER_PRICE * 100),
+    amountDiscount: Number(session.total_details?.amount_discount || 0),
+    amountTax: Number(session.total_details?.amount_tax || 0),
+    currency: String(session.currency || 'thb').toLowerCase(),
+    stripeCustomerId: stripeObjectId(session.customer),
+    stripeSessionId: session.id || '',
+    stripePaymentIntentId: stripeObjectId(session.payment_intent),
+    stripeChargeId: charge?.id || '',
+    receiptUrl: charge?.receipt_url || '',
+    invoiceUrl: typeof session.invoice === 'object' ? session.invoice?.hosted_invoice_url || '' : '',
+    promotionCode: discount.promotionCode,
+    couponName: discount.couponName,
+    metadata: session.metadata || {},
+    paidAt: paid ? stripeDate(charge?.created || session.created) : ''
+  };
+}
+
+function paymentRecordFromStripePaymentIntent(intent = {}) {
+  const charge = stripeLatestCharge(intent);
+  return {
+    memberId: intent.metadata?.member_id || '',
+    provider: 'stripe',
+    status: intent.status === 'succeeded' ? 'paid' : intent.status || 'pending',
+    paymentMethod: intent.payment_method_types?.[0] || charge?.payment_method_details?.type || 'stripe',
+    productName: 'AiX Member',
+    amount: Number(intent.amount_received || intent.amount || MEMBER_PRICE * 100),
+    amountSubtotal: Number(intent.amount || intent.amount_received || MEMBER_PRICE * 100),
+    amountDiscount: 0,
+    amountTax: 0,
+    currency: String(intent.currency || 'thb').toLowerCase(),
+    stripeCustomerId: stripeObjectId(intent.customer),
+    stripeSessionId: '',
+    stripePaymentIntentId: intent.id || '',
+    stripeChargeId: charge?.id || '',
+    receiptUrl: charge?.receipt_url || '',
+    invoiceUrl: '',
+    promotionCode: '',
+    couponName: '',
+    metadata: intent.metadata || {},
+    paidAt: intent.status === 'succeeded' ? stripeDate(charge?.created || intent.created) : ''
+  };
+}
+
+function findPaymentRecord(data = {}) {
+  const lookups = [
+    ['stripeSessionId', data.stripeSessionId],
+    ['stripePaymentIntentId', data.stripePaymentIntentId],
+    ['stripeChargeId', data.stripeChargeId],
+    ['id', data.id]
+  ];
+  for (const [column, value] of lookups) {
+    if (!value) continue;
+    const row = db.prepare(`SELECT * FROM payment_records WHERE ${column} = ?`).get(value);
+    if (row) return row;
+  }
+  return null;
+}
+
+function upsertPaymentRecord(data = {}) {
+  if (!data.memberId) return null;
+  const existing = findPaymentRecord(data);
+  const now = new Date().toISOString();
+  const nextStatus = existing?.status === 'paid' && data.status !== 'paid' ? 'paid' : data.status || existing?.status || 'pending';
+  const paidAt = data.paidAt || existing?.paidAt || '';
+  const id = existing?.id
+    || data.id
+    || (data.stripeSessionId ? `stripe_session_${data.stripeSessionId}` : '')
+    || (data.stripePaymentIntentId ? `stripe_intent_${data.stripePaymentIntentId}` : '')
+    || `payment_${crypto.randomUUID()}`;
+  const payload = {
+    id,
+    memberId: data.memberId,
+    provider: data.provider || existing?.provider || 'stripe',
+    status: nextStatus,
+    paymentMethod: data.paymentMethod || existing?.paymentMethod || 'stripe',
+    productName: data.productName || existing?.productName || 'AiX Member',
+    amount: Number(data.amount || existing?.amount || 0),
+    amountSubtotal: Number(data.amountSubtotal || existing?.amountSubtotal || data.amount || 0),
+    amountDiscount: Number(data.amountDiscount ?? existing?.amountDiscount ?? 0),
+    amountTax: Number(data.amountTax ?? existing?.amountTax ?? 0),
+    currency: String(data.currency || existing?.currency || 'thb').toLowerCase(),
+    stripeCustomerId: data.stripeCustomerId || existing?.stripeCustomerId || '',
+    stripeSessionId: data.stripeSessionId || existing?.stripeSessionId || '',
+    stripePaymentIntentId: data.stripePaymentIntentId || existing?.stripePaymentIntentId || '',
+    stripeChargeId: data.stripeChargeId || existing?.stripeChargeId || '',
+    receiptUrl: data.receiptUrl || existing?.receiptUrl || '',
+    invoiceUrl: data.invoiceUrl || existing?.invoiceUrl || '',
+    promotionCode: data.promotionCode || existing?.promotionCode || '',
+    couponName: data.couponName || existing?.couponName || '',
+    metadata: JSON.stringify(data.metadata || (existing?.metadata ? parseJsonField(existing.metadata, {}) : {})),
+    paidAt,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now
+  };
+
+  if (existing) {
+    db.prepare(`
+      UPDATE payment_records
+      SET memberId = ?, provider = ?, status = ?, paymentMethod = ?, productName = ?,
+          amount = ?, amountSubtotal = ?, amountDiscount = ?, amountTax = ?, currency = ?,
+          stripeCustomerId = ?, stripeSessionId = ?, stripePaymentIntentId = ?, stripeChargeId = ?,
+          receiptUrl = ?, invoiceUrl = ?, promotionCode = ?, couponName = ?, metadata = ?,
+          paidAt = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(
+      payload.memberId, payload.provider, payload.status, payload.paymentMethod, payload.productName,
+      payload.amount, payload.amountSubtotal, payload.amountDiscount, payload.amountTax, payload.currency,
+      payload.stripeCustomerId, payload.stripeSessionId, payload.stripePaymentIntentId, payload.stripeChargeId,
+      payload.receiptUrl, payload.invoiceUrl, payload.promotionCode, payload.couponName, payload.metadata,
+      payload.paidAt, payload.updatedAt, payload.id
+    );
+  } else {
+    db.prepare(`
+      INSERT INTO payment_records (
+        id, memberId, provider, status, paymentMethod, productName,
+        amount, amountSubtotal, amountDiscount, amountTax, currency,
+        stripeCustomerId, stripeSessionId, stripePaymentIntentId, stripeChargeId,
+        receiptUrl, invoiceUrl, promotionCode, couponName, metadata,
+        paidAt, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      payload.id, payload.memberId, payload.provider, payload.status, payload.paymentMethod, payload.productName,
+      payload.amount, payload.amountSubtotal, payload.amountDiscount, payload.amountTax, payload.currency,
+      payload.stripeCustomerId, payload.stripeSessionId, payload.stripePaymentIntentId, payload.stripeChargeId,
+      payload.receiptUrl, payload.invoiceUrl, payload.promotionCode, payload.couponName, payload.metadata,
+      payload.paidAt, payload.createdAt, payload.updatedAt
+    );
+  }
+
+  return db.prepare('SELECT * FROM payment_records WHERE id = ?').get(payload.id);
+}
+
+function publicPaymentRecord(record) {
+  if (!record) return null;
+  return {
+    id: record.id,
+    provider: record.provider || 'stripe',
+    status: record.status || 'pending',
+    paymentMethod: record.paymentMethod || 'stripe',
+    productName: record.productName || 'AiX Member',
+    amount: Number(record.amount || 0),
+    amountSubtotal: Number(record.amountSubtotal || 0),
+    amountDiscount: Number(record.amountDiscount || 0),
+    amountTax: Number(record.amountTax || 0),
+    currency: String(record.currency || 'thb').toUpperCase(),
+    receiptUrl: record.receiptUrl || '',
+    invoiceUrl: record.invoiceUrl || '',
+    promotionCode: record.promotionCode || '',
+    couponName: record.couponName || '',
+    reference: record.stripeSessionId || record.stripePaymentIntentId || record.stripeChargeId || record.id,
+    paidAt: record.paidAt || '',
+    createdAt: record.createdAt || '',
+    updatedAt: record.updatedAt || ''
+  };
+}
+
+function memberPaymentRecords(member) {
+  const rows = db.prepare(`
+    SELECT * FROM payment_records
+    WHERE memberId = ?
+    ORDER BY COALESCE(NULLIF(paidAt, ''), updatedAt, createdAt) DESC
+    LIMIT 30
+  `).all(member.id);
+  if (rows.length) return rows.map(publicPaymentRecord);
+  if ((member.paymentStatus || 'unpaid') !== 'paid') return [];
+  return [publicPaymentRecord({
+    id: `legacy_${member.id}`,
+    provider: member.paymentProvider || 'stripe',
+    status: 'paid',
+    paymentMethod: member.paymentMethod || member.payment || 'stripe',
+    productName: 'AiX Member',
+    amount: member.paymentAmount || MEMBER_PRICE * 100,
+    amountSubtotal: member.paymentAmount || MEMBER_PRICE * 100,
+    amountDiscount: 0,
+    amountTax: 0,
+    currency: member.paymentCurrency || 'thb',
+    receiptUrl: '',
+    invoiceUrl: '',
+    promotionCode: '',
+    couponName: '',
+    stripeSessionId: member.stripeSessionId || '',
+    stripePaymentIntentId: member.stripePaymentIntentId || '',
+    stripeChargeId: '',
+    paidAt: member.paidAt || '',
+    createdAt: member.paidAt || member.createdAt || '',
+    updatedAt: member.updatedAt || ''
+  })];
+}
+
+async function retrieveStripeCheckoutSession(sessionId) {
+  try {
+    return await getStripeClient().checkout.sessions.retrieve(sessionId, {
+      expand: ['payment_intent.latest_charge']
+    });
+  } catch (error) {
+    if (String(error.message || '').includes('expand')) {
+      return getStripeClient().checkout.sessions.retrieve(sessionId);
+    }
+    throw error;
+  }
+}
+
+async function retrieveStripePaymentIntent(paymentIntentId) {
+  try {
+    return await getStripeClient().paymentIntents.retrieve(paymentIntentId, {
+      expand: ['latest_charge']
+    });
+  } catch (error) {
+    if (String(error.message || '').includes('expand')) {
+      return getStripeClient().paymentIntents.retrieve(paymentIntentId);
+    }
+    throw error;
+  }
+}
+
 function markMemberPaid(memberId, paymentData = {}) {
   const existing = db.prepare('SELECT * FROM members WHERE id = ?').get(memberId);
   if (!existing) return null;
@@ -892,6 +1174,7 @@ function memberIdFromStripeObject(object = {}) {
 function applyPaidStripeSession(session) {
   const memberId = memberIdFromStripeObject(session);
   if (!memberId) return null;
+  upsertPaymentRecord(paymentRecordFromStripeSession(session));
   return markMemberPaid(memberId, {
     paymentMethod: paymentMethodLabelFromTypes(session.payment_method_types || []),
     paymentProvider: 'stripe',
@@ -917,13 +1200,15 @@ async function handleStripeWebhook(req, res) {
 
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-      const session = event.data.object;
+      const session = await retrieveStripeCheckoutSession(event.data.object.id).catch(() => event.data.object);
+      upsertPaymentRecord(paymentRecordFromStripeSession(session));
       if (session.payment_status === 'paid') applyPaidStripeSession(session);
     }
 
     if (event.type === 'payment_intent.succeeded') {
-      const intent = event.data.object;
+      const intent = await retrieveStripePaymentIntent(event.data.object.id).catch(() => event.data.object);
       const memberId = intent.metadata?.member_id;
+      upsertPaymentRecord(paymentRecordFromStripePaymentIntent(intent));
       if (memberId) {
         markMemberPaid(memberId, {
           paymentMethod: intent.payment_method_types?.[0] || 'stripe',
@@ -1489,7 +1774,7 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/member/dashboard', requireMemberSession, (req, res) => {
+app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
   const member = publicMember(req.member);
   const paid = member.paymentStatus === 'paid';
   const courses = paid
@@ -1504,6 +1789,20 @@ app.get('/api/member/dashboard', requireMemberSession, (req, res) => {
     : [];
   const schedule = paid ? getUpcomingSchedules().slice(0, 8) : [];
   const notifications = paid ? ensureScheduleNotifications(req.member) : [];
+  let payments = memberPaymentRecords(req.member);
+
+  const hasOnlyLegacyPayment = payments.length === 1 && payments[0].id === `legacy_${req.member.id}`;
+  if ((!payments.length || hasOnlyLegacyPayment) && req.member.stripeSessionId && stripeReady()) {
+    try {
+      const session = await retrieveStripeCheckoutSession(req.member.stripeSessionId);
+      if (memberIdFromStripeObject(session) === req.member.id) {
+        upsertPaymentRecord(paymentRecordFromStripeSession(session));
+        payments = memberPaymentRecords(req.member);
+      }
+    } catch (error) {
+      console.warn('Could not refresh Stripe payment history:', error.message);
+    }
+  }
 
   res.json({
     member,
@@ -1511,6 +1810,7 @@ app.get('/api/member/dashboard', requireMemberSession, (req, res) => {
     resources,
     schedule,
     notifications,
+    payments,
     nextAction: paid ? 'learn' : 'pay',
     payment: {
       amount: MEMBER_PRICE,
@@ -1543,6 +1843,12 @@ app.post('/api/member/notifications/:id/read', requireMemberSession, (req, res) 
   if (result.changes === 0) return res.status(404).json({ error: 'ไม่พบแจ้งเตือนนี้' });
   const notification = db.prepare('SELECT * FROM notifications WHERE id = ?').get(req.params.id);
   res.json(publicNotification(notification));
+});
+
+app.get('/api/member/payments', requireMemberSession, (req, res) => {
+  res.json({
+    payments: memberPaymentRecords(req.member)
+  });
 });
 
 app.get('/api/payments/config', requireMemberSession, (req, res) => {
@@ -1614,6 +1920,7 @@ app.post('/api/payments/stripe/checkout', requireMemberSession, async (req, res)
       new Date().toISOString(),
       req.member.id
     );
+    upsertPaymentRecord(paymentRecordFromStripeSession(session));
 
     res.json({
       checkoutUrl: session.url,
@@ -1631,15 +1938,17 @@ app.get('/api/payments/stripe/session/:sessionId', requireMemberSession, async (
       return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า Stripe API Key' });
     }
 
-    const session = await getStripeClient().checkout.sessions.retrieve(req.params.sessionId);
+    const session = await retrieveStripeCheckoutSession(req.params.sessionId);
     const sessionMemberId = memberIdFromStripeObject(session);
     if (sessionMemberId && sessionMemberId !== req.member.id) {
       return res.status(403).json({ error: 'Session นี้ไม่ตรงกับสมาชิกที่เข้าสู่ระบบ' });
     }
 
     let member = req.member;
+    let paymentRecord = upsertPaymentRecord(paymentRecordFromStripeSession(session));
     if (session.payment_status === 'paid') {
       member = applyPaidStripeSession(session) || req.member;
+      paymentRecord = findPaymentRecord(paymentRecordFromStripeSession(session)) || paymentRecord;
     }
 
     res.json({
@@ -1648,7 +1957,8 @@ app.get('/api/payments/stripe/session/:sessionId', requireMemberSession, async (
       paymentStatus: session.payment_status,
       amountTotal: session.amount_total,
       currency: session.currency,
-      member: publicMember(member)
+      member: publicMember(member),
+      payment: publicPaymentRecord(paymentRecord)
     });
   } catch (error) {
     res.status(400).json({ error: error.message || 'ไม่สามารถตรวจสอบ Stripe Session ได้' });

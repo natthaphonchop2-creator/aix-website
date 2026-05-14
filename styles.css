@@ -1463,6 +1463,102 @@ details p {
   box-shadow: var(--shadow-card);
 }
 
+.payment-history-section {
+  padding-top: 0;
+}
+
+.payment-history-list {
+  display: grid;
+  gap: 12px;
+}
+
+.payment-history-card,
+.payment-history-empty {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.payment-history-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+}
+
+.payment-history-main {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.payment-history-icon,
+.payment-history-empty span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--blue);
+  border-radius: var(--radius);
+  background: var(--blue-soft);
+}
+
+.payment-history-card small {
+  display: block;
+  color: var(--success);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.payment-history-card h3,
+.payment-history-empty h3 {
+  margin: 0;
+}
+
+.payment-history-card p,
+.payment-history-empty p {
+  margin: 2px 0 0;
+  color: var(--muted);
+}
+
+.payment-history-card .payment-discount {
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.payment-history-side {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.payment-history-side strong {
+  font-size: 1.05rem;
+}
+
+.secondary-btn.compact {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 0.88rem;
+}
+
+.receipt-pending {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.payment-history-empty {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 18px;
+}
+
 .member-notification-section,
 .member-schedule-section {
   padding-top: 0;
@@ -2926,6 +3022,14 @@ details {
   .member-alert-card button {
     grid-column: 2;
     width: fit-content;
+  }
+
+  .payment-history-card {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-history-side {
+    justify-items: start;
   }
 
   .otp-head {
