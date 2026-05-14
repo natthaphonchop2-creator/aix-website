@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AiX Club แพลตฟอร์มคอร์สเรียน AI สำหรับผู้ประกอบการและทีมธุรกิจ เรียน AI Agent, Prompt Engineering, Automation และ AI Content พร้อมคลาสสด วิดีโอย้อนหลัง เครื่องมือ และ Community">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="AiX Club">
+  <meta name="theme-color" content="#ffffff">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AiX Club">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:url" content="https://www.aixclub.co/">
+  <meta property="og:title" content="AiX Club | คอร์สเรียน AI สำหรับธุรกิจและผู้ประกอบการ">
+  <meta property="og:description" content="เรียน AI แบบลงมือทำจริง สร้าง AI Agent, Workflow, Prompt และระบบ Content สำหรับธุรกิจ พร้อมคลาสสด วิดีโอย้อนหลัง และ Community">
+  <meta property="og:image" content="https://www.aixclub.co/assets/generated/hero-space-learning.jpg">
+  <meta name="twitter:title" content="AiX Club | คอร์สเรียน AI สำหรับธุรกิจ">
+  <meta name="twitter:description" content="เรียน AI Agent, Prompt Engineering, Automation และ AI Content สำหรับธุรกิจ พร้อมคลาสสด วิดีโอย้อนหลัง และ Community">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.aixclub.co/assets/generated/hero-space-learning.jpg">
+  <link rel="canonical" href="https://www.aixclub.co/">
+  <title>AiX Club | คอร์สเรียน AI สำหรับธุรกิจ AI Agent และ Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css?v=google-visible-2">
+  <script src="https://accounts.google.com/gsi/client?hl=th" async defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="top-strip">
+      <div class="container strip-inner">
+        <a href="#home">สำหรับผู้เรียน</a>
+        <a href="#business">สำหรับธุรกิจ</a>
+        <a href="#answers">คำถามยอดนิยม</a>
+        <a href="#membership">AiX Member</a>
+      </div>
+    </div>
+
+    <div class="container nav-bar">
+      <a class="brand" href="#home" aria-label="AiX Club home">
+        <img src="AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+
+      <button class="explore-btn" data-scroll="catalog">
+        <i class="fa-solid fa-grip"></i>
+        สำรวจคอร์ส
+      </button>
+
+      <label class="global-search" aria-label="Search courses">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="globalSearch" type="search" placeholder="ค้นหา AI Agent, Prompt, Automation, Content">
+      </label>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <button data-scroll="paths">เส้นทางเรียน</button>
+        <button data-scroll="catalog">คอร์สเรียน</button>
+        <button data-scroll="tools">เครื่องมือ</button>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="link-btn" id="loginBtn">เข้าสู่ระบบ</button>
+        <button class="primary-btn" data-open-signup>สมัคร AiX Member</button>
+      </div>
+
+      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+    <div class="mobile-panel" id="mobilePanel">
+      <button data-scroll="paths">เส้นทางเรียน</button>
+      <button data-scroll="catalog">คอร์สเรียน</button>
+      <button data-scroll="tools">เครื่องมือ</button>
+      <button id="mobileLoginBtn" type="button">เข้าสู่ระบบ</button>
+      <button data-open-signup>สมัคร AiX Member</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">คอร์สเรียน AI สำหรับธุรกิจและผู้ประกอบการ</p>
+          <h1>เรียน AI ให้สร้าง AI Agent, Automation และ Content System ได้จริง</h1>
+          <p class="hero-lead">AiX Club คือแพลตฟอร์มเรียน AI สำหรับคนทำธุรกิจที่อยากใช้ AI ในงานจริง ตั้งแต่ Prompt Engineering, AI Agent, Workflow Automation, Deep Research ไปจนถึงการทำคอนเทนต์ด้วย AI พร้อมคลาสสด วิดีโอย้อนหลัง เครื่องมือ และ Community</p>
+          <div class="hero-actions">
+            <button class="primary-btn large" data-scroll="catalog">สำรวจคอร์สเรียน</button>
+            <button class="secondary-btn large" data-scroll="paths">ดูเส้นทางเรียน</button>
+          </div>
+          <div class="hero-proof">
+            <span><i class="fa-solid fa-video"></i> คลาสสด + ดูย้อนหลัง</span>
+            <span><i class="fa-solid fa-certificate"></i> เหมาะกับผู้เริ่มต้นถึงใช้งานจริง</span>
+            <span><i class="fa-solid fa-users"></i> Community สำหรับลงมือทำ</span>
+          </div>
+        </div>
+        <div class="hero-media">
+          <img src="assets/generated/hero-space-learning.jpg" alt="คอร์สเรียน AI สำหรับธุรกิจบนแพลตฟอร์ม AiX Club">
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-band">
+      <div class="container trust-grid">
+        <p>เรียน AI แบบลงมือทำในแพลตฟอร์มเดียว</p>
+        <span>คลาสสดกลุ่มเล็ก</span>
+        <span>วิดีโอย้อนหลัง</span>
+        <span>AI Tools</span>
+        <span>Prompt Templates</span>
+        <span>Community</span>
+      </div>
+    </section>
+
+    <section class="section answer-section" id="answers">
+      <div class="container answer-grid">
+        <div>
+          <p class="eyebrow">Quick Answer</p>
+          <h2>AiX Club คืออะไร?</h2>
+          <p class="section-copy">AiX Club คือแพลตฟอร์มคอร์สเรียน AI ภาษาไทยสำหรับผู้ประกอบการ คนทำงาน และทีมธุรกิจที่ต้องการนำ AI ไปใช้ลดงานซ้ำ สร้างระบบหลังบ้าน ทำคอนเทนต์ วิเคราะห์ข้อมูล และสร้าง AI Agent โดยไม่ต้องเริ่มจากทฤษฎีล้วน</p>
+        </div>
+        <div class="answer-list">
+          <article>
+            <strong>เหมาะกับใคร</strong>
+            <p>เจ้าของธุรกิจ, Solo Entrepreneur, Marketer, Creator, Consultant และทีมที่ต้องการใช้ AI ในงานประจำวัน</p>
+          </article>
+          <article>
+            <strong>เรียนอะไรบ้าง</strong>
+            <p>AI Agent, Prompt Engineering, Manus AI, Claude, Automation, Deep Research, AI Video, AI Graphic และ Vibe Coding</p>
+          </article>
+          <article>
+            <strong>ผลลัพธ์ที่คาดหวัง</strong>
+            <p>สร้าง workflow ใช้งานจริง, ลดเวลาทำงานซ้ำ, ทำระบบคอนเทนต์, สร้างผู้ช่วย AI และนำ template ไปปรับใช้กับธุรกิจของตัวเอง</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="paths">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Learning Paths</p>
+            <h2>เส้นทางเรียน AI ตามเป้าหมายธุรกิจ</h2>
+          </div>
+          <button class="text-link" data-scroll="catalog">ดูคอร์สทั้งหมด <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+
+        <div class="path-grid">
+          <article class="path-card">
+            <i class="fa-solid fa-robot"></i>
+            <h3>AI Agent Builder</h3>
+            <p>เรียนสร้าง AI Agent สำหรับตอบลูกค้า สรุปรายงาน วางแผนงาน และช่วยจัดการงานซ้ำในธุรกิจ</p>
+            <button data-filter-shortcut="Agent">เริ่มเส้นทางนี้</button>
+          </article>
+          <article class="path-card">
+            <i class="fa-solid fa-gears"></i>
+            <h3>Business Automation</h3>
+            <p>ออกแบบ workflow automation เชื่อมเครื่องมือ ลดงาน manual และวางระบบหลังบ้านให้ทำงานต่อเนื่อง</p>
+            <button data-filter-shortcut="Automation">เริ่มเส้นทางนี้</button>
+          </article>
+          <article class="path-card">
+            <i class="fa-solid fa-pen-nib"></i>
+            <h3>Creative AI</h3>
+            <p>ใช้ AI ทำภาพ วิดีโอ โฆษณา และ content marketing ที่คุมโทนแบรนด์และผลิตซ้ำได้</p>
+            <button data-filter-shortcut="Creative">เริ่มเส้นทางนี้</button>
+          </article>
+          <article class="path-card">
+            <i class="fa-solid fa-code"></i>
+            <h3>AI-Assisted Coding</h3>
+            <p>ใช้ AI ช่วยคิดสเปก เขียน prototype เว็บ แอป และระบบธุรกิจ เพื่อส่งต่อให้ทีมพัฒนาหรือทำ MVP</p>
+            <button data-filter-shortcut="Coding">เริ่มเส้นทางนี้</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section catalog-section" id="catalog">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">AI Course Catalog</p>
+            <h2>คอร์สเรียน AI สำหรับธุรกิจ ตั้งแต่เริ่มต้นถึงลงมือทำ</h2>
+            <p>เลือกคอร์สตามงานที่ต้องการแก้ เช่น สร้าง AI Agent, เขียน Prompt, ทำ Automation, ทำคอนเทนต์ หรือใช้ AI ช่วยสร้าง prototype</p>
+          </div>
+        </div>
+
+        <div class="catalog-toolbar">
+          <div class="filter-tabs" id="classFilters"></div>
+          <label class="catalog-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="catalogSearch" type="search" placeholder="ค้นหา AI Agent, Prompt, Automation">
+          </label>
+        </div>
+
+        <div class="course-grid" id="classesGrid"></div>
+      </div>
+    </section>
+
+    <section class="section alt-section" id="tools">
+      <div class="container resource-layout">
+        <div>
+          <p class="eyebrow">AI Tools & Resources</p>
+          <h2>เครื่องมือและ Template สำหรับเอา AI ไปใช้ในธุรกิจทันที</h2>
+          <p class="section-copy">สมาชิกจะได้ resource สำหรับลงมือทำจริง เช่น Prompt Template, Agent Workflow Blueprint, Research Playbook, Automation Checklist และตัวอย่าง workflow สำหรับธุรกิจ</p>
+        </div>
+        <div class="resource-grid" id="resourceList"></div>
+      </div>
+    </section>
+
+    <section class="section business-section" id="business">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">For Business</p>
+            <h2>เรียน AI เพื่อใช้กับงานธุรกิจ ไม่ใช่แค่รู้จักเครื่องมือ</h2>
+            <p>AiX Club ออกแบบเนื้อหาให้ตอบโจทย์งานจริงของธุรกิจไทย เช่น งานขาย การตลาด Customer Service การวิเคราะห์ข้อมูล การทำรายงาน และระบบคอนเทนต์</p>
+          </div>
+        </div>
+        <div class="answer-list compact">
+          <article>
+            <strong>ลดงานซ้ำ</strong>
+            <p>ใช้ AI และ Automation ช่วยสรุปข้อมูล ตอบคำถามเบื้องต้น จัดการเอกสาร และเตรียมรายงาน</p>
+          </article>
+          <article>
+            <strong>เพิ่มความเร็วการทำคอนเทนต์</strong>
+            <p>วางระบบ Prompt และ Content Workflow ให้ทีมสร้างไอเดีย เขียน และปรับโทนแบรนด์ได้เร็วขึ้น</p>
+          </article>
+          <article>
+            <strong>สร้างระบบที่ใช้ซ้ำได้</strong>
+            <p>เรียนวิธีเปลี่ยนความรู้และขั้นตอนทำงานให้เป็น Template, Agent และ Workflow ที่ปรับใช้ซ้ำได้</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section membership-section" id="membership">
+      <div class="container membership-grid">
+        <article class="membership-card">
+          <span class="badge">AiX Member</span>
+          <h2>สมัคร AiX Member เพื่อเข้าเรียนคอร์ส AI และใช้ Resource สำหรับธุรกิจ</h2>
+          <p>สมาชิก AiX Member เข้าถึงคอร์สเรียน AI, คลาสสด, วิดีโอย้อนหลัง, Prompt Template, Workflow Blueprint และ Community สำหรับถามตอบระหว่างลงมือทำ</p>
+          <div class="price-row">
+            <strong>1,999</strong>
+            <span>บาท</span>
+          </div>
+          <ul>
+            <li><i class="fa-solid fa-check"></i> คอร์สเรียน AI สำหรับธุรกิจและผู้ประกอบการ</li>
+            <li><i class="fa-solid fa-check"></i> คลาสสดกลุ่มเล็กและวิดีโอย้อนหลัง</li>
+            <li><i class="fa-solid fa-check"></i> Prompt Templates และ Workflow Blueprint</li>
+            <li><i class="fa-solid fa-check"></i> Community สำหรับถามตอบและอัปเดตเทรนด์ AI</li>
+          </ul>
+        </article>
+
+        <article class="signup-card member-entry-card">
+          <span class="provider">สมัครสมาชิกออนไลน์</span>
+          <h3>สมัครและเข้าสู่ระบบสมาชิก</h3>
+          <p>สมัครด้วย Google หรือ Email/Password แล้วเข้าหน้าสมาชิกได้ทันที บัญชีเริ่มต้นเป็นสมาชิกสถานะยังไม่ชำระเงิน</p>
+          <div class="member-entry-actions">
+            <button class="primary-btn full" type="button" data-open-signup>สมัคร AiX Member</button>
+            <button class="secondary-btn full" type="button" data-open-login>เข้าสู่ระบบสมาชิก</button>
+          </div>
+          <div class="member-checklist">
+            <span><i class="fa-solid fa-envelope-circle-check"></i> ตรวจรูปแบบอีเมลก่อนสมัคร</span>
+            <span><i class="fa-solid fa-lock"></i> Session สมาชิก 7 วัน</span>
+            <span><i class="fa-brands fa-google"></i> รองรับ Google login</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section faq-section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">FAQ</p>
+            <h2>คำถามที่พบบ่อย</h2>
+          </div>
+        </div>
+        <div class="faq-grid">
+          <details open>
+            <summary>AiX Club เหมาะกับใคร?</summary>
+            <p>AiX Club เหมาะกับผู้ประกอบการ เจ้าของธุรกิจ คนทำงานสายการตลาด Creator, Consultant และทีมธุรกิจที่ต้องการเรียน AI เพื่อนำไปใช้จริงกับงานขาย การตลาด คอนเทนต์ การวิเคราะห์ข้อมูล และระบบหลังบ้าน</p>
+          </details>
+          <details>
+            <summary>ไม่มีพื้นฐาน AI เริ่มเรียนได้ไหม?</summary>
+            <p>เริ่มได้ เพราะคอร์สออกแบบให้เรียนจาก use case ธุรกิจจริงก่อน แล้วค่อยลงรายละเอียดเรื่อง Prompt, Agent, Automation และเครื่องมือที่จำเป็น โดยไม่ต้องมีพื้นฐานเขียนโค้ดมาก่อน</p>
+          </details>
+          <details>
+            <summary>เรียน AI Agent แล้วนำไปใช้ทำอะไรได้บ้าง?</summary>
+            <p>ผู้เรียนสามารถนำความรู้ไปสร้างผู้ช่วย AI สำหรับตอบคำถามลูกค้า สรุปรายงาน ทำ research วางแผนคอนเทนต์ เตรียมเอกสาร และออกแบบ workflow ที่ช่วยลดงานซ้ำในธุรกิจ</p>
+          </details>
+          <details>
+            <summary>คอร์สเรียน AI ราคาเท่าไหร่?</summary>
+            <p>AiX Member ราคา 1,999 บาท สำหรับการเข้าเรียนคอร์สหลักและใช้ resource ในแพลตฟอร์ม โดยรายละเอียดสิทธิ์สมาชิกจะแสดงในหน้าสมัครสมาชิก</p>
+          </details>
+          <details>
+            <summary>เรียนย้อนหลังได้ไหม?</summary>
+            <p>คอร์สหลักมีวิดีโอย้อนหลังและ resource ให้สมาชิกกลับมาทบทวนได้ เหมาะกับคนทำงานหรือเจ้าของธุรกิจที่ต้องแบ่งเวลาเรียนตามตารางของตัวเอง</p>
+          </details>
+          <details>
+            <summary>ชำระเงินอย่างไร?</summary>
+            <p>สมัครสมาชิกได้ทันทีผ่าน Google หรือ Email/Password จากนั้นชำระเงินใน Dashboard เพื่อปลดล็อกคอร์สเรียน</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <img src="AiX%20logo/textblack.png" alt="AiX Club">
+        <p>แพลตฟอร์มคอร์สเรียน AI ภาษาไทย สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI ทำงานจริง</p>
+      </div>
+      <div>
+        <strong>เรียน AI</strong>
+        <a href="#paths">เส้นทางเรียน AI</a>
+        <a href="#catalog">คอร์สเรียน AI</a>
+        <a href="#tools">AI Tools & Templates</a>
+        <a href="#business">AI สำหรับธุรกิจ</a>
+      </div>
+      <div>
+        <strong>ติดต่อ AiX Club</strong>
+        <a href="tel:0987570796">098-757-0796</a>
+        <a href="mailto:natthaphon.chop2@gmail.com">natthaphon.chop2@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="classModal" aria-hidden="true">
+    <div class="modal-panel">
+      <button class="modal-close" data-close-modal aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      <div id="classModalContent"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="authModal" aria-hidden="true">
+    <div class="modal-panel auth-panel">
+      <button class="modal-close" data-close-auth aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-content">
+        <span class="provider">AiX Member</span>
+        <h2>ระบบสมาชิก AiX</h2>
+
+        <div class="auth-tabs" role="tablist" aria-label="Member actions">
+          <button class="active" type="button" data-auth-tab="signup">สมัครสมาชิก</button>
+          <button type="button" data-auth-tab="login">เข้าสู่ระบบ</button>
+        </div>
+
+        <section class="auth-pane active" id="signupPane">
+          <div class="google-box">
+            <div id="googleSignupButton"></div>
+            <p id="googleSignupStatus">สมัครด้วย Google แล้วเข้าหน้าสมาชิกได้ทันที</p>
+          </div>
+          <div class="auth-divider"><span>หรือสมัครด้วย Email/Password</span></div>
+
+          <form id="memberForm" class="member-form auth-form" novalidate>
+            <div class="form-row">
+              <label>ชื่อ<input name="firstName" autocomplete="given-name" required placeholder="ชื่อจริง"></label>
+              <label>นามสกุล<input name="lastName" autocomplete="family-name" required placeholder="นามสกุล"></label>
+            </div>
+            <label>อีเมล<input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com"></label>
+            <label>รหัสผ่าน<input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="อย่างน้อย 8 ตัวอักษร"></label>
+            <label>ยืนยันรหัสผ่าน<input name="passwordConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="กรอกรหัสผ่านอีกครั้ง"></label>
+            <div class="form-row">
+              <label>เบอร์โทร <span class="optional-label">ไม่จำเป็นต้องกรอก</span><input name="phone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx"></label>
+              <label>Line ID<input name="lineId" autocomplete="username" placeholder="Line ID"></label>
+            </div>
+            <div class="otp-box hidden" id="signupOtpBox">
+              <div class="otp-head">
+                <strong>ยืนยันเบอร์โทรด้วย SMS</strong>
+                <span id="otpStatus">กรอกเบอร์โทรแล้วกดส่งรหัส</span>
+              </div>
+              <div class="otp-actions">
+                <input id="otpCode" name="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="รหัส 6 หลัก">
+                <button class="secondary-btn" id="sendOtpBtn" type="button">ส่งรหัส SMS</button>
+                <button class="secondary-btn" id="verifyOtpBtn" type="button">ยืนยันรหัส</button>
+              </div>
+              <input name="phoneVerificationToken" type="hidden">
+            </div>
+            <label>ธุรกิจ / งานที่ทำ <span class="optional-label">ไม่จำเป็นต้องกรอก</span><input name="business" placeholder="เช่น E-commerce, Marketing, Consultant"></label>
+            <input type="hidden" name="payment" value="online">
+            <label class="consent-row">
+              <input name="consentAccepted" type="checkbox" required>
+              <span>ยืนยันว่าข้อมูลถูกต้อง และยอมรับการสร้างบัญชีสมาชิก AiX Club</span>
+            </label>
+            <label class="consent-row soft">
+              <input name="marketingConsent" type="checkbox">
+              <span>รับข่าวสารคอร์สและ AI update จาก AiX Club</span>
+            </label>
+            <button class="primary-btn full" type="submit">สมัครสมาชิก</button>
+          </form>
+        </section>
+
+        <section class="auth-pane" id="loginPane">
+          <div class="google-box">
+            <div id="googleLoginButton"></div>
+            <p id="googleLoginStatus">เข้าสู่ระบบด้วย Google เป็นช่องทางหลัก</p>
+          </div>
+          <div class="auth-divider"><span>หรือเข้าสู่ระบบด้วย Email/Password</span></div>
+
+          <form id="loginForm" class="member-form auth-form" novalidate>
+            <label>อีเมล<input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com"></label>
+            <label>รหัสผ่าน<input name="password" type="password" autocomplete="current-password" required placeholder="รหัสผ่าน"></label>
+            <button class="primary-btn full" type="submit">เข้าสู่ระบบ</button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.aixclub.co/#organization",
+        "name": "AiX Club",
+        "url": "https://www.aixclub.co/",
+        "logo": "https://www.aixclub.co/AiX%20logo/textblack.png",
+        "description": "แพลตฟอร์มคอร์สเรียน AI ภาษาไทยสำหรับผู้ประกอบการและทีมธุรกิจ",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+66-98-757-0796",
+          "contactType": "customer support",
+          "areaServed": "TH",
+          "availableLanguage": ["Thai"]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.aixclub.co/#website",
+        "url": "https://www.aixclub.co/",
+        "name": "AiX Club",
+        "description": "คอร์สเรียน AI สำหรับธุรกิจ AI Agent Prompt Engineering และ Automation",
+        "publisher": {
+          "@id": "https://www.aixclub.co/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.aixclub.co/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Product",
+        "@id": "https://www.aixclub.co/#aix-member",
+        "name": "AiX Member",
+        "description": "สมาชิกสำหรับเข้าเรียนคอร์ส AI ใช้ Prompt Templates Workflow Blueprint วิดีโอย้อนหลัง และ Community",
+        "brand": {
+          "@id": "https://www.aixclub.co/#organization"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "1999",
+          "priceCurrency": "THB",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.aixclub.co/#membership"
+        }
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://www.aixclub.co/#course-list",
+        "name": "คอร์สเรียน AI ของ AiX Club",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@type": "Course",
+              "name": "Manus AI สำหรับธุรกิจ",
+              "description": "คอร์สเรียนสร้าง AI Agent และ Workflow Automation สำหรับธุรกิจ",
+              "provider": {
+                "@id": "https://www.aixclub.co/#organization"
+              }
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+              "@type": "Course",
+              "name": "Claude & Manus Vibe Coding",
+              "description": "เรียนใช้ AI ช่วยสร้าง prototype เว็บ แอป และ workflow สำหรับธุรกิจ",
+              "provider": {
+                "@id": "https://www.aixclub.co/#organization"
+              }
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "item": {
+              "@type": "Course",
+              "name": "AI Video & Graphic",
+              "description": "เรียนสร้างภาพ วิดีโอ และคอนเทนต์การตลาดด้วย AI",
+              "provider": {
+                "@id": "https://www.aixclub.co/#organization"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.aixclub.co/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "AiX Club เหมาะกับใคร?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "AiX Club เหมาะกับผู้ประกอบการ เจ้าของธุรกิจ คนทำงานสายการตลาด Creator Consultant และทีมธุรกิจที่ต้องการเรียน AI เพื่อนำไปใช้จริงกับงานขาย การตลาด คอนเทนต์ การวิเคราะห์ข้อมูล และระบบหลังบ้าน"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "ไม่มีพื้นฐาน AI เริ่มเรียนได้ไหม?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "เริ่มได้ เพราะคอร์สออกแบบให้เรียนจาก use case ธุรกิจจริงก่อน แล้วค่อยลงรายละเอียดเรื่อง Prompt Agent Automation และเครื่องมือที่จำเป็น"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "คอร์สเรียน AI ราคาเท่าไหร่?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "AiX Member ราคา 1,999 บาท สำหรับการเข้าเรียนคอร์สหลักและใช้ resource ในแพลตฟอร์ม"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <script src="script.js?v=password-confirm-1"></script>
+</body>
+</html>

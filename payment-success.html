@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ตรวจสอบการชำระเงิน | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=payment-success-1">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+        <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+      <nav class="main-nav" aria-label="Payment success navigation">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/index.html#catalog">คอร์สเรียน</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <section class="section payment-page">
+      <div class="container payment-result-shell">
+        <article class="payment-result-card" id="paymentResultCard">
+          <span class="result-icon pending" id="paymentResultIcon"><i class="fa-solid fa-spinner"></i></span>
+          <p class="eyebrow">Stripe Payment</p>
+          <h1 id="paymentResultTitle">กำลังตรวจสอบการชำระเงิน</h1>
+          <p id="paymentResultCopy">ระบบกำลังตรวจสอบสถานะจาก Stripe และจะปลดล็อกคอร์สเมื่อชำระสำเร็จ</p>
+          <div class="dashboard-actions">
+            <a class="primary-btn" id="dashboardLink" href="/dashboard">ไป Dashboard</a>
+            <a class="secondary-btn" href="/payment">กลับหน้าชำระเงิน</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/payment-success.js?v=payment-success-1"></script>
+</body>
+</html>

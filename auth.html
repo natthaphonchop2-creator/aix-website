@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>เข้าสู่ระบบสมาชิก | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=auth-page-2">
+  <script src="https://accounts.google.com/gsi/client?hl=th" async defer></script>
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-shell">
+      <a class="brand auth-brand" href="/index.html#home" aria-label="AiX Club home">
+        <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+
+      <div class="auth-layout">
+        <aside class="auth-copy">
+          <p class="eyebrow">AiX Member</p>
+          <h1>เข้าสู่ระบบเพื่อเรียน AI และปลดล็อกคอร์สของคุณ</h1>
+          <p>สมัครด้วย Google หรือ Email/Password แล้วเข้าหน้าสมาชิกได้ทันที บัญชีใหม่เริ่มต้นเป็นสมาชิกสถานะยังไม่ชำระเงิน</p>
+          <div class="member-checklist">
+            <span><i class="fa-solid fa-circle-check"></i> Auto Registration ไม่ต้องรอ Admin</span>
+            <span><i class="fa-solid fa-lock"></i> Session สมาชิก 7 วัน</span>
+            <span><i class="fa-solid fa-graduation-cap"></i> ชำระเงินแล้วเข้าเรียนได้ทันที</span>
+          </div>
+        </aside>
+
+        <section class="auth-card">
+          <div class="auth-tabs" role="tablist" aria-label="Member actions">
+            <button class="active" type="button" data-auth-mode="register">สมัครสมาชิก</button>
+            <button type="button" data-auth-mode="login">เข้าสู่ระบบ</button>
+          </div>
+
+          <div class="google-box">
+            <div id="googleAuthButton"></div>
+            <p id="googleAuthStatus">Google เป็นช่องทางหลักสำหรับ Login / Register</p>
+          </div>
+
+          <div class="auth-divider"><span id="dividerText">หรือสมัครด้วย Email/Password</span></div>
+
+          <form id="registerForm" class="member-form auth-form" novalidate>
+            <div class="form-row">
+              <label>ชื่อ<input name="firstName" autocomplete="given-name" required placeholder="ชื่อจริง"></label>
+              <label>นามสกุล<input name="lastName" autocomplete="family-name" required placeholder="นามสกุล"></label>
+            </div>
+            <label>อีเมล<input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com"></label>
+            <label>รหัสผ่าน<input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="อย่างน้อย 8 ตัวอักษร"></label>
+            <label>ยืนยันรหัสผ่าน<input name="passwordConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="กรอกรหัสผ่านอีกครั้ง"></label>
+            <label>เบอร์โทร <span class="optional-label">ไม่จำเป็นต้องกรอก</span><input name="phone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx"></label>
+            <label class="consent-row">
+              <input name="consentAccepted" type="checkbox" required>
+              <span>ยืนยันว่าข้อมูลถูกต้อง และยอมรับการสร้างบัญชีสมาชิก AiX Club</span>
+            </label>
+            <button class="primary-btn full" type="submit">สมัครสมาชิก</button>
+          </form>
+
+          <form id="emailLoginForm" class="member-form auth-form hidden" novalidate>
+            <label>อีเมล<input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com"></label>
+            <label>รหัสผ่าน<input name="password" type="password" autocomplete="current-password" required placeholder="รหัสผ่าน"></label>
+            <button class="primary-btn full" type="submit">เข้าสู่ระบบ</button>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/auth-page.js?v=auth-page-2"></script>
+</body>
+</html>

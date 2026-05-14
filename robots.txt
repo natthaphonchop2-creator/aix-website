@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /payment
+Disallow: /course/*/content
+Disallow: /admin
+Disallow: /admin.html
+
+Sitemap: https://www.aixclub.co/sitemap.xml

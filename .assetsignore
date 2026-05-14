@@ -1,0 +1,16 @@
+node_modules
+old aix-club
+outputs
+.git
+.DS_Store
+.env
+.env.*
+data.db
+data.db-*
+uploads
+server.js
+rewrite_admin.js
+package.json
+package-lock.json
+wrangler.jsonc
+cloudflare

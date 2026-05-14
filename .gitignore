@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+data.db*
+uploads/
+outputs/
+.wrangler/
+old aix-club/
+videos/
+cloudflare/assets/

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Member Dashboard | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="brand" href="index.html#home" aria-label="AiX Club home">
+        <img src="AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+      <nav class="main-nav" aria-label="Dashboard navigation">
+        <a href="index.html#catalog">คอร์สเรียน</a>
+        <a href="#payment">ชำระเงิน</a>
+        <a href="#courses">ห้องเรียน</a>
+        <a href="#schedule">ตารางเรียน</a>
+        <a href="#tools">Tools</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="link-btn" id="logoutBtn" type="button">ออกจากระบบ</button>
+      </div>
+      <button class="mobile-menu" id="dashboardMobileMenu" aria-label="Open menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+    <div class="mobile-panel" id="dashboardMobilePanel">
+      <a href="index.html#catalog">คอร์สเรียน</a>
+      <a href="#payment">ชำระเงิน</a>
+      <a href="#courses">ห้องเรียน</a>
+      <a href="#schedule">ตารางเรียน</a>
+      <a href="#tools">Tools</a>
+      <button class="link-btn" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <section class="section dashboard-hero">
+      <div class="container dashboard-grid">
+        <article class="dashboard-profile">
+          <img id="memberAvatar" src="AiX%20logo/iconblack.png" alt="Member avatar">
+          <div>
+            <p class="eyebrow">AiX Member</p>
+            <h1 id="memberName">กำลังโหลดสมาชิก</h1>
+            <p id="memberEmail"></p>
+          </div>
+        </article>
+        <article class="dashboard-status" id="payment">
+          <span class="badge" id="paymentBadge">กำลังโหลด</span>
+          <h2 id="paymentTitle">สถานะการชำระเงิน</h2>
+          <p id="paymentCopy"></p>
+          <div class="dashboard-actions">
+            <button class="primary-btn" id="payBtn" type="button">ชำระเงินเพื่อเข้าเรียน</button>
+            <a class="secondary-btn" href="#courses">ดูคอร์สของฉัน</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="container member-overview-grid" aria-label="Member overview">
+        <article class="member-overview-card">
+          <span><i class="fa-solid fa-user-check"></i></span>
+          <small>สถานะบัญชี</small>
+          <strong id="accountStatusText">กำลังโหลด</strong>
+        </article>
+        <article class="member-overview-card">
+          <span><i class="fa-solid fa-credit-card"></i></span>
+          <small>การชำระเงิน</small>
+          <strong id="paymentMethodText">กำลังโหลด</strong>
+        </article>
+        <article class="member-overview-card">
+          <span><i class="fa-regular fa-calendar-check"></i></span>
+          <small>วันหมดอายุ</small>
+          <strong id="expiresAtText">-</strong>
+        </article>
+        <article class="member-overview-card">
+          <span><i class="fa-solid fa-graduation-cap"></i></span>
+          <small>คอร์สที่ปลดล็อก</small>
+          <strong id="coursesCountText">0 คอร์ส</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="section member-notification-section" id="notifications">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Notifications</p>
+            <h2>แจ้งเตือนจาก AiX Club</h2>
+            <p>ตารางสอนและประกาศสำคัญสำหรับสมาชิกจะแสดงที่นี่</p>
+          </div>
+        </div>
+        <div class="member-alert-grid" id="memberAlerts"></div>
+      </div>
+    </section>
+
+    <section class="section" id="courses">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">My Learning</p>
+            <h2>คอร์สที่มีสิทธิ์เข้าเรียน</h2>
+            <p id="courseSummary">คอร์สจะแสดงหลังชำระเงินสำเร็จ</p>
+          </div>
+        </div>
+        <div class="course-grid" id="memberCourses"></div>
+      </div>
+    </section>
+
+    <section class="section member-schedule-section" id="schedule">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Class Schedule</p>
+            <h2>ตารางสอนที่กำลังจะมาถึง</h2>
+            <p>เข้าห้องเรียนจากตารางนี้ได้ทันทีเมื่อถึงเวลาเรียน</p>
+          </div>
+        </div>
+        <div class="member-schedule-grid" id="memberSchedule"></div>
+      </div>
+    </section>
+
+    <section class="section member-resource-section" id="tools">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Member Tools</p>
+            <h2>เครื่องมือสำหรับสมาชิก</h2>
+            <p>Tools set, skill set และ template ที่แจกให้สมาชิก</p>
+          </div>
+        </div>
+        <div class="member-resource-grid" id="memberResources"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="dashboard.js"></script>
+</body>
+</html>

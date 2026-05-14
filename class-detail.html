@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="รายละเอียดคอร์สเรียน AI ของ AiX Club เรียน AI Agent, Prompt Engineering, Automation และ AI Tools สำหรับธุรกิจ พร้อมผลลัพธ์การเรียนและแผนการเรียนแบบเต็ม">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="AiX Club">
+  <meta name="theme-color" content="#ffffff">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AiX Club">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:url" content="https://www.aixclub.co/class-detail.html">
+  <meta property="og:title" content="รายละเอียดคอร์สเรียน AI | AiX Club">
+  <meta property="og:description" content="ดูรายละเอียดคอร์สเรียน AI แบบเต็ม พร้อมสิ่งที่จะได้เรียน ทักษะ แผนการเรียน และข้อมูลสมัคร AiX Member">
+  <meta property="og:image" content="https://www.aixclub.co/assets/generated/hero-space-learning.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="รายละเอียดคอร์สเรียน AI | AiX Club">
+  <meta name="twitter:description" content="ดูรายละเอียดคอร์สเรียน AI แบบเต็ม พร้อมสิ่งที่จะได้เรียน ทักษะ แผนการเรียน และข้อมูลสมัคร AiX Member">
+  <meta name="twitter:image" content="https://www.aixclub.co/assets/generated/hero-space-learning.jpg">
+  <link rel="canonical" href="https://www.aixclub.co/class-detail.html">
+  <title>รายละเอียดคอร์สเรียน AI | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="top-strip">
+      <div class="container strip-inner">
+        <a href="index.html#home">สำหรับผู้เรียน</a>
+        <a href="index.html#business">สำหรับธุรกิจ</a>
+        <a href="index.html#answers">คำถามยอดนิยม</a>
+        <a href="index.html#membership">AiX Member</a>
+      </div>
+    </div>
+
+    <div class="container nav-bar">
+      <a class="brand" href="index.html#home" aria-label="AiX Club home">
+        <img src="AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+
+      <a class="explore-btn" href="index.html#catalog">
+        <i class="fa-solid fa-grip"></i>
+        คอร์สทั้งหมด
+      </a>
+
+      <label class="global-search" aria-label="Search courses">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="detailSearch" type="search" placeholder="ค้นหาในหน้านี้ เช่น syllabus, skill, FAQ">
+      </label>
+
+      <nav class="main-nav" aria-label="Course navigation">
+        <button data-scroll="about">ภาพรวม</button>
+        <button data-scroll="outcomes">ผลลัพธ์</button>
+        <button data-scroll="syllabus">แผนการเรียน</button>
+        <button data-scroll="faq">FAQ</button>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="link-btn" href="index.html#catalog">กลับไปคอร์ส</a>
+        <a class="primary-btn" id="detailNavCta" href="index.html#membership">สมัคร AiX Member</a>
+      </div>
+
+      <button class="mobile-menu" id="detailMobileMenu" aria-label="Open menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+
+    <div class="mobile-panel" id="detailMobilePanel">
+      <button data-scroll="about">ภาพรวม</button>
+      <button data-scroll="outcomes">ผลลัพธ์</button>
+      <button data-scroll="syllabus">แผนการเรียน</button>
+      <a href="index.html#membership">สมัคร AiX Member</a>
+    </div>
+  </header>
+
+  <main id="detailRoot">
+    <section class="detail-hero" id="about">
+      <div class="container detail-hero-grid">
+        <div class="detail-hero-copy">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="index.html">AiX Club</a>
+            <span>/</span>
+            <a href="index.html#catalog">คอร์สเรียน AI</a>
+          </nav>
+          <p class="eyebrow" id="detailType">AI Course</p>
+          <h1 id="detailTitle">กำลังโหลดรายละเอียดคอร์ส</h1>
+          <p class="detail-subtitle" id="detailSubtitle"></p>
+          <div class="detail-instructor">
+            <img src="AiX%20logo/iconblack.png" alt="AiX Team">
+            <div>
+              <span>ผู้สอน</span>
+              <strong id="detailInstructor">AiX Team</strong>
+            </div>
+          </div>
+          <div class="detail-stats" id="detailStats"></div>
+          <div class="brand-logo-strip" id="detailBrandStrip" aria-label="AI brands in this course"></div>
+        </div>
+
+        <aside class="enroll-card" aria-label="Enrollment summary">
+          <img id="detailImage" src="assets/generated/hero-space-learning.jpg" alt="คอร์สเรียน AI">
+          <div class="enroll-body">
+            <span class="badge" id="detailStatus">AiX Member</span>
+            <h2 id="detailEnrollTitle">เข้าเรียนผ่าน AiX Member</h2>
+            <p id="detailEnrollCopy">ดูรายละเอียดคอร์ส แผนการเรียน และสมัครสมาชิกเพื่อเริ่มเรียน</p>
+            <a class="primary-btn full" id="detailMainCta" href="index.html#membership">สมัคร AiX Member</a>
+            <a class="secondary-btn full" href="#syllabus">ดูแผนการเรียน</a>
+            <div class="enroll-mini" id="detailMini"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <nav class="detail-tabs" aria-label="Course sections">
+      <div class="container">
+        <a href="#about">ภาพรวม</a>
+        <a href="#outcomes">สิ่งที่จะได้เรียน</a>
+        <a href="#skills">ทักษะ</a>
+        <a href="#syllabus">แผนการเรียน</a>
+        <a href="#instructor">ผู้สอน</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </nav>
+
+    <section class="section" id="outcomes">
+      <div class="container detail-two-col">
+        <div>
+          <p class="eyebrow">What You Will Learn</p>
+          <h2>สิ่งที่จะทำได้หลังเรียนคอร์สนี้</h2>
+          <p class="section-copy" id="detailOverview"></p>
+        </div>
+        <div class="outcome-list" id="detailOutcomes"></div>
+      </div>
+    </section>
+
+    <section class="section alt-section" id="skills">
+      <div class="container detail-two-col">
+        <div>
+          <p class="eyebrow">Skills & Tools</p>
+          <h2>ทักษะและเครื่องมือที่ได้ฝึก</h2>
+          <p class="section-copy">คอร์สถูกออกแบบให้เห็น workflow จริง ไม่ใช่แค่รู้ชื่อเครื่องมือ ผู้เรียนจะได้ฝึกคิด prompt, วางระบบ และเชื่อมงานให้เอาไปใช้ต่อได้</p>
+        </div>
+        <div>
+          <div class="brand-board" id="detailBrandBoard" aria-label="AI tools and brands"></div>
+          <div class="detail-skill-cloud" id="detailSkills"></div>
+          <div class="tool-row" id="detailTools"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="details">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Details To Know</p>
+            <h2>ข้อมูลก่อนเริ่มเรียน</h2>
+          </div>
+        </div>
+        <div class="detail-info-grid" id="detailInfo"></div>
+      </div>
+    </section>
+
+    <section class="section catalog-section" id="syllabus">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Course Syllabus</p>
+            <h2>แผนการเรียนแบบเต็ม</h2>
+            <p>เรียนตามลำดับจากพื้นฐาน แนวคิดหลัก ไปสู่โปรเจกต์ที่นำไปใช้กับงานจริง</p>
+          </div>
+        </div>
+        <div class="syllabus-list" id="detailSyllabus"></div>
+      </div>
+    </section>
+
+    <section class="section" id="project">
+      <div class="container detail-project">
+        <div>
+          <p class="eyebrow">Applied Learning Project</p>
+          <h2>โปรเจกต์ลงมือทำ</h2>
+          <p id="detailProject"></p>
+        </div>
+        <a class="primary-btn large" id="detailProjectCta" href="index.html#membership">สมัครเพื่อเริ่มเรียน</a>
+      </div>
+    </section>
+
+    <section class="section alt-section" id="instructor">
+      <div class="container instructor-panel">
+        <img src="AiX%20logo/iconblack.png" alt="AiX Team">
+        <div>
+          <p class="eyebrow">Instructor</p>
+          <h2>สอนโดย AiX Team</h2>
+          <p>ทีมผู้สอนของ AiX Club โฟกัสการนำ AI ไปใช้ในธุรกิจจริง ตั้งแต่การคิด use case, สร้าง prompt, วางระบบ automation และทำ template ให้ทีมใช้งานซ้ำได้</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">FAQ</p>
+            <h2>คำถามเกี่ยวกับคอร์สนี้</h2>
+          </div>
+        </div>
+        <div class="faq-grid" id="detailFaq"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <img src="AiX%20logo/textblack.png" alt="AiX Club">
+        <p>แพลตฟอร์มคอร์สเรียน AI ภาษาไทย สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI ทำงานจริง</p>
+      </div>
+      <div>
+        <strong>เรียน AI</strong>
+        <a href="index.html#paths">เส้นทางเรียน AI</a>
+        <a href="index.html#catalog">คอร์สเรียน AI</a>
+        <a href="index.html#tools">AI Tools & Templates</a>
+      </div>
+      <div>
+        <strong>ติดต่อ AiX Club</strong>
+        <a href="tel:0987570796">098-757-0796</a>
+        <a href="mailto:natthaphon.chop2@gmail.com">natthaphon.chop2@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="class-detail.js"></script>
+</body>
+</html>

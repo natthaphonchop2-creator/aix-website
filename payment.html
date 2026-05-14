@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ชำระเงิน AiX Member | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=payment-page-1">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+        <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+      <nav class="main-nav" aria-label="Payment navigation">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/index.html#catalog">คอร์สเรียน</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <section class="section payment-page">
+      <div class="container payment-layout">
+        <article class="payment-summary">
+          <p class="eyebrow">Order Summary</p>
+          <h1>ชำระเงิน AiX Member</h1>
+          <p id="paymentMember">กำลังโหลดข้อมูลสมาชิก</p>
+
+          <div class="order-box">
+            <div>
+              <strong>AiX Member</strong>
+              <span>ปลดล็อกคอร์ส AI, วิดีโอย้อนหลัง, Template และ Resource</span>
+            </div>
+            <strong id="paymentAmount">1,999 บาท</strong>
+          </div>
+
+          <div class="member-checklist">
+            <span><i class="fa-solid fa-shield-halved"></i> ชำระผ่าน Stripe Checkout โดยข้อมูลบัตรไม่ผ่านเซิร์ฟเวอร์ AiX</span>
+            <span><i class="fa-solid fa-qrcode"></i> พร้อมเพย์แสดง QR ผ่าน Stripe สำหรับบัญชีที่เปิดใช้งานในไทย</span>
+            <span><i class="fa-solid fa-unlock"></i> หลัง Stripe ยืนยันสำเร็จ ระบบจะปลดล็อกคอร์สให้อัตโนมัติ</span>
+          </div>
+        </article>
+
+        <article class="payment-panel">
+          <span class="badge">Payment</span>
+          <h2>เลือกวิธีชำระเงิน</h2>
+          <p class="payment-note" id="paymentNotice">ระบบจะพาไปหน้า Stripe Checkout เพื่อชำระเงินอย่างปลอดภัย</p>
+          <div class="payment-method-list" role="radiogroup" aria-label="Payment method">
+            <label class="payment-method active">
+              <input type="radio" name="paymentMethod" value="card" checked>
+              <span><i class="fa-solid fa-credit-card"></i></span>
+              <strong>บัตรเครดิต / เดบิต</strong>
+              <small>จ่ายผ่าน Stripe Checkout</small>
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="paymentMethod" value="promptpay">
+              <span><i class="fa-solid fa-qrcode"></i></span>
+              <strong>PromptPay QR</strong>
+              <small>จ่ายพร้อมเพย์ผ่าน Stripe</small>
+            </label>
+          </div>
+          <button class="primary-btn full large" id="confirmPaymentBtn" type="button">ไปยัง Stripe Checkout</button>
+          <a class="secondary-btn full" href="/dashboard">กลับ Dashboard</a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/payment.js?v=payment-page-1"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "aix-website",
+  "main": "cloudflare/worker.js",
+  "compatibility_date": "2026-05-13",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./cloudflare/assets",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": [
+      "/api/*",
+      "/admin",
+      "/admin/",
+      "/dashboard",
+      "/dashboard/",
+      "/login",
+      "/login/",
+      "/register",
+      "/register/",
+      "/payment",
+      "/payment/",
+      "/payment/success",
+      "/payment/success/",
+      "/payment/cancel",
+      "/payment/cancel/",
+      "/course/*/content"
+    ]
+  },
+  "vars": {
+    "APP_ENV": "production",
+    "BACKEND_MODE": "static-preview"
+  },
+  "env": {
+    "staging": {
+      "name": "aix-website-staging",
+      "vars": {
+        "APP_ENV": "staging",
+        "BACKEND_MODE": "static-preview"
+      }
+    }
+  }
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ห้องเรียน | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+        <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+      <nav class="main-nav" aria-label="Classroom navigation">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/index.html#catalog">คอร์สทั้งหมด</a>
+        <a href="#replays">คลิปย้อนหลัง</a>
+        <a href="#resources">Tools</a>
+        <a href="#schedule">ตารางเรียน</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <section class="detail-hero">
+      <div class="container detail-hero-grid">
+        <div class="detail-hero-copy">
+          <p class="eyebrow">AiX Classroom</p>
+          <h1 id="courseTitle">กำลังโหลดห้องเรียน</h1>
+          <p class="detail-subtitle" id="courseSubtitle"></p>
+          <div class="detail-stats" id="courseStats"></div>
+        </div>
+        <aside class="enroll-card">
+          <img id="courseImage" src="/assets/generated/hero-space-learning.jpg" alt="Course">
+          <div class="enroll-body">
+            <span class="badge paid">ปลดล็อกแล้ว</span>
+            <h2>เริ่มเรียนได้ทันที</h2>
+            <p>ดูรายละเอียดคลาส คลิปย้อนหลัง Resource และตารางเรียนทั้งหมดจากหน้านี้</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section member-class-overview">
+      <div class="container classroom-layout">
+        <article class="classroom-panel">
+          <p class="eyebrow">Class Detail</p>
+          <h2>รายละเอียดคลาส</h2>
+          <p id="courseOverviewText"></p>
+          <div class="classroom-chip-row" id="courseSkillChips"></div>
+        </article>
+        <article class="classroom-panel">
+          <p class="eyebrow">Outcome</p>
+          <h2>เรียนจบแล้วทำอะไรได้</h2>
+          <div class="classroom-outcomes" id="courseOutcomes"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="replays">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Replay Library</p>
+            <h2>คลิปย้อนหลัง</h2>
+            <p>Admin สามารถอัปโหลดคลิปหรือตั้งลิงก์วิดีโอ แล้วสมาชิกจะดูได้จากหน้านี้</p>
+          </div>
+        </div>
+        <div class="classroom-video-grid">
+          <div class="classroom-video-player" id="replayPlayer"></div>
+          <div class="classroom-replay-list" id="replayList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section member-resource-section" id="resources">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Tools & Skills</p>
+            <h2>Resource ของคลาสนี้</h2>
+            <p>Tools set, skill set, template และไฟล์ประกอบสำหรับนำไปใช้จริง</p>
+          </div>
+        </div>
+        <div class="member-resource-grid" id="classResources"></div>
+      </div>
+    </section>
+
+    <section class="section member-schedule-section" id="schedule">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Live Schedule</p>
+            <h2>ตารางสอนของคลาสนี้</h2>
+            <p>ตารางสดและลิงก์เข้าห้องเรียนสำหรับสมาชิก</p>
+          </div>
+        </div>
+        <div class="member-schedule-grid" id="classSchedule"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Course Content</p>
+            <h2>บทเรียนในคอร์สนี้</h2>
+          </div>
+        </div>
+        <div class="syllabus-list" id="moduleList"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/course-content.js"></script>
+</body>
+</html>

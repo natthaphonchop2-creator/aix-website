@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AiX Club — Admin Panel</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       LOGIN PAGE
+       ============================================================ -->
+  <div class="login-page" id="loginPage">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="AiX%20logo/iconwhite.png" alt="AiX Club" class="logo-icon">
+        <h1>AiX Club Admin</h1>
+        <p>Mission Control Center</p>
+      </div>
+      <div class="login-error" id="loginError">Email หรือ Password ไม่ถูกต้อง</div>
+      <div class="admin-form-group">
+        <label>Email</label>
+        <input type="email" class="admin-input" id="adminEmail" placeholder="admin@aix.club" value="admin@aix.club">
+      </div>
+      <div class="admin-form-group">
+        <label>Password</label>
+        <input type="password" class="admin-input" id="adminPassword" placeholder="••••••••" value="admin1234">
+      </div>
+      <button class="btn-admin btn-admin-primary" style="width:100%;padding:12px;margin-top:8px;font-size:0.9rem;" onclick="adminLogin()">
+        <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+      </button>
+      <p style="text-align:center;margin-top:16px;font-size:0.78rem;color:var(--text-muted);">
+        <a href="index.html" style="color:var(--accent-cyan);">← กลับหน้าหลัก</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ADMIN LAYOUT
+       ============================================================ -->
+  <div class="admin-layout" id="adminLayout" style="display:none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <img src="AiX%20logo/iconwhite.png" alt="AiX Club" class="s-icon">
+        <img src="AiX%20logo/textwhite.png" alt="AiX Club" class="s-text">
+        <span class="s-badge">ADMIN</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label">Main</div>
+        <a class="sidebar-link active" data-section="dashboard" onclick="switchSection('dashboard')">
+          <span class="sl-icon"><i class="fas fa-chart-pie"></i></span>
+          Dashboard
+        </a>
+        <a class="sidebar-link" data-section="courses" onclick="switchSection('courses')">
+          <span class="sl-icon"><i class="fas fa-graduation-cap"></i></span>
+          Courses
+          <span class="sl-badge" id="coursesCount">6</span>
+        </a>
+        <a class="sidebar-link" data-section="replays" onclick="switchSection('replays')">
+          <span class="sl-icon"><i class="fas fa-video"></i></span>
+          Replays
+          <span class="sl-badge" id="replaysCount" style="background:var(--accent-green);">0</span>
+        </a>
+        <a class="sidebar-link" data-section="resources" onclick="switchSection('resources')">
+          <span class="sl-icon"><i class="fas fa-toolbox"></i></span>
+          Tools & Skills
+          <span class="sl-badge" id="resourcesCount" style="background:var(--accent-orange);">0</span>
+        </a>
+        <a class="sidebar-link" data-section="schedules" onclick="switchSection('schedules')">
+          <span class="sl-icon"><i class="fas fa-calendar-days"></i></span>
+          Schedule
+          <span class="sl-badge" id="schedulesCount" style="background:var(--accent-cyan);">0</span>
+        </a>
+        <a class="sidebar-link" data-section="leads" onclick="switchSection('leads')">
+          <span class="sl-icon"><i class="fas fa-clipboard-list"></i></span>
+          Leads
+          <span class="sl-badge" id="leadsCount" style="background:var(--accent-cyan);">0</span>
+        </a>
+
+        <div class="sidebar-nav-label">Manage</div>
+        <a class="sidebar-link" data-section="members" onclick="switchSection('members')">
+          <span class="sl-icon"><i class="fas fa-users"></i></span>
+          Members
+          <span class="sl-badge" id="membersCount" style="background:var(--accent-purple);">0</span>
+        </a>
+        <a class="sidebar-link" data-section="packages" onclick="switchSection('packages')">
+          <span class="sl-icon"><i class="fas fa-gem"></i></span>
+          Packages
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar">A</div>
+          <div class="sidebar-user-info">
+            <div class="su-name">Admin</div>
+            <div class="su-role">Super Admin</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="adminLogout()">
+          <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="top-header">
+        <h2 id="sectionTitle">📊 Dashboard</h2>
+        <div class="top-header-actions">
+          <a href="index.html" class="header-back-link">
+            <i class="fas fa-external-link-alt"></i> เปิดหน้าเว็บ
+          </a>
+        </div>
+      </div>
+
+      <div class="mobile-admin-nav" aria-label="Admin navigation">
+        <button class="mobile-admin-tab active" data-section="dashboard" onclick="switchSection('dashboard')">Dashboard</button>
+        <button class="mobile-admin-tab" data-section="courses" onclick="switchSection('courses')">Courses</button>
+        <button class="mobile-admin-tab" data-section="replays" onclick="switchSection('replays')">Replays</button>
+        <button class="mobile-admin-tab" data-section="resources" onclick="switchSection('resources')">Tools</button>
+        <button class="mobile-admin-tab" data-section="schedules" onclick="switchSection('schedules')">Schedule</button>
+        <button class="mobile-admin-tab" data-section="leads" onclick="switchSection('leads')">Leads</button>
+        <button class="mobile-admin-tab" data-section="members" onclick="switchSection('members')">Members</button>
+        <button class="mobile-admin-tab" data-section="packages" onclick="switchSection('packages')">Packages</button>
+      </div>
+
+      <div class="content-area">
+
+        <!-- ======== DASHBOARD ======== -->
+        <div class="admin-section active" id="sec-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card sc-cyan">
+              <div class="stat-icon"><i class="fas fa-users"></i></div>
+              <div class="stat-value" id="statMembers">0</div>
+              <div class="stat-label">สมาชิกทั้งหมด</div>
+            </div>
+            <div class="stat-card sc-purple">
+              <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+              <div class="stat-value" id="statLeads">0</div>
+              <div class="stat-label">Leads ทั้งหมด</div>
+            </div>
+            <div class="stat-card sc-magenta">
+              <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+              <div class="stat-value" id="statCourses">0</div>
+              <div class="stat-label">คอร์สทั้งหมด</div>
+            </div>
+            <div class="stat-card sc-green">
+              <div class="stat-icon"><i class="fas fa-baht-sign"></i></div>
+              <div class="stat-value" id="statRevenue">฿0</div>
+              <div class="stat-label">รายได้ประมาณการ</div>
+            </div>
+          </div>
+
+          <div class="recent-grid">
+            <div class="recent-card">
+              <h4><i class="fas fa-user-plus" style="color:var(--accent-cyan)"></i> สมาชิกล่าสุด</h4>
+              <div id="recentMembers">
+                <div class="empty-state"><p>ยังไม่มีข้อมูล</p></div>
+              </div>
+            </div>
+            <div class="recent-card">
+              <h4><i class="fas fa-clipboard-check" style="color:var(--accent-green)"></i> Leads ล่าสุด</h4>
+              <div id="recentLeads">
+                <div class="empty-state"><p>ยังไม่มีข้อมูล</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======== COURSES ======== -->
+        <div class="admin-section" id="sec-courses">
+          <div class="panel-header">
+            <h3 class="panel-title">📚 จัดการคอร์สเรียน</h3>
+            <div class="panel-actions">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="ค้นหาคอร์ส..." id="courseSearch" oninput="renderCourses()">
+              </div>
+              <button class="btn-admin btn-admin-primary" onclick="openCourseModal()">
+                <i class="fas fa-plus"></i> เพิ่มคอร์ส
+              </button>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>คอร์ส</th>
+                  <th>ผู้สอน</th>
+                  <th>ระดับ</th>
+                  <th>ราคา</th>
+                  <th>นักเรียน</th>
+                  <th>Rating</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="coursesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======== REPLAYS ======== -->
+        <div class="admin-section" id="sec-replays">
+          <div class="panel-header">
+            <h3 class="panel-title">🎥 Upload คลิปย้อนหลัง</h3>
+            <div class="panel-actions">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="ค้นหาคลิป..." id="replaySearch" oninput="renderReplays()">
+              </div>
+              <button class="btn-admin btn-admin-primary" onclick="openReplayModal()">
+                <i class="fas fa-upload"></i> เพิ่มคลิปย้อนหลัง
+              </button>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>คลิป</th>
+                  <th>คอร์ส</th>
+                  <th>ระยะเวลา</th>
+                  <th>ไฟล์/ลิงก์</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="replaysTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======== RESOURCES ======== -->
+        <div class="admin-section" id="sec-resources">
+          <div class="panel-header">
+            <h3 class="panel-title">🧰 Tools Set / Skill Set</h3>
+            <div class="panel-actions">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="ค้นหา Resource..." id="resourceSearch" oninput="renderResourcesAdmin()">
+              </div>
+              <button class="btn-admin btn-admin-primary" onclick="openResourceModal()">
+                <i class="fas fa-plus"></i> เพิ่ม Resource
+              </button>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Resource</th>
+                  <th>ประเภท</th>
+                  <th>คอร์ส</th>
+                  <th>Tags</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="resourcesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======== SCHEDULES ======== -->
+        <div class="admin-section" id="sec-schedules">
+          <div class="panel-header">
+            <h3 class="panel-title">🗓️ ตารางสอนและแจ้งเตือน</h3>
+            <div class="panel-actions">
+              <button class="btn-admin btn-admin-primary" onclick="openScheduleModal()">
+                <i class="fas fa-calendar-plus"></i> เพิ่มตารางเรียน
+              </button>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>หัวข้อ</th>
+                  <th>คอร์ส</th>
+                  <th>เริ่มเรียน</th>
+                  <th>แจ้งเตือน</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="schedulesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======== LEADS ======== -->
+        <div class="admin-section" id="sec-leads">
+          <div class="panel-header">
+            <h3 class="panel-title">📋 Leads (การลงทะเบียน)</h3>
+            <div class="panel-actions">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="ค้นหา Lead..." id="leadSearch" oninput="renderLeads()">
+              </div>
+              <select class="filter-select" id="leadFilter" onchange="renderLeads()">
+                <option value="all">ทุกสถานะ</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="converted">Converted</option>
+              </select>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ชื่อ</th>
+                  <th>Email</th>
+                  <th>เบอร์โทร</th>
+                  <th>คอร์ส</th>
+                  <th>แพ็คเกจ</th>
+                  <th>สถานะ</th>
+                  <th>วันที่</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="leadsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======== MEMBERS ======== -->
+        <div class="admin-section" id="sec-members">
+          <div class="panel-header">
+            <h3 class="panel-title">👥 จัดการสมาชิก</h3>
+            <div class="panel-actions">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="ค้นหาสมาชิก..." id="memberSearch" oninput="renderMembers()">
+              </div>
+              <select class="filter-select" id="memberFilter" onchange="renderMembers()">
+                <option value="all">สมาชิกทั้งหมด</option>
+                <option value="active">บัญชี Active</option>
+                <option value="suspended">บัญชี Suspended</option>
+                <option value="paid">ชำระเงินแล้ว</option>
+                <option value="unpaid">ยังไม่ชำระ</option>
+                <option value="google">Google Login</option>
+                <option value="email">Email Login</option>
+              </select>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>สมาชิก</th>
+                  <th>Email</th>
+                  <th>Provider</th>
+                  <th>บัญชี</th>
+                  <th>ชำระเงิน</th>
+                  <th>วันสมัคร</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="membersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======== PACKAGES ======== -->
+        <div class="admin-section" id="sec-packages">
+          <div class="panel-header">
+            <h3 class="panel-title">💎 จัดการแพ็คเกจสมาชิก</h3>
+          </div>
+          <div class="packages-grid" id="packagesGrid"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================
+       MODALS
+       ============================================================ -->
+
+  <!-- Course Modal -->
+  <div class="admin-modal-overlay" id="courseModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('courseModal')"><i class="fas fa-times"></i></button>
+      <h3 id="courseModalTitle">➕ เพิ่มคอร์สใหม่</h3>
+      <form onsubmit="return saveCourse(event)">
+        <input type="hidden" id="courseEditId">
+        <div class="admin-form-group">
+          <label>ชื่อคอร์ส <span class="req">*</span></label>
+          <input type="text" class="admin-input" id="courseFormName" placeholder="เช่น AI Fundamentals: Zero to Hero" required>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ประเภทคอร์ส</label>
+            <input type="text" class="admin-input" id="courseFormType" placeholder="AI Automation, Private Class">
+          </div>
+          <div class="admin-form-group">
+            <label>สถานะคอร์ส</label>
+            <select class="admin-input" id="courseFormStatus">
+              <option value="เปิดรับสมัคร">เปิดรับสมัคร</option>
+              <option value="เร็วๆ นี้">เร็วๆ นี้</option>
+              <option value="ปิดรับสมัคร">ปิดรับสมัคร</option>
+              <option value="Draft">Draft</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ราคา (฿) <span class="req">*</span></label>
+            <input type="number" class="admin-input" id="courseFormPrice" placeholder="1490" required>
+          </div>
+          <div class="admin-form-group">
+            <label>ราคาเดิม (฿)</label>
+            <input type="number" class="admin-input" id="courseFormOriginalPrice" placeholder="4990">
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ผู้สอน <span class="req">*</span></label>
+            <input type="text" class="admin-input" id="courseFormInstructor" placeholder="Dr. Nova Chen" required>
+          </div>
+          <div class="admin-form-group">
+            <label>ระดับ</label>
+            <select class="admin-input" id="courseFormLevel">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>จำนวนชั่วโมง</label>
+            <input type="number" class="admin-input" id="courseFormHours" placeholder="42">
+          </div>
+          <div class="admin-form-group">
+            <label>จำนวนบทเรียน</label>
+            <input type="number" class="admin-input" id="courseFormLessons" placeholder="156">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>URL รูปภาพ</label>
+          <input type="text" class="admin-input" id="courseFormImage" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="admin-form-group">
+          <label>รายละเอียด</label>
+          <textarea class="admin-input" id="courseFormDesc" placeholder="คำอธิบายคอร์สโดยย่อ..."></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="courseFormFeatured" checked style="accent-color:var(--accent-cyan);"> แสดงคอร์สนี้บน Platform
+          </label>
+        </div>
+        <div class="admin-form-actions">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeAdminModal('courseModal')">ยกเลิก</button>
+          <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Replay Modal -->
+  <div class="admin-modal-overlay" id="replayModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('replayModal')"><i class="fas fa-times"></i></button>
+      <h3 id="replayModalTitle">🎥 เพิ่มคลิปย้อนหลัง</h3>
+      <form onsubmit="return saveReplay(event)" enctype="multipart/form-data">
+        <input type="hidden" id="replayEditId">
+        <div class="admin-form-group">
+          <label>คอร์ส <span class="req">*</span></label>
+          <select class="admin-input" id="replayFormCourse" required></select>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ชื่อคลิป <span class="req">*</span></label>
+            <input type="text" class="admin-input" id="replayFormTitle" placeholder="เช่น Replay: Module 1" required>
+          </div>
+          <div class="admin-form-group">
+            <label>ระยะเวลา</label>
+            <input type="text" class="admin-input" id="replayFormDuration" placeholder="1 ชม. 20 นาที">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>ลิงก์วิดีโอ</label>
+          <input type="url" class="admin-input" id="replayFormVideoUrl" placeholder="https://...">
+        </div>
+        <div class="admin-form-group">
+          <label>หรืออัปโหลดไฟล์วิดีโอ</label>
+          <input type="file" class="admin-input" id="replayFormVideo" accept="video/*">
+          <div class="admin-note" id="replayFileNote">รองรับไฟล์วิดีโอ ขนาดสูงสุด 800MB</div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ลำดับ</label>
+            <input type="number" class="admin-input" id="replayFormSort" value="0">
+          </div>
+          <div class="admin-form-group">
+            <label>การมองเห็น</label>
+            <select class="admin-input" id="replayFormVisibility">
+              <option value="members">สมาชิกเท่านั้น</option>
+              <option value="hidden">ซ่อน</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>รายละเอียด</label>
+          <textarea class="admin-input" id="replayFormDescription" placeholder="สรุปเนื้อหาในคลิปนี้"></textarea>
+        </div>
+        <div class="admin-form-actions">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeAdminModal('replayModal')">ยกเลิก</button>
+          <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> บันทึกคลิป</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Resource Modal -->
+  <div class="admin-modal-overlay" id="resourceModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('resourceModal')"><i class="fas fa-times"></i></button>
+      <h3 id="resourceModalTitle">🧰 เพิ่ม Resource</h3>
+      <form onsubmit="return saveResource(event)" enctype="multipart/form-data">
+        <input type="hidden" id="resourceEditId">
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ประเภท <span class="req">*</span></label>
+            <select class="admin-input" id="resourceFormType" required>
+              <option value="tool">Tool Set</option>
+              <option value="skill">Skill Set</option>
+              <option value="template">Template</option>
+              <option value="file">File</option>
+              <option value="link">Link</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label>ผูกกับคอร์ส</label>
+            <select class="admin-input" id="resourceFormCourse"></select>
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>ชื่อ Resource <span class="req">*</span></label>
+          <input type="text" class="admin-input" id="resourceFormTitle" placeholder="เช่น Prompt Template Pack" required>
+        </div>
+        <div class="admin-form-group">
+          <label>ลิงก์เปิดใช้งาน</label>
+          <input type="url" class="admin-input" id="resourceFormUrl" placeholder="https://...">
+        </div>
+        <div class="admin-form-group">
+          <label>หรืออัปโหลดไฟล์</label>
+          <input type="file" class="admin-input" id="resourceFormFile">
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>Tags</label>
+            <input type="text" class="admin-input" id="resourceFormTags" placeholder="Prompt, Agent, Workflow">
+          </div>
+          <div class="admin-form-group">
+            <label>ลำดับ</label>
+            <input type="number" class="admin-input" id="resourceFormSort" value="0">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>รายละเอียด</label>
+          <textarea class="admin-input" id="resourceFormDescription" placeholder="อธิบายว่า Resource นี้ใช้ทำอะไร"></textarea>
+        </div>
+        <div class="admin-form-actions">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeAdminModal('resourceModal')">ยกเลิก</button>
+          <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> บันทึก Resource</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Schedule Modal -->
+  <div class="admin-modal-overlay" id="scheduleModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('scheduleModal')"><i class="fas fa-times"></i></button>
+      <h3 id="scheduleModalTitle">🗓️ เพิ่มตารางเรียน</h3>
+      <form onsubmit="return saveSchedule(event)">
+        <input type="hidden" id="scheduleEditId">
+        <div class="admin-form-group">
+          <label>คอร์ส <span class="req">*</span></label>
+          <select class="admin-input" id="scheduleFormCourse" required></select>
+        </div>
+        <div class="admin-form-group">
+          <label>หัวข้อคลาส <span class="req">*</span></label>
+          <input type="text" class="admin-input" id="scheduleFormTitle" placeholder="เช่น Live Class: AI Agent Workshop" required>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>เริ่มเรียน <span class="req">*</span></label>
+            <input type="datetime-local" class="admin-input" id="scheduleFormStartsAt" required>
+          </div>
+          <div class="admin-form-group">
+            <label>สิ้นสุด</label>
+            <input type="datetime-local" class="admin-input" id="scheduleFormEndsAt">
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ลิงก์ห้องเรียน</label>
+            <input type="text" class="admin-input" id="scheduleFormMeetingUrl" placeholder="/course/claude-deep-dive/content หรือ Zoom link">
+          </div>
+          <div class="admin-form-group">
+            <label>แจ้งเตือนล่วงหน้า (นาที)</label>
+            <input type="number" class="admin-input" id="scheduleFormNotifyBefore" value="1440">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>รายละเอียด</label>
+          <textarea class="admin-input" id="scheduleFormDescription" placeholder="สิ่งที่นักเรียนควรเตรียมก่อนเข้าเรียน"></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="scheduleFormNotifyNow" style="accent-color:var(--accent-cyan);"> ส่งแจ้งเตือนเข้า Dashboard สมาชิกที่ชำระแล้วทันที
+          </label>
+        </div>
+        <div class="admin-form-actions">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeAdminModal('scheduleModal')">ยกเลิก</button>
+          <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> บันทึกตารางเรียน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Member Edit Modal -->
+  <div class="admin-modal-overlay" id="memberModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('memberModal')"><i class="fas fa-times"></i></button>
+      <h3 id="memberModalTitle">✏️ แก้ไขสมาชิก</h3>
+      <form onsubmit="return saveMember(event)">
+        <input type="hidden" id="memberEditId">
+        <div class="admin-form-group">
+          <label>ชื่อที่แสดง <span class="req">*</span></label>
+          <input type="text" class="admin-input" id="memberFormName" placeholder="ชื่อสมาชิก" required>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>Email</label>
+            <input type="email" class="admin-input" id="memberFormEmail" disabled>
+          </div>
+          <div class="admin-form-group">
+            <label>เบอร์โทร</label>
+            <input type="text" class="admin-input" id="memberFormPhone" placeholder="08x-xxx-xxxx">
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>สถานะบัญชี</label>
+            <select class="admin-input" id="memberFormStatus">
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label>สถานะชำระเงิน</label>
+            <select class="admin-input" id="memberFormPaymentStatus">
+              <option value="unpaid">ยังไม่ชำระ</option>
+              <option value="paid">ชำระแล้ว</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>วันที่ชำระ</label>
+            <input type="date" class="admin-input" id="memberFormPaidAt">
+          </div>
+          <div class="admin-form-group">
+            <label>วันหมดอายุ</label>
+            <input type="date" class="admin-input" id="memberFormExpiresAt">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>ธุรกิจ / งานที่ทำ</label>
+          <input type="text" class="admin-input" id="memberFormBusiness" placeholder="ไม่จำเป็นต้องกรอก">
+        </div>
+        <div class="admin-note" id="memberFormMeta"></div>
+        <div class="admin-form-actions">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeAdminModal('memberModal')">ยกเลิก</button>
+          <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Package Edit Modal -->
+  <div class="admin-modal-overlay" id="packageModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('packageModal')"><i class="fas fa-times"></i></button>
+      <h3>✏️ แก้ไขแพ็คเกจ</h3>
+      <form onsubmit="return savePackage(event)">
+        <input type="hidden" id="packageEditId">
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ชื่อแพ็คเกจ <span class="req">*</span></label>
+            <input type="text" class="admin-input" id="packageFormName" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Icon</label>
+            <input type="text" class="admin-input" id="packageFormIcon" placeholder="spark">
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>ราคา (฿) <span class="req">*</span></label>
+            <input type="number" class="admin-input" id="packageFormPrice" required>
+          </div>
+          <div class="admin-form-group">
+            <label>ช่วงเวลา</label>
+            <input type="text" class="admin-input" id="packageFormPeriod" placeholder="/เดือน">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>ฟีเจอร์ (แต่ละบรรทัด = 1 ฟีเจอร์)</label>
+          <div class="features-editor" id="featuresEditor"></div>
+          <button type="button" class="btn-add-feature" onclick="addFeatureRow()">
+            <i class="fas fa-plus"></i> เพิ่มฟีเจอร์
+          </button>
+        </div>
+        <div class="admin-form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="packageFormPopular" style="accent-color:var(--accent-cyan);"> แสดงเป็น "Popular"
+          </label>
+        </div>
+        <div class="admin-form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="packageFormEnabled" checked style="accent-color:var(--accent-green);"> เปิดใช้งาน
+          </label>
+        </div>
+        <div class="admin-form-actions">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeAdminModal('packageModal')">ยกเลิก</button>
+          <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div class="admin-modal-overlay" id="confirmModal">
+    <div class="admin-modal" style="max-width:400px;">
+      <div class="confirm-dialog">
+        <div class="confirm-icon">⚠️</div>
+        <h3 style="text-align:center;">ยืนยันการลบ</h3>
+        <p>คุณต้องการลบ <span class="confirm-name" id="confirmName"></span> ใช่หรือไม่?</p>
+        <p style="font-size:0.78rem;color:var(--accent-magenta);">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+        <div class="confirm-btns">
+          <button class="btn-admin btn-admin-secondary" onclick="closeAdminModal('confirmModal')">ยกเลิก</button>
+          <button class="btn-admin btn-admin-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+            <i class="fas fa-trash"></i> ลบ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lead Detail Modal -->
+  <div class="admin-modal-overlay" id="leadDetailModal">
+    <div class="admin-modal">
+      <button class="admin-modal-close" onclick="closeAdminModal('leadDetailModal')"><i class="fas fa-times"></i></button>
+      <h3>📋 รายละเอียด Lead</h3>
+      <div id="leadDetailContent"></div>
+      <div class="admin-form-actions" style="border:none;">
+        <button class="btn-admin btn-admin-secondary" onclick="closeAdminModal('leadDetailModal')">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
