@@ -163,6 +163,22 @@ app.use((req, res, next) => {
   }
   next();
 });
+app.use((req, res, next) => {
+  const blockedStaticFiles = new Set([
+    'server.js',
+    'package.json',
+    'package-lock.json',
+    'render.yaml',
+    'wrangler.jsonc',
+    'rewrite_admin.js',
+    'data.db',
+    'data.db-shm',
+    'data.db-wal'
+  ]);
+  const requestedFile = path.basename(req.path);
+  if (blockedStaticFiles.has(requestedFile)) return res.sendStatus(404);
+  next();
+});
 app.use('/uploads', express.static(UPLOAD_ROOT));
 app.use(express.static(path.join(__dirname)));
 
