@@ -39,14 +39,18 @@ function normalizePhone(value) {
 
 async function apiRequest(path, options = {}) {
   const token = localStorage.getItem(TOKEN_KEY);
-  const response = await fetch(`${API_ORIGIN}${path}`, {
+  const requestPath = path === "/api/config" ? `${path}?_=${Date.now()}` : path;
+  const requestOptions = {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {})
     }
-  });
+  };
+  if (path === "/api/config") requestOptions.cache = "no-store";
+
+  const response = await fetch(`${API_ORIGIN}${requestPath}`, requestOptions);
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.error || "ไม่สามารถเชื่อมต่อระบบได้");

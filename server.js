@@ -1131,6 +1131,8 @@ app.get('/api/config', (req, res) => {
   const sms = getSmsConfig();
   const googleReady = isValidGoogleClientId(GOOGLE_CLIENT_ID);
 
+  res.setHeader('Cache-Control', 'no-store');
+
   res.json({
     googleClientId: googleReady ? GOOGLE_CLIENT_ID : '',
     googleReady,
