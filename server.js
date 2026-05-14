@@ -1574,6 +1574,7 @@ app.post('/api/payments/stripe/checkout', requireMemberSession, async (req, res)
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      allow_promotion_codes: true,
       payment_method_types: paymentMethodTypes,
       line_items: [lineItem],
       customer_email: req.member.email,
