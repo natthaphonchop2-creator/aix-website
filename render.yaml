@@ -32,7 +32,7 @@ services:
       - key: SMS_OTP_SECRET
         sync: false
       - key: GOOGLE_CLIENT_ID
-        sync: false
+        value: 817795687726-haal10huu6ot4cl4r5anfpfkfm4v94hh.apps.googleusercontent.com
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
