@@ -91,6 +91,7 @@ loadLocalEnv();
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = path.resolve(process.env.DATA_DIR || __dirname);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^0\d{9}$/;
@@ -98,11 +99,19 @@ const SMS_OTP_TTL_MS = Number(process.env.SMS_OTP_TTL_MS || 5 * 60 * 1000);
 const SMS_OTP_RESEND_MS = Number(process.env.SMS_OTP_RESEND_MS || 60 * 1000);
 const SMS_OTP_MAX_ATTEMPTS = Number(process.env.SMS_OTP_MAX_ATTEMPTS || 5);
 const SMS_TOKEN_TTL_MS = Number(process.env.SMS_TOKEN_TTL_MS || 15 * 60 * 1000);
-const SMS_OTP_SECRET = process.env.SMS_OTP_SECRET || crypto.createHash('sha256').update(`${__dirname}:aix-sms-otp`).digest('hex');
+const SMS_OTP_SECRET = process.env.SMS_OTP_SECRET || (
+  IS_PRODUCTION
+    ? crypto.randomBytes(32).toString('hex')
+    : crypto.createHash('sha256').update(`${__dirname}:aix-sms-otp`).digest('hex')
+);
 const AUTH_SESSION_TTL_MS = Number(process.env.AUTH_SESSION_TTL_MS || 7 * 24 * 60 * 60 * 1000);
-const AUTH_SECRET = process.env.AUTH_SECRET || crypto.createHash('sha256').update(`${__dirname}:aix-auth-session`).digest('hex');
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aix.club';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin1234';
+const AUTH_SECRET = process.env.AUTH_SECRET || (
+  IS_PRODUCTION
+    ? crypto.randomBytes(32).toString('hex')
+    : crypto.createHash('sha256').update(`${__dirname}:aix-auth-session`).digest('hex')
+);
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || (IS_PRODUCTION ? '' : 'admin@aix.club');
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (IS_PRODUCTION ? '' : 'admin1234');
 const MEMBER_PRICE = Number(process.env.MEMBER_PRICE || 1999);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -2525,6 +2534,10 @@ app.get('/api/stats', (req, res) => {
 // ADMIN AUTH (simple)
 // ============================================================
 app.post('/api/admin/login', (req, res) => {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า ADMIN_EMAIL หรือ ADMIN_PASSWORD บน server' });
+  }
+
   const { email, password } = req.body;
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
     res.json({ success: true, token: 'admin-token-' + Date.now() });
