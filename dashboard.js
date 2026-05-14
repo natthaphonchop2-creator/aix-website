@@ -270,26 +270,33 @@ function renderDashboard(data) {
   memberName.textContent = member.displayName || member.name || "AiX Member";
   memberEmail.textContent = member.email;
 
-  const paid = member.paymentStatus === "paid";
-  paymentBadge.textContent = paid ? "ชำระแล้ว" : "ยังไม่ชำระ";
+  const paid = Boolean(payment.active);
+  const expired = Boolean(payment.expired);
+  paymentBadge.textContent = paid ? "ชำระแล้ว" : expired ? "หมดอายุ" : "ยังไม่ชำระ";
   paymentBadge.classList.toggle("paid", paid);
-  paymentTitle.textContent = paid ? "ปลดล็อกคอร์สแล้ว" : "ชำระเงินเพื่อเข้าเรียน";
+  paymentBadge.classList.toggle("expired", expired);
+  paymentTitle.textContent = paid ? "ปลดล็อกคอร์สแล้ว" : expired ? "สมาชิกหมดอายุแล้ว" : "ชำระเงินเพื่อเข้าเรียน";
   paymentCopy.textContent = paid
     ? `สิทธิ์ใช้งานถึง ${formatDate(payment.expiresAt)}`
+    : expired
+      ? `สิทธิ์ใช้งานหมดอายุเมื่อ ${formatDate(payment.expiresAt)} ต่ออายุเพื่อเข้าเรียนต่อ`
     : `ยอดชำระ AiX Member ${payment.amount.toLocaleString("th-TH")} บาท ชำระผ่าน Stripe หรือ PromptPay เพื่อปลดล็อกคอร์ส`;
   payBtn.hidden = paid;
+  payBtn.textContent = expired ? "ต่ออายุสมาชิก" : "ชำระเงินเพื่อเข้าเรียน";
 
   accountStatusText.textContent = member.status === "active" ? "Active" : "Suspended";
-  paymentMethodText.textContent = paymentMethodLabel(member);
-  expiresAtText.textContent = paid ? formatDate(payment.expiresAt) : "หลังชำระเงิน";
+  paymentMethodText.textContent = expired ? "หมดอายุ" : paymentMethodLabel(member);
+  expiresAtText.textContent = paid || expired ? formatDate(payment.expiresAt) : "หลังชำระเงิน";
   coursesCountText.textContent = `${courses.length.toLocaleString("th-TH")} คอร์ส`;
 
   courseSummary.textContent = paid
     ? `คุณมีสิทธิ์เข้าเรียน ${courses.length} คอร์ส`
+    : expired
+      ? "ต่ออายุสมาชิกเพื่อปลดล็อกคอร์สอีกครั้ง"
     : "คอร์สจะถูกปลดล็อกทันทีหลังชำระเงิน";
   memberCourses.innerHTML = paid
     ? courses.map(renderCourseCard).join("")
-    : `<article class="resource-card"><h3>ยังไม่ได้ปลดล็อกคอร์ส</h3><p>กดชำระเงินเพื่อเข้าเรียนคอร์ส AiX Club ทั้งหมดที่เปิดให้สมาชิก</p></article>`;
+    : `<article class="resource-card"><h3>${expired ? "สมาชิกหมดอายุแล้ว" : "ยังไม่ได้ปลดล็อกคอร์ส"}</h3><p>${expired ? "ต่ออายุสมาชิกเพื่อกลับเข้าเรียนคอร์ส AiX Club" : "กดชำระเงินเพื่อเข้าเรียนคอร์ส AiX Club ทั้งหมดที่เปิดให้สมาชิก"}</p></article>`;
   renderNotifications(paid, notifications);
   renderPaymentHistory(payments, paid);
   renderSchedule(paid, schedule);

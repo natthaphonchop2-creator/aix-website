@@ -62,6 +62,8 @@ async function loadPayment() {
     if (!stripeReady) {
       paymentNotice.textContent = "ยังไม่ได้ตั้งค่า STRIPE_SECRET_KEY จึงยังเปิดรับชำระเงินจริงไม่ได้";
       showToast("ต้องตั้งค่า Stripe API ก่อนใช้งานระบบชำระเงิน");
+    } else if (config.expired) {
+      paymentNotice.textContent = "สมาชิกหมดอายุแล้ว ต่ออายุเพื่อเข้าเรียนต่อได้ทันที";
     }
 
     const availableMethods = new Set(config.paymentMethods || []);

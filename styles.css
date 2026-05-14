@@ -1808,6 +1808,11 @@ details p {
   background: #eaf8ef;
 }
 
+.badge.expired {
+  color: #b45309;
+  background: #fff7ed;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;

@@ -1368,6 +1368,23 @@ function publicMember(member) {
   };
 }
 
+function memberAccess(member) {
+  const paymentStatus = member?.paymentStatus || 'unpaid';
+  const expiresAt = member?.expiresAt || '';
+  const expiresAtMs = expiresAt ? Date.parse(expiresAt) : NaN;
+  const expired = paymentStatus === 'paid' && Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
+  return {
+    paid: paymentStatus === 'paid',
+    expired,
+    active: paymentStatus === 'paid' && !expired,
+    expiresAt
+  };
+}
+
+function memberHasActiveAccess(member) {
+  return memberAccess(member).active;
+}
+
 function base64UrlDecode(input) {
   const padded = input.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(input.length / 4) * 4, '=');
   return Buffer.from(padded, 'base64');
@@ -1776,19 +1793,19 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
   const member = publicMember(req.member);
-  const paid = member.paymentStatus === 'paid';
-  const courses = paid
+  const access = memberAccess(req.member);
+  const courses = access.active
     ? db.prepare('SELECT * FROM courses WHERE featured = 1 ORDER BY sortOrder ASC, name ASC').all().map(publicCourse)
     : [];
-  const resources = paid
+  const resources = access.active
     ? db.prepare(`
         SELECT * FROM member_resources
         WHERE visibility = 'members'
         ORDER BY sortOrder ASC, createdAt DESC
       `).all().map(publicResource)
     : [];
-  const schedule = paid ? getUpcomingSchedules().slice(0, 8) : [];
-  const notifications = paid ? ensureScheduleNotifications(req.member) : [];
+  const schedule = access.active ? getUpcomingSchedules().slice(0, 8) : [];
+  const notifications = access.active ? ensureScheduleNotifications(req.member) : [];
   let payments = memberPaymentRecords(req.member);
 
   const hasOnlyLegacyPayment = payments.length === 1 && payments[0].id === `legacy_${req.member.id}`;
@@ -1811,11 +1828,14 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
     schedule,
     notifications,
     payments,
-    nextAction: paid ? 'learn' : 'pay',
+    access,
+    nextAction: access.active ? 'learn' : 'pay',
     payment: {
       amount: MEMBER_PRICE,
       currency: 'THB',
       status: member.paymentStatus,
+      active: access.active,
+      expired: access.expired,
       paidAt: member.paidAt,
       expiresAt: member.expiresAt
     }
@@ -1852,11 +1872,16 @@ app.get('/api/member/payments', requireMemberSession, (req, res) => {
 });
 
 app.get('/api/payments/config', requireMemberSession, (req, res) => {
+  const access = memberAccess(req.member);
   res.json({
     amount: MEMBER_PRICE,
     currency: 'THB',
     stripeReady: stripeReady(),
-    paymentMethods: STRIPE_PAYMENT_METHOD_TYPES
+    paymentMethods: STRIPE_PAYMENT_METHOD_TYPES,
+    paymentStatus: req.member.paymentStatus || 'unpaid',
+    active: access.active,
+    expired: access.expired,
+    expiresAt: access.expiresAt
   });
 });
 
@@ -1865,7 +1890,7 @@ app.post('/api/payments/stripe/checkout', requireMemberSession, async (req, res)
     if (!stripeReady()) {
       return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า Stripe API Key' });
     }
-    if ((req.member.paymentStatus || 'unpaid') === 'paid') {
+    if (memberHasActiveAccess(req.member)) {
       return res.status(400).json({ error: 'บัญชีนี้ชำระเงินแล้ว' });
     }
 
@@ -2182,7 +2207,7 @@ function getUpcomingSchedules(courseId = '') {
 }
 
 function ensureScheduleNotifications(member) {
-  if (!member || (member.paymentStatus || 'unpaid') !== 'paid') return [];
+  if (!member || !memberHasActiveAccess(member)) return [];
   const now = new Date().toISOString();
   const schedules = getUpcomingSchedules();
   const insert = db.prepare(`
@@ -2235,8 +2260,14 @@ app.get('/api/platform/courses/:id', (req, res) => {
 app.get('/api/courses/:id/content', requireMemberSession, (req, res) => {
   const course = db.prepare('SELECT * FROM courses WHERE id = ? AND featured = 1').get(req.params.id);
   if (!course) return res.status(404).json({ error: 'Course not found' });
-  if ((req.member.paymentStatus || 'unpaid') !== 'paid') {
-    return res.status(402).json({ error: 'กรุณาชำระเงินเพื่อเข้าเรียน', paymentRequired: true });
+  const access = memberAccess(req.member);
+  if (!access.active) {
+    return res.status(402).json({
+      error: access.expired ? 'สมาชิกหมดอายุแล้ว กรุณาต่ออายุเพื่อเข้าเรียน' : 'กรุณาชำระเงินเพื่อเข้าเรียน',
+      paymentRequired: true,
+      expired: access.expired,
+      expiresAt: access.expiresAt
+    });
   }
 
   const publicData = publicCourse(course);
