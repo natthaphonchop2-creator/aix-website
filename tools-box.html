@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Tools Box | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=tools-box-1">
+</head>
+<body>
+  <header class="site-header dashboard-header tools-header">
+    <div class="container nav-bar">
+      <div class="dashboard-brand-block">
+        <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+          <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+        </a>
+        <div class="dashboard-label">
+          <span>Member Tools</span>
+          <strong>Tools Box</strong>
+        </div>
+      </div>
+      <nav class="main-nav dashboard-nav" aria-label="Tools Box navigation">
+        <a class="dashboard-nav-link" href="/dashboard">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+        <a class="dashboard-nav-link" href="/dashboard#courses">
+          <i class="fa-solid fa-graduation-cap"></i><span>ห้องเรียน</span>
+        </a>
+        <a class="dashboard-nav-link active" href="/tools-box">
+          <i class="fa-solid fa-toolbox"></i><span>Tools Box</span>
+        </a>
+        <a class="dashboard-nav-link" href="/dashboard#billing">
+          <i class="fa-solid fa-receipt"></i><span>บัญชี</span>
+        </a>
+      </nav>
+      <div class="nav-actions">
+        <a class="dashboard-home-link" href="/dashboard#schedule">ตารางสอนสด</a>
+        <button class="link-btn dashboard-logout" id="toolsLogoutBtn" type="button">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i><span>ออกจากระบบ</span>
+        </button>
+      </div>
+      <button class="mobile-menu" id="toolsMobileMenu" aria-label="Open menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+    <div class="mobile-panel" id="toolsMobilePanel">
+      <a href="/dashboard"><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
+      <a href="/dashboard#courses"><i class="fa-solid fa-graduation-cap"></i>ห้องเรียน</a>
+      <a class="active" href="/tools-box"><i class="fa-solid fa-toolbox"></i>Tools Box</a>
+      <a href="/dashboard#schedule"><i class="fa-regular fa-calendar-check"></i>ตารางสอนสด</a>
+      <a href="/dashboard#billing"><i class="fa-solid fa-receipt"></i>บัญชีและใบเสร็จ</a>
+      <button class="link-btn" id="toolsMobileLogoutBtn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i>ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="tools-box-page">
+    <section class="section tools-box-hero">
+      <div class="container tools-box-hero-grid">
+        <div class="tools-hero-copy">
+          <h1>Tools Box สำหรับสมาชิก</h1>
+          <p>คลังเครื่องมือที่รวม Skill Set, Ebook, Prompt Pack, Template และ Workflow Blueprint สำหรับนำ AI ไปใช้ทำงานจริงแบบเป็นระบบ</p>
+          <div class="tools-hero-actions">
+            <a class="primary-btn large" href="#skill-set">เริ่มจาก Skill Set</a>
+            <a class="secondary-btn large" href="/dashboard">กลับ Dashboard</a>
+          </div>
+          <div class="tools-hero-note" id="toolsAccessBadge">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>กำลังตรวจสอบสิทธิ์สมาชิก</span>
+          </div>
+        </div>
+        <figure class="tools-hero-media">
+          <img src="/assets/generated/tools-box-hero.png" alt="ภาพประกอบ Tools Box สำหรับสมาชิก AiX Club">
+        </figure>
+      </div>
+      <div class="container tools-hero-stats" aria-label="Tools Box summary">
+        <article class="tools-stat-card">
+          <strong>6+</strong>
+          <span>หมวดเครื่องมือ</span>
+        </article>
+        <article class="tools-stat-card">
+          <strong>AI</strong>
+          <span>Agent, Automation, Content</span>
+        </article>
+        <article class="tools-stat-card">
+          <strong>Member</strong>
+          <span>เปิดใช้จาก Dashboard</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section tools-catalog-section" id="categories">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Choose Your Tools</p>
+            <h2>เลือกหัวข้อที่ต้องการใช้</h2>
+            <p>จัดหมวดให้เปิดใช้งานง่าย ทั้งการฝึกทักษะ อ่านคู่มือ และหยิบ template ไปปรับใช้</p>
+          </div>
+        </div>
+        <div class="tools-category-grid">
+          <a class="tools-category-card" href="#skill-set">
+            <div class="tools-card-top">
+              <span class="tools-card-icon"><i class="fa-solid fa-brain"></i></span>
+              <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
+            </div>
+            <strong>Skill Set</strong>
+            <small>เส้นทางฝึกทักษะ AI Agent, Prompt, Automation และ Research</small>
+            <div class="tools-card-tags"><span>Agent</span><span>Workflow</span></div>
+          </a>
+          <a class="tools-category-card" href="#ebook">
+            <div class="tools-card-top">
+              <span class="tools-card-icon"><i class="fa-solid fa-book-open-reader"></i></span>
+              <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
+            </div>
+            <strong>Ebook</strong>
+            <small>คู่มืออ่านประกอบ สรุปเนื้อหา และ playbook สำหรับกลับมาอ่านซ้ำ</small>
+            <div class="tools-card-tags"><span>PDF</span><span>Guide</span></div>
+          </a>
+          <a class="tools-category-card" href="#prompt-pack">
+            <div class="tools-card-top">
+              <span class="tools-card-icon"><i class="fa-solid fa-message"></i></span>
+              <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
+            </div>
+            <strong>Prompt Pack</strong>
+            <small>ชุด prompt พร้อมใช้สำหรับวิเคราะห์ วางแผน เขียนคอนเทนต์ และทำงานกับทีม</small>
+            <div class="tools-card-tags"><span>Prompt</span><span>QA</span></div>
+          </a>
+          <a class="tools-category-card" href="#workflow">
+            <div class="tools-card-top">
+              <span class="tools-card-icon"><i class="fa-solid fa-diagram-project"></i></span>
+              <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
+            </div>
+            <strong>Workflow Blueprint</strong>
+            <small>แบบร่าง process, automation และระบบตรวจงานก่อนนำ AI ไปใช้จริง</small>
+            <div class="tools-card-tags"><span>Flow</span><span>System</span></div>
+          </a>
+          <a class="tools-category-card" href="#templates">
+            <div class="tools-card-top">
+              <span class="tools-card-icon"><i class="fa-solid fa-file-lines"></i></span>
+              <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
+            </div>
+            <strong>Templates</strong>
+            <small>เอกสาร ตาราง checklist และโครงงานที่ใช้ต่อในธุรกิจได้ทันที</small>
+            <div class="tools-card-tags"><span>Docs</span><span>Sheet</span></div>
+          </a>
+          <a class="tools-category-card" href="#ai-stack">
+            <div class="tools-card-top">
+              <span class="tools-card-icon"><i class="fa-solid fa-layer-group"></i></span>
+              <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
+            </div>
+            <strong>AI Tool Stack</strong>
+            <small>รายการเครื่องมือ AI ที่ควรรู้ พร้อมแนวทางเลือกใช้ให้ตรงกับงาน</small>
+            <div class="tools-card-tags"><span>Tools</span><span>Setup</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tools-topic-section" id="skill-set">
+      <div class="container tools-topic-layout">
+        <article class="tools-topic-panel">
+          <header>
+            <span><i class="fa-solid fa-brain"></i></span>
+            <div>
+              <h2>Skill Set สำหรับสมาชิก</h2>
+              <p>เริ่มจากทักษะหลักที่ต้องใช้ซ้ำในทุกคลาส แล้วค่อยต่อยอดเป็นงานจริง</p>
+            </div>
+          </header>
+          <ul class="tools-topic-list">
+            <li><strong>Prompt Structure</strong><span>ตั้งโจทย์, role, context, output และเกณฑ์ตรวจผลลัพธ์</span></li>
+            <li><strong>AI Agent Thinking</strong><span>แตกงานเป็น goal, task, memory, tool และ checkpoint</span></li>
+            <li><strong>Automation Mapping</strong><span>วาง process ก่อนเชื่อมเครื่องมือจริง</span></li>
+          </ul>
+        </article>
+        <article class="tools-topic-panel" id="ebook">
+          <header>
+            <span><i class="fa-solid fa-book-open-reader"></i></span>
+            <div>
+              <h2>Ebook และคู่มืออ่านประกอบ</h2>
+              <p>พื้นที่รวมคู่มือ PDF, reading notes และ playbook ที่ใช้ควบคู่กับคอร์ส</p>
+            </div>
+          </header>
+          <ul class="tools-topic-list">
+            <li><strong>AI Business Playbook</strong><span>โครงสร้างคิดแบบผู้ประกอบการเมื่อต้องนำ AI เข้าธุรกิจ</span></li>
+            <li><strong>Automation Checklist</strong><span>เช็คความพร้อมก่อนเริ่มทำระบบ automation</span></li>
+            <li><strong>Research Notes</strong><span>สรุปคำสั่งและรูปแบบการวิจัยด้วย AI</span></li>
+          </ul>
+        </article>
+        <article class="tools-topic-panel" id="prompt-pack">
+          <header>
+            <span><i class="fa-solid fa-message"></i></span>
+            <div>
+              <h2>Prompt Pack</h2>
+              <p>ชุด prompt ตั้งต้นสำหรับงานที่ใช้บ่อย และปรับต่อได้ตามธุรกิจของคุณ</p>
+            </div>
+          </header>
+          <ul class="tools-topic-list">
+            <li><strong>Content System</strong><span>วาง pillar, brief, script และ repurpose content</span></li>
+            <li><strong>Business Analysis</strong><span>วิเคราะห์ลูกค้า ข้อเสนอ และคู่แข่ง</span></li>
+            <li><strong>Prompt QA</strong><span>ตรวจ prompt ก่อนส่งให้ AI ทำงานจริง</span></li>
+          </ul>
+        </article>
+        <article class="tools-topic-panel" id="workflow">
+          <header>
+            <span><i class="fa-solid fa-diagram-project"></i></span>
+            <div>
+              <h2>Workflow Blueprint</h2>
+              <p>แบบร่าง workflow สำหรับวางระบบก่อนใช้ n8n, Make, Zapier หรือ custom agent</p>
+            </div>
+          </header>
+          <ul class="tools-topic-list">
+            <li><strong>Agent Workflow</strong><span>โครงสร้าง input, decision, action และ output review</span></li>
+            <li><strong>Lead Automation</strong><span>รับ lead, จัดกลุ่ม, ส่งต่อ และติดตามผล</span></li>
+            <li><strong>Content Pipeline</strong><span>จาก research ไปจนถึง production และ publishing</span></li>
+          </ul>
+        </article>
+        <article class="tools-topic-panel" id="templates">
+          <header>
+            <span><i class="fa-solid fa-file-lines"></i></span>
+            <div>
+              <h2>Templates</h2>
+              <p>ไฟล์ตั้งต้นสำหรับนำไปทำงานจริง ลดเวลาสร้างระบบเอกสารตั้งแต่ศูนย์</p>
+            </div>
+          </header>
+          <ul class="tools-topic-list">
+            <li><strong>Prompt Review Sheet</strong><span>ตารางตรวจคุณภาพ prompt สำหรับทีม</span></li>
+            <li><strong>AI SOP Template</strong><span>โครง SOP สำหรับงานที่ใช้ AI ช่วยประจำ</span></li>
+            <li><strong>Project Brief</strong><span>ฟอร์มเก็บ context ก่อนเริ่มงาน AI</span></li>
+          </ul>
+        </article>
+        <article class="tools-topic-panel" id="ai-stack">
+          <header>
+            <span><i class="fa-solid fa-layer-group"></i></span>
+            <div>
+              <h2>AI Tool Stack</h2>
+              <p>แนะนำกลุ่มเครื่องมือที่ควรมี พร้อมตำแหน่งการใช้งานในระบบงานจริง</p>
+            </div>
+          </header>
+          <ul class="tools-topic-list">
+            <li><strong>Research & Writing</strong><span>เครื่องมือสำหรับวิเคราะห์ข้อมูลและสร้าง draft</span></li>
+            <li><strong>Automation & Database</strong><span>เครื่องมือเชื่อม workflow, form, sheet และ CRM</span></li>
+            <li><strong>Media & Creative</strong><span>เครื่องมือภาพ วิดีโอ เสียง และงานนำเสนอ</span></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section tools-resource-section" id="resources">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Member Resources</p>
+            <h2>รายการที่เปิดให้ใช้งานจากระบบ</h2>
+            <p id="toolsMemberName">กำลังโหลดรายการ resource ของสมาชิก</p>
+          </div>
+        </div>
+        <div class="tools-locked-state" id="toolsLockedState" hidden>
+          <span><i class="fa-solid fa-lock"></i></span>
+          <div>
+            <h3>Tools Box เปิดให้สมาชิกที่ยังมีสิทธิ์ใช้งาน</h3>
+            <p>ชำระเงินหรือต่ออายุสมาชิกเพื่อเปิดใช้ Skill Set, Ebook และ Template ทั้งหมด</p>
+          </div>
+          <a class="primary-btn" href="/payment">ไปหน้าชำระเงิน</a>
+        </div>
+        <div class="tools-resource-grid" id="toolsDynamicResources"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/site-footer.js?v=tools-box-1"></script>
+  <div class="toast" id="toast"></div>
+  <script src="/tools-box.js?v=tools-box-1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
+  <script src="/site-motion.js?v=tools-box-1" defer></script>
+</body>
+</html>

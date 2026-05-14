@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=receipt-fix-1">
+  <link rel="stylesheet" href="styles.css?v=tools-box-1">
 </head>
 <body>
   <header class="site-header dashboard-header">
@@ -33,7 +33,7 @@
         <a class="dashboard-nav-link" href="#schedule" data-dashboard-nav>
           <i class="fa-regular fa-calendar-check"></i><span>ตาราง</span>
         </a>
-        <a class="dashboard-nav-link" href="#tools" data-dashboard-nav>
+        <a class="dashboard-nav-link" href="/tools-box">
           <i class="fa-solid fa-toolbox"></i><span>Tools</span>
         </a>
       </nav>
@@ -51,7 +51,7 @@
       <a href="#overview" data-dashboard-nav><i class="fa-solid fa-gauge-high"></i>ภาพรวม</a>
       <a href="#courses" data-dashboard-nav><i class="fa-solid fa-graduation-cap"></i>ห้องเรียน</a>
       <a href="#schedule" data-dashboard-nav><i class="fa-regular fa-calendar-check"></i>ตารางเรียน</a>
-      <a href="#tools" data-dashboard-nav><i class="fa-solid fa-toolbox"></i>Tools</a>
+      <a href="/tools-box"><i class="fa-solid fa-toolbox"></i>Tools Box</a>
       <a href="index.html#catalog"><i class="fa-solid fa-layer-group"></i>คอร์สทั้งหมด</a>
       <button class="link-btn" id="mobileLogoutBtn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i>ออกจากระบบ</button>
     </div>
@@ -128,9 +128,9 @@
           <i class="fa-regular fa-calendar"></i>
           <span>ดูตารางเรียน</span>
         </a>
-        <a href="#tools">
+        <a href="/tools-box">
           <i class="fa-solid fa-toolbox"></i>
-          <span>เปิด Tools</span>
+          <span>เปิด Tools Box</span>
         </a>
       </div>
     </section>
@@ -167,8 +167,9 @@
           <div>
             <p class="eyebrow">Member Tools</p>
             <h2>เครื่องมือสำหรับสมาชิก</h2>
-            <p>Tools set, skill set และ template ที่แจกให้สมาชิก</p>
+            <p>เปิดคลัง Skill Set, Ebook, Prompt Pack และ Template สำหรับสมาชิก</p>
           </div>
+          <a class="secondary-btn" href="/tools-box"><i class="fa-solid fa-toolbox"></i>&nbsp;เปิด Tools Box</a>
         </div>
         <div class="member-resource-grid" id="memberResources"></div>
       </div>
@@ -201,10 +202,10 @@
     </section>
   </main>
 
-  <script src="/site-footer.js?v=receipt-fix-1"></script>
+  <script src="/site-footer.js?v=tools-box-1"></script>
   <div class="toast" id="toast"></div>
-  <script src="dashboard.js?v=receipt-fix-1"></script>
+  <script src="dashboard.js?v=tools-box-1"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
-  <script src="site-motion.js?v=receipt-fix-1" defer></script>
+  <script src="site-motion.js?v=tools-box-1" defer></script>
 </body>
 </html>

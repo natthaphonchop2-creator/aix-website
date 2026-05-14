@@ -361,8 +361,8 @@ function renderResources(paid, resources = []) {
   if (!paid) {
     memberResources.innerHTML = [
       ["fa-solid fa-credit-card", "ชำระเงิน", "ปลดล็อกคอร์สและ Resource สำหรับสมาชิก", "/payment"],
-      ["fa-solid fa-list-check", "ดูคอร์สทั้งหมด", "สำรวจคลาส AI ที่พร้อมเข้าเรียนหลังชำระเงิน", "/index.html#catalog"],
-      ["fa-solid fa-circle-info", "ตรวจข้อมูลบัญชี", "อีเมลและสถานะสมาชิกจะใช้สำหรับออกสิทธิ์เข้าเรียน", "#payment"]
+      ["fa-solid fa-toolbox", "Tools Box", "ปลดล็อก Skill Set, Ebook, Prompt Pack และ Template", "/payment"],
+      ["fa-solid fa-list-check", "ดูคอร์สทั้งหมด", "สำรวจคลาส AI ที่พร้อมเข้าเรียนหลังชำระเงิน", "/index.html#catalog"]
     ].map(([icon, title, copy, href]) => `
       <a class="member-resource-card" href="${href}">
         <span><i class="${icon}"></i></span>
@@ -373,13 +373,22 @@ function renderResources(paid, resources = []) {
     return;
   }
 
+  const toolsBoxCard = `
+    <a class="member-resource-card tools-box-entry" href="/tools-box">
+      <span><i class="fa-solid fa-toolbox"></i></span>
+      <strong>เปิด Tools Box</strong>
+      <small>เข้า Skill Set, Ebook, Prompt Pack, Workflow Blueprint และ Template ทั้งหมด</small>
+    </a>
+  `;
+
   if (!resources.length) {
-    memberResources.innerHTML = `<article class="resource-card"><h3>ยังไม่มี Resource</h3><p>เมื่อ Admin เพิ่ม tools หรือ skill set ใหม่ รายการจะแสดงตรงนี้</p></article>`;
+    memberResources.innerHTML = `${toolsBoxCard}<article class="resource-card"><h3>ยังไม่มี Resource เพิ่มเติม</h3><p>เริ่มใช้งานจาก Tools Box ได้เลย เมื่อ Admin เพิ่มไฟล์ใหม่ รายการจะแสดงตรงนี้</p></article>`;
     return;
   }
 
-  memberResources.innerHTML = resources.map((resource) => {
-    const href = resource.url || resource.filePath || "#";
+  memberResources.innerHTML = toolsBoxCard + resources.map((resource) => {
+    const rawHref = resource.url || resource.filePath || "#";
+    const href = rawHref === "/dashboard" ? "/tools-box#resources" : rawHref;
     const external = /^https?:\/\//.test(href);
     return `
       <a class="member-resource-card" href="${href}" ${external ? 'target="_blank" rel="noopener"' : ""}>

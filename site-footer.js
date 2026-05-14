@@ -19,6 +19,7 @@
       <div>
         <strong>สมาชิก</strong>
         <a href="/dashboard">Dashboard</a>
+        <a href="/tools-box">Tools Box</a>
         <a href="/payment">ชำระเงิน</a>
         <a href="/dashboard#schedule">ตารางสอนสด</a>
         <a href="/dashboard#billing">ใบเสร็จและบัญชี</a>

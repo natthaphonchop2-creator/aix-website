@@ -17,6 +17,10 @@
     ".payment-history-card",
     ".member-alert-card",
     ".member-schedule-card",
+    ".tools-stat-card",
+    ".tools-category-card",
+    ".tools-topic-panel",
+    ".tools-resource-row",
     ".classroom-panel",
     ".classroom-video-player",
     ".classroom-replay-card",
@@ -37,6 +41,8 @@
     ".syllabus-number",
     ".member-overview-card span",
     ".member-resource-card span",
+    ".tools-card-icon",
+    ".tools-resource-icon",
   ].join(", ");
 
   const seenCards = new WeakSet();

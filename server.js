@@ -648,8 +648,8 @@ function seedMemberLearningData() {
     `);
     const now = new Date().toISOString();
     [
-      ['', 'tool', 'AI Agent Workflow Blueprint', 'ไฟล์โครงสร้างสำหรับวาง role, task, input, output และจุดตรวจสอบของ AI Agent ก่อนนำไปใช้จริง', '/dashboard', ['AI Agent', 'Workflow'], 1],
-      ['', 'skill', 'Prompt Review Checklist', 'Checklist ตรวจ prompt ให้ชัดเจน ลดผลลัพธ์มั่ว และทำซ้ำได้กับทีม', '/dashboard', ['Prompt Engineering', 'QA'], 2],
+      ['', 'tool', 'AI Agent Workflow Blueprint', 'ไฟล์โครงสร้างสำหรับวาง role, task, input, output และจุดตรวจสอบของ AI Agent ก่อนนำไปใช้จริง', '/tools-box#workflow', ['AI Agent', 'Workflow'], 1],
+      ['', 'skill', 'Prompt Review Checklist', 'Checklist ตรวจ prompt ให้ชัดเจน ลดผลลัพธ์มั่ว และทำซ้ำได้กับทีม', '/tools-box#skill-set', ['Prompt Engineering', 'QA'], 2],
       ['claude-deep-dive', 'template', 'Claude Deep Research Template', 'Template สำหรับสั่ง Claude วิเคราะห์ข้อมูล สรุป insight และเปลี่ยนเป็นแผนปฏิบัติการ', '/course/claude-deep-dive/start', ['Claude', 'Research'], 3]
     ].forEach(([courseId, type, title, description, url, tags, sortOrder]) => {
       insertResource.run(createRecordId('resource'), courseId, type, title, description, url, safeJson(tags), sortOrder, now, now);
@@ -712,6 +712,7 @@ function normalizeStoredLearningLinks() {
 }
 
 normalizeStoredLearningLinks();
+db.prepare("UPDATE member_resources SET url = '/tools-box#resources' WHERE url = '/dashboard'").run();
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -3155,6 +3156,10 @@ app.get('/admin', (req, res) => {
 app.get('/dashboard', (req, res) => {
   if (!hasValidMemberSession(req)) return res.redirect('/login');
   res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+app.get('/tools-box', (req, res) => {
+  res.sendFile(path.join(__dirname, 'tools-box.html'));
 });
 
 app.get('/login', (req, res) => {
