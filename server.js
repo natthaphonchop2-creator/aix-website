@@ -123,6 +123,11 @@ const STRIPE_PAYMENT_METHOD_TYPES = (process.env.STRIPE_PAYMENT_METHOD_TYPES || 
   .filter(Boolean);
 let googleJwksCache = { expiresAt: 0, keys: [] };
 let stripeClient = null;
+
+function isValidGoogleClientId(clientId) {
+  return /^[0-9]+-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/.test(String(clientId || ''));
+}
+
 fs.mkdirSync(DATA_DIR, { recursive: true });
 const UPLOAD_ROOT = path.resolve(process.env.UPLOAD_DIR || path.join(DATA_DIR, 'uploads'));
 const REPLAY_UPLOAD_DIR = path.join(UPLOAD_ROOT, 'replays');
@@ -1085,7 +1090,7 @@ async function getGoogleJwks() {
 }
 
 async function verifyGoogleCredential(credential) {
-  if (!GOOGLE_CLIENT_ID) {
+  if (!isValidGoogleClientId(GOOGLE_CLIENT_ID)) {
     throw new Error('ยังไม่ได้ตั้งค่า GOOGLE_CLIENT_ID');
   }
 
@@ -1124,9 +1129,11 @@ async function verifyGoogleCredential(credential) {
 
 app.get('/api/config', (req, res) => {
   const sms = getSmsConfig();
+  const googleReady = isValidGoogleClientId(GOOGLE_CLIENT_ID);
+
   res.json({
-    googleClientId: GOOGLE_CLIENT_ID,
-    googleReady: Boolean(GOOGLE_CLIENT_ID),
+    googleClientId: googleReady ? GOOGLE_CLIENT_ID : '',
+    googleReady,
     smsProvider: sms.provider,
     smsReady: sms.ready,
     sessionTtlDays: Math.round(AUTH_SESSION_TTL_MS / 86400000),
