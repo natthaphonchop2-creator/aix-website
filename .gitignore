@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+.evn
+.evn.*
 node_modules/
 data.db*
 uploads/
