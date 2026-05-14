@@ -795,7 +795,7 @@ function courseCta(course) {
     return `<a class="secondary-btn" href="class-detail.html?id=${course.id}">ดูรายละเอียด</a>`;
   }
   if (state.member.paymentStatus === "paid") {
-    return `<a class="primary-btn full" href="/course/${course.id}/content">เข้าเรียน</a>`;
+    return `<a class="primary-btn full" href="/course/${encodeURIComponent(course.id)}/start">เข้าเรียน</a>`;
   }
   return `<a class="primary-btn full" href="/payment">ชำระเงินเพื่อเข้าเรียน</a>`;
 }

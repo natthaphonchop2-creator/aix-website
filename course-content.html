@@ -9,25 +9,53 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=footer-ai-2">
 </head>
 <body>
-  <header class="site-header">
+  <header class="site-header classroom-header">
     <div class="container nav-bar">
-      <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
-        <img src="/AiX%20logo/textblack.png" alt="AiX Club">
-      </a>
-      <nav class="main-nav" aria-label="Classroom navigation">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/index.html#catalog">คอร์สทั้งหมด</a>
-        <a href="#replays">คลิปย้อนหลัง</a>
-        <a href="#resources">Tools</a>
-        <a href="#schedule">ตารางเรียน</a>
+      <div class="classroom-brand-block">
+        <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+          <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+        </a>
+        <div class="classroom-label">
+          <span>AiX Classroom</span>
+          <strong id="classroomNavTitle">กำลังโหลดคอร์ส</strong>
+        </div>
+      </div>
+      <nav class="main-nav classroom-nav" aria-label="Classroom navigation">
+        <a class="classroom-nav-link active" href="#modules" data-classroom-nav>
+          <i class="fa-solid fa-list-check"></i><span>บทเรียน</span>
+        </a>
+        <a class="classroom-nav-link" href="#overview" data-classroom-nav>
+          <i class="fa-solid fa-bullseye"></i><span>ภาพรวม</span>
+        </a>
+        <a class="classroom-nav-link" href="#schedule" data-classroom-nav>
+          <i class="fa-regular fa-calendar-check"></i><span>ตาราง</span>
+        </a>
+        <a class="classroom-nav-link" href="#resources" data-classroom-nav>
+          <i class="fa-solid fa-toolbox"></i><span>Tools</span>
+        </a>
       </nav>
+      <div class="nav-actions">
+        <a class="classroom-home-link" href="/dashboard">Dashboard</a>
+      </div>
+      <button class="mobile-menu classroom-menu-button" id="classroomMobileMenu" aria-label="Open classroom menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div class="mobile-panel classroom-mobile-panel" id="classroomMobilePanel">
+      <a href="#modules" data-classroom-nav><i class="fa-solid fa-list-check"></i>บทเรียน</a>
+      <a href="#overview" data-classroom-nav><i class="fa-solid fa-bullseye"></i>ภาพรวมคอร์ส</a>
+      <a href="#schedule" data-classroom-nav><i class="fa-regular fa-calendar-check"></i>ตารางเรียน</a>
+      <a href="#resources" data-classroom-nav><i class="fa-solid fa-toolbox"></i>Tools</a>
+      <a href="/dashboard"><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
     </div>
   </header>
 
-  <main class="dashboard-page">
+  <main class="dashboard-page classroom-page">
     <section class="detail-hero">
       <div class="container detail-hero-grid">
         <div class="detail-hero-copy">
@@ -41,13 +69,27 @@
           <div class="enroll-body">
             <span class="badge paid">ปลดล็อกแล้ว</span>
             <h2>เริ่มเรียนได้ทันที</h2>
-            <p>ดูรายละเอียดคลาส คลิปย้อนหลัง Resource และตารางเรียนทั้งหมดจากหน้านี้</p>
+            <p>กดเริ่มเรียนเลยเพื่อเข้า lesson player พร้อมวิดีโอ เนื้อหาอ่านประกอบ และ AI ช่วยทบทวน</p>
+            <a class="primary-btn full" id="heroStartLearning" href="#">เริ่มเรียนเลย</a>
           </div>
         </aside>
       </div>
     </section>
 
-    <section class="section member-class-overview">
+    <section class="section classroom-modules-section" id="modules">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Course Content</p>
+            <h2>บทเรียนในคอร์สนี้</h2>
+            <p>เลือกบทเรียนเพื่อเปิดหน้าเรียนรู้ พร้อมวิดีโอ เนื้อหาอ่านประกอบ และ AI ช่วยสรุปประเด็นสำคัญ</p>
+          </div>
+        </div>
+        <div class="syllabus-list classroom-syllabus" id="moduleList"></div>
+      </div>
+    </section>
+
+    <section class="section member-class-overview" id="overview">
       <div class="container classroom-layout">
         <article class="classroom-panel">
           <p class="eyebrow">Class Detail</p>
@@ -63,23 +105,20 @@
       </div>
     </section>
 
-    <section class="section" id="replays">
+    <section class="section member-schedule-section" id="schedule">
       <div class="container">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Replay Library</p>
-            <h2>คลิปย้อนหลัง</h2>
-            <p>Admin สามารถอัปโหลดคลิปหรือตั้งลิงก์วิดีโอ แล้วสมาชิกจะดูได้จากหน้านี้</p>
+            <p class="eyebrow">Live Schedule</p>
+            <h2>ตารางสอนสดของคลาสนี้</h2>
+            <p>ตารางสอนสดและลิงก์เข้าห้องเรียนสำหรับสมาชิก</p>
           </div>
         </div>
-        <div class="classroom-video-grid">
-          <div class="classroom-video-player" id="replayPlayer"></div>
-          <div class="classroom-replay-list" id="replayList"></div>
-        </div>
+        <div class="member-schedule-grid" id="classSchedule"></div>
       </div>
     </section>
 
-    <section class="section member-resource-section" id="resources">
+    <section class="section member-resource-section classroom-resource-section" id="resources">
       <div class="container">
         <div class="section-head">
           <div>
@@ -91,34 +130,12 @@
         <div class="member-resource-grid" id="classResources"></div>
       </div>
     </section>
-
-    <section class="section member-schedule-section" id="schedule">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Live Schedule</p>
-            <h2>ตารางสอนของคลาสนี้</h2>
-            <p>ตารางสดและลิงก์เข้าห้องเรียนสำหรับสมาชิก</p>
-          </div>
-        </div>
-        <div class="member-schedule-grid" id="classSchedule"></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Course Content</p>
-            <h2>บทเรียนในคอร์สนี้</h2>
-          </div>
-        </div>
-        <div class="syllabus-list" id="moduleList"></div>
-      </div>
-    </section>
   </main>
 
+  <script src="/site-footer.js?v=footer-ai-2"></script>
   <div class="toast" id="toast"></div>
-  <script src="/course-content.js"></script>
+  <script src="/course-content.js?v=learn-room-1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
+  <script src="/site-motion.js?v=footer-ai-2" defer></script>
 </body>
 </html>

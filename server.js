@@ -370,6 +370,19 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_notifications_member ON notifications(memberId, status, createdAt);
 
+  CREATE TABLE IF NOT EXISTS learning_progress (
+    memberId TEXT NOT NULL,
+    courseId TEXT NOT NULL,
+    activeIndex INTEGER DEFAULT 0,
+    completedCount INTEGER DEFAULT 0,
+    totalModules INTEGER DEFAULT 0,
+    moduleTitle TEXT DEFAULT '',
+    updatedAt TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (memberId, courseId)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_learning_progress_member ON learning_progress(memberId, updatedAt);
+
   CREATE TABLE IF NOT EXISTS payment_records (
     id TEXT PRIMARY KEY,
     memberId TEXT NOT NULL,
@@ -637,7 +650,7 @@ function seedMemberLearningData() {
     [
       ['', 'tool', 'AI Agent Workflow Blueprint', 'ไฟล์โครงสร้างสำหรับวาง role, task, input, output และจุดตรวจสอบของ AI Agent ก่อนนำไปใช้จริง', '/dashboard', ['AI Agent', 'Workflow'], 1],
       ['', 'skill', 'Prompt Review Checklist', 'Checklist ตรวจ prompt ให้ชัดเจน ลดผลลัพธ์มั่ว และทำซ้ำได้กับทีม', '/dashboard', ['Prompt Engineering', 'QA'], 2],
-      ['claude-deep-dive', 'template', 'Claude Deep Research Template', 'Template สำหรับสั่ง Claude วิเคราะห์ข้อมูล สรุป insight และเปลี่ยนเป็นแผนปฏิบัติการ', '/course/claude-deep-dive/content', ['Claude', 'Research'], 3]
+      ['claude-deep-dive', 'template', 'Claude Deep Research Template', 'Template สำหรับสั่ง Claude วิเคราะห์ข้อมูล สรุป insight และเปลี่ยนเป็นแผนปฏิบัติการ', '/course/claude-deep-dive/start', ['Claude', 'Research'], 3]
     ].forEach(([courseId, type, title, description, url, tags, sortOrder]) => {
       insertResource.run(createRecordId('resource'), courseId, type, title, description, url, safeJson(tags), sortOrder, now, now);
     });
@@ -660,7 +673,7 @@ function seedMemberLearningData() {
       'คลาสสดสำหรับสมาชิก พร้อมแจ้งเตือนใน Dashboard ก่อนเริ่มเรียน',
       startsAt,
       endsAt,
-      '/course/claude-deep-dive/content',
+      '/course/claude-deep-dive/start',
       1440,
       createdAt,
       createdAt
@@ -669,6 +682,36 @@ function seedMemberLearningData() {
 }
 
 seedMemberLearningData();
+
+function normalizedLearningLink(value = '') {
+  const raw = String(value || '').trim();
+  const contentMatch = raw.match(/^\/course\/([^/?#]+)\/content(?:[?#].*)?$/);
+  if (contentMatch) {
+    try {
+      return `/course/${encodeURIComponent(decodeURIComponent(contentMatch[1]))}/start`;
+    } catch (error) {
+      return `/course/${contentMatch[1]}/start`;
+    }
+  }
+  return raw;
+}
+
+function normalizeStoredLearningLinks() {
+  [
+    { table: 'member_resources', column: 'url' },
+    { table: 'class_schedules', column: 'meetingUrl' }
+  ].forEach(({ table, column }) => {
+    const rows = db.prepare(`SELECT id, courseId, ${column} as value FROM ${table}`).all();
+    const update = db.prepare(`UPDATE ${table} SET ${column} = ?, updatedAt = ? WHERE id = ?`);
+    const now = new Date().toISOString();
+    rows.forEach((row) => {
+      const normalized = normalizedLearningLink(row.value);
+      if (normalized && normalized !== row.value) update.run(normalized, now, row.id);
+    });
+  });
+}
+
+normalizeStoredLearningLinks();
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -1806,6 +1849,7 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
     : [];
   const schedule = access.active ? getUpcomingSchedules().slice(0, 8) : [];
   const notifications = access.active ? ensureScheduleNotifications(req.member) : [];
+  const progress = memberLearningProgress(req.member.id);
   let payments = memberPaymentRecords(req.member);
 
   const hasOnlyLegacyPayment = payments.length === 1 && payments[0].id === `legacy_${req.member.id}`;
@@ -1827,6 +1871,7 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
     resources,
     schedule,
     notifications,
+    progress,
     payments,
     access,
     nextAction: access.active ? 'learn' : 'pay',
@@ -1863,6 +1908,67 @@ app.post('/api/member/notifications/:id/read', requireMemberSession, (req, res) 
   if (result.changes === 0) return res.status(404).json({ error: 'ไม่พบแจ้งเตือนนี้' });
   const notification = db.prepare('SELECT * FROM notifications WHERE id = ?').get(req.params.id);
   res.json(publicNotification(notification));
+});
+
+app.post('/api/member/progress', requireMemberSession, (req, res) => {
+  const access = memberAccess(req.member);
+  if (!access.active) {
+    return res.status(402).json({
+      error: access.expired ? 'สมาชิกหมดอายุแล้ว กรุณาต่ออายุเพื่อเข้าเรียน' : 'กรุณาชำระเงินเพื่อเข้าเรียน',
+      paymentRequired: true,
+      expired: access.expired,
+      expiresAt: access.expiresAt
+    });
+  }
+
+  const courseId = String(req.body?.courseId || '').trim();
+  if (!courseId) return res.status(400).json({ error: 'กรุณาระบุคอร์ส' });
+
+  const course = db.prepare('SELECT id FROM courses WHERE id = ? AND featured = 1').get(courseId);
+  if (!course) return res.status(404).json({ error: 'Course not found' });
+
+  const activeIndex = Math.min(Math.max(Number.parseInt(req.body?.activeIndex, 10) || 0, 0), 500);
+  const totalModules = Math.min(Math.max(Number.parseInt(req.body?.totalModules, 10) || 0, activeIndex + 1), 500);
+  const requestedCompleted = Number.parseInt(req.body?.completedCount, 10) || activeIndex + 1;
+  const completedCount = Math.min(Math.max(requestedCompleted, activeIndex + 1), Math.max(totalModules, activeIndex + 1));
+  const moduleTitle = String(req.body?.moduleTitle || '').trim().slice(0, 200);
+  const existing = db.prepare(`
+    SELECT * FROM learning_progress
+    WHERE memberId = ? AND courseId = ?
+  `).get(req.member.id, courseId);
+  const now = new Date().toISOString();
+
+  if (existing) {
+    db.prepare(`
+      UPDATE learning_progress
+      SET activeIndex = ?,
+          completedCount = ?,
+          totalModules = ?,
+          moduleTitle = ?,
+          updatedAt = ?
+      WHERE memberId = ? AND courseId = ?
+    `).run(
+      activeIndex,
+      Math.max(Number(existing.completedCount || 0), completedCount),
+      Math.max(Number(existing.totalModules || 0), totalModules),
+      moduleTitle || existing.moduleTitle || '',
+      now,
+      req.member.id,
+      courseId
+    );
+  } else {
+    db.prepare(`
+      INSERT INTO learning_progress (
+        memberId, courseId, activeIndex, completedCount, totalModules, moduleTitle, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(req.member.id, courseId, activeIndex, completedCount, totalModules, moduleTitle, now);
+  }
+
+  const progress = db.prepare(`
+    SELECT * FROM learning_progress
+    WHERE memberId = ? AND courseId = ?
+  `).get(req.member.id, courseId);
+  res.json({ progress: publicLearningProgress(progress) });
 });
 
 app.get('/api/member/payments', requireMemberSession, (req, res) => {
@@ -2153,6 +2259,26 @@ function publicResource(resource) {
   };
 }
 
+function publicLearningProgress(progress) {
+  if (!progress) return null;
+  return {
+    courseId: progress.courseId,
+    activeIndex: Number(progress.activeIndex || 0),
+    completedCount: Number(progress.completedCount || 0),
+    totalModules: Number(progress.totalModules || 0),
+    moduleTitle: progress.moduleTitle || '',
+    updatedAt: progress.updatedAt || ''
+  };
+}
+
+function memberLearningProgress(memberId) {
+  return db.prepare(`
+    SELECT * FROM learning_progress
+    WHERE memberId = ?
+    ORDER BY updatedAt DESC
+  `).all(memberId).map(publicLearningProgress);
+}
+
 function publicSchedule(schedule) {
   if (!schedule) return null;
   return {
@@ -2183,6 +2309,33 @@ function publicNotification(notification) {
     createdAt: notification.createdAt,
     readAt: notification.readAt || ''
   };
+}
+
+function courseModules(publicData, replays = []) {
+  const syllabus = Array.isArray(publicData.syllabus) ? publicData.syllabus : [];
+  const modules = syllabus.map((module, index) => ({
+    id: `${publicData.id}-module-${index + 1}`,
+    title: module.title || `Module ${index + 1}`,
+    time: module.time || 'บทเรียน',
+    lessons: Array.isArray(module.points) ? module.points : [],
+    videoUrl: replays[index]?.videoUrl || '',
+    status: 'available'
+  }));
+
+  if (modules.length) return modules;
+
+  return [{
+    id: `${publicData.id}-module-1`,
+    title: publicData.title || 'เริ่มต้นคอร์ส',
+    time: publicData.duration || 'บทเรียน',
+    lessons: [
+      publicData.overview || publicData.description || 'อ่านภาพรวมคอร์สและเริ่มลงมือทำตามขั้นตอน',
+      'ใช้พื้นที่หมายเหตุเพื่อจดสิ่งที่เรียนรู้',
+      'ถาม AiX Coach เพื่อขอสรุป ตัวอย่าง prompt หรือ checklist เพิ่ม'
+    ].filter(Boolean),
+    videoUrl: replays[0]?.videoUrl || '',
+    status: 'available'
+  }];
 }
 
 function getUpcomingSchedules(courseId = '') {
@@ -2284,14 +2437,7 @@ app.get('/api/courses/:id/content', requireMemberSession, (req, res) => {
   const schedule = getUpcomingSchedules(publicData.id);
   res.json({
     course: publicData,
-    modules: publicData.syllabus.map((module, index) => ({
-      id: `${publicData.id}-module-${index + 1}`,
-      title: module.title,
-      time: module.time,
-      lessons: module.points,
-      videoUrl: replays[index]?.videoUrl || '',
-      status: 'available'
-    })),
+    modules: courseModules(publicData, replays),
     replays,
     resources,
     schedule
@@ -2947,9 +3093,25 @@ app.get('/payment/cancel', (req, res) => {
   res.redirect('/payment?cancelled=1');
 });
 
+app.get('/course/:id/start', (req, res) => {
+  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  res.sendFile(path.join(__dirname, 'course-start.html'));
+});
+
 app.get('/course/:id/content', (req, res) => {
   if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (req.query.ready !== '1') {
+    return res.redirect(`/course/${encodeURIComponent(req.params.id)}/start`);
+  }
   res.sendFile(path.join(__dirname, 'course-content.html'));
+});
+
+app.get('/course/:id/learn', (req, res) => {
+  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (req.query.ready !== '1') {
+    return res.redirect(`/course/${encodeURIComponent(req.params.id)}/start`);
+  }
+  res.sendFile(path.join(__dirname, 'course-learn.html'));
 });
 
 // ============================================================

@@ -1,5 +1,8 @@
 const API_ORIGIN = window.location.origin;
 const TOKEN_KEY = "aix_member_token";
+const classroomNavLinks = Array.from(document.querySelectorAll("[data-classroom-nav]"));
+const classroomMobileMenu = document.getElementById("classroomMobileMenu");
+const classroomMobilePanel = document.getElementById("classroomMobilePanel");
 
 function getCourseId() {
   const pathMatch = window.location.pathname.match(/\/course\/([^/]+)\/content/);
@@ -57,37 +60,26 @@ function playableVideo(url = "") {
   return url.startsWith("/uploads/") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 }
 
-function renderReplayPlayer(replay) {
-  const player = document.getElementById("replayPlayer");
-  if (!replay) {
-    player.innerHTML = `
-      <div class="empty-video-state">
-        <i class="fa-regular fa-circle-play"></i>
-        <strong>ยังไม่มีคลิปย้อนหลัง</strong>
-        <span>เมื่อ Admin อัปโหลดคลิป รายการจะเล่นจากพื้นที่นี้</span>
-      </div>
-    `;
-    return;
-  }
-
-  const url = replay.videoUrl || replay.filePath || "";
-  player.innerHTML = playableVideo(url)
-    ? `<video controls preload="metadata" src="${escapeHtml(url)}"></video><h3>${escapeHtml(replay.title)}</h3><p>${escapeHtml(replay.description || "")}</p>`
-    : `<div class="empty-video-state"><i class="fa-solid fa-arrow-up-right-from-square"></i><strong>${escapeHtml(replay.title)}</strong><span>${escapeHtml(replay.description || "เปิดวิดีโอจากลิงก์ภายนอก")}</span><a class="primary-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener">เปิดวิดีโอ</a></div>`;
+function courseStartUrl(courseId) {
+  return `/course/${encodeURIComponent(courseId)}/start`;
 }
 
-function selectReplay(id) {
-  const replay = (window.__courseReplays || []).find((item) => item.id === id);
-  renderReplayPlayer(replay);
-  document.querySelectorAll(".classroom-replay-card").forEach((card) => {
-    card.classList.toggle("active", card.dataset.replayId === id);
-  });
+function courseLearnUrl(courseId, moduleIndex = 0) {
+  return `/course/${encodeURIComponent(courseId)}/learn?module=${moduleIndex}&ready=1`;
+}
+
+function learningEntryUrl(href, courseId) {
+  const value = String(href || "");
+  const match = value.match(/^\/course\/([^/?#]+)\/content(?:[?#].*)?$/);
+  if (match) return courseStartUrl(decodeURIComponent(match[1]));
+  return value || courseStartUrl(courseId);
 }
 
 function renderContent(data) {
-  const { course, modules, replays = [], resources = [], schedule = [] } = data;
+  const { course, modules, resources = [], schedule = [] } = data;
   document.title = `${course.title} | AiX Classroom`;
   document.getElementById("courseTitle").textContent = course.title;
+  document.getElementById("classroomNavTitle").textContent = course.title;
   document.getElementById("courseSubtitle").textContent = course.overview || course.description || "";
   document.getElementById("courseImage").src = assetUrl(course.image);
   document.getElementById("courseStats").innerHTML = [
@@ -101,20 +93,7 @@ function renderContent(data) {
   document.getElementById("courseOutcomes").innerHTML = (course.outcomes || []).slice(0, 6).map((outcome) => `
     <div><i class="fa-solid fa-check"></i><span>${escapeHtml(outcome)}</span></div>
   `).join("") || `<p>รายละเอียดผลลัพธ์การเรียนจะแสดงเมื่อมีข้อมูลในคอร์ส</p>`;
-
-  window.__courseReplays = replays;
-  renderReplayPlayer(replays[0]);
-  document.getElementById("replayList").innerHTML = replays.length
-    ? replays.map((replay, index) => `
-        <button type="button" class="classroom-replay-card ${index === 0 ? "active" : ""}" data-replay-id="${escapeHtml(replay.id)}" onclick="selectReplay('${escapeHtml(replay.id)}')">
-          <i class="fa-regular fa-circle-play"></i>
-          <span>
-            <strong>${escapeHtml(replay.title)}</strong>
-            <small>${escapeHtml(replay.durationText || replay.duration || "คลิปย้อนหลัง")}</small>
-          </span>
-        </button>
-      `).join("")
-    : `<article class="resource-card"><h3>ยังไม่มีคลิปย้อนหลัง</h3><p>เมื่อ Admin เพิ่มคลิป ระบบจะแสดงรายการตรงนี้</p></article>`;
+  document.getElementById("heroStartLearning").href = courseLearnUrl(course.id, 0);
 
   document.getElementById("classResources").innerHTML = resources.length
     ? resources.map((resource) => {
@@ -136,7 +115,7 @@ function renderContent(data) {
           <span><i class="fa-regular fa-calendar-check"></i>${formatDateTime(item.startsAt)}</span>
           <h3>${escapeHtml(item.title)}</h3>
           <p>${escapeHtml(item.description || item.courseTitle || "AiX Live Class")}</p>
-          <a class="secondary-btn" href="${escapeHtml(item.meetingUrl || `/course/${item.courseId}/content`)}">เข้าห้องเรียน</a>
+          <a class="secondary-btn" href="${escapeHtml(learningEntryUrl(item.meetingUrl, item.courseId))}">เข้าห้องเรียน</a>
         </article>
       `).join("")
     : `<article class="resource-card"><h3>ยังไม่มีตารางเรียน</h3><p>ตารางสอนใหม่จะแสดงที่นี่เมื่อ Admin เพิ่มในระบบ</p></article>`;
@@ -148,9 +127,48 @@ function renderContent(data) {
         <span>${escapeHtml(module.time || "บทเรียน")}</span>
         <h3>${escapeHtml(module.title)}</h3>
         <ul>${(module.lessons || []).map((lesson) => `<li>${escapeHtml(lesson)}</li>`).join("")}</ul>
+        <a class="primary-btn compact learn-now-btn" href="${courseLearnUrl(course.id, index)}">เริ่มเรียนเลย</a>
       </div>
     </article>
   `).join("");
+  document.body.classList.add("classroom-ready");
+}
+
+function setActiveClassroomNav(id) {
+  classroomNavLinks.forEach((link) => {
+    const linkId = link.getAttribute("href")?.replace("#", "");
+    link.classList.toggle("active", linkId === id);
+  });
+}
+
+function setupClassroomNav() {
+  if (!classroomNavLinks.length) return;
+
+  classroomNavLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      const id = link.getAttribute("href")?.replace("#", "");
+      if (id) setActiveClassroomNav(id);
+      classroomMobilePanel?.classList.remove("open");
+    });
+  });
+
+  const sections = [...new Set(classroomNavLinks
+    .map((link) => document.querySelector(link.getAttribute("href")))
+    .filter(Boolean))];
+
+  if (!("IntersectionObserver" in window) || !sections.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (visible?.target?.id) setActiveClassroomNav(visible.target.id);
+  }, {
+    rootMargin: "-24% 0px -58% 0px",
+    threshold: [0.12, 0.35, 0.65]
+  });
+
+  sections.forEach((section) => observer.observe(section));
 }
 
 async function initContent() {
@@ -167,4 +185,9 @@ async function initContent() {
   }
 }
 
+classroomMobileMenu?.addEventListener("click", () => {
+  classroomMobilePanel?.classList.toggle("open");
+});
+
+setupClassroomNav();
 initContent();

@@ -267,7 +267,7 @@ function updateDetailCtas(course) {
   const href = !currentMember
     ? "index.html#membership"
     : currentMember.paymentStatus === "paid"
-      ? `/course/${course.id}/content`
+      ? `/course/${encodeURIComponent(course.id)}/start`
       : "/payment";
 
   ctas.forEach((cta) => {

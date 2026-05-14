@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>หน้าเรียนรู้ | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=footer-ai-2">
+</head>
+<body class="learn-body">
+  <header class="learn-topbar">
+    <div class="learn-brand">
+      <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+        <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+      </a>
+      <span id="learnCourseName">กำลังโหลดคอร์ส</span>
+    </div>
+    <div class="learn-progress" aria-label="Learning progress">
+      <strong id="learnProgressText">0/0 รายการการเรียนรู้</strong>
+      <div><span id="learnProgressBar"></span></div>
+    </div>
+    <a class="secondary-btn compact" id="backToCourseLink" href="/dashboard">กลับหน้าคอร์ส</a>
+  </header>
+
+  <main class="learn-shell">
+    <aside class="learn-sidebar" aria-label="Course lesson list">
+      <div class="learn-sidebar-head">
+        <strong id="learnSidebarTitle">บทเรียน</strong>
+        <a href="/dashboard" aria-label="Close learning page"><i class="fa-solid fa-xmark"></i></a>
+      </div>
+      <div class="learn-module-list" id="learnModuleList"></div>
+    </aside>
+
+    <section class="learn-stage">
+      <div class="learn-video-card" id="learnVideoCard"></div>
+      <div class="learn-content-grid">
+        <article class="learn-reading-card">
+          <div class="learn-lesson-head">
+            <div>
+              <span id="learnModuleMeta">บทเรียน</span>
+              <h1 id="learnModuleTitle">กำลังโหลดบทเรียน</h1>
+            </div>
+            <button class="text-link learn-note-jump" id="focusNotesBtn" type="button">
+              <i class="fa-regular fa-pen-to-square"></i>บันทึกหมายเหตุ
+            </button>
+          </div>
+          <div class="learn-tabs" role="tablist" aria-label="Lesson material">
+            <button class="active" type="button" data-learn-tab="reading">เนื้อหาอ่านประกอบ</button>
+            <button type="button" data-learn-tab="notes">หมายเหตุ</button>
+            <button type="button" data-learn-tab="downloads">ดาวน์โหลด</button>
+          </div>
+          <div class="learn-tab-panel" id="readingPanel"></div>
+          <div class="learn-tab-panel hidden" id="notesPanel">
+            <label for="lessonNotes">บันทึกของฉัน</label>
+            <textarea id="lessonNotes" placeholder="จดสิ่งที่เข้าใจ คำถาม หรือสิ่งที่อยากกลับมาทบทวน"></textarea>
+            <small>บันทึกจะเก็บไว้ในเครื่องนี้ก่อน ยังไม่ส่งขึ้น server</small>
+          </div>
+          <div class="learn-tab-panel hidden" id="downloadsPanel"></div>
+          <div class="learn-bottom-actions">
+            <button class="secondary-btn" id="prevLessonBtn" type="button">รายการก่อนหน้า</button>
+            <button class="primary-btn" id="nextLessonBtn" type="button">ไปที่รายการถัดไป <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </article>
+
+        <aside class="learn-ai-card">
+          <div class="learn-ai-head">
+            <span><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+            <div>
+              <strong>AiX Coach</strong>
+              <small>ถามเพื่อสรุปบทเรียน วางแผนลงมือทำ หรือขอตัวอย่าง prompt</small>
+            </div>
+          </div>
+          <div class="learn-ai-messages" id="learnAiMessages"></div>
+          <form class="learn-ai-form" id="learnAiForm">
+            <input id="learnAiInput" type="text" placeholder="ถาม AI เกี่ยวกับบทนี้">
+            <button type="submit">ถาม</button>
+          </form>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="/site-footer.js?v=footer-ai-2"></script>
+  <div class="toast" id="toast"></div>
+  <script src="/course-learn.js?v=learn-progress-3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
+  <script src="/site-motion.js?v=footer-ai-2" defer></script>
+</body>
+</html>

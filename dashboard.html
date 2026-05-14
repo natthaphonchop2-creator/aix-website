@@ -9,42 +9,57 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=payments-1">
+  <link rel="stylesheet" href="styles.css?v=footer-ai-2">
 </head>
 <body>
-  <header class="site-header">
+  <header class="site-header dashboard-header">
     <div class="container nav-bar">
-      <a class="brand" href="index.html#home" aria-label="AiX Club home">
-        <img src="AiX%20logo/textblack.png" alt="AiX Club">
-      </a>
-      <nav class="main-nav" aria-label="Dashboard navigation">
-        <a href="index.html#catalog">คอร์สเรียน</a>
-        <a href="#payment">ชำระเงิน</a>
-        <a href="#payment-history">ประวัติชำระเงิน</a>
-        <a href="#courses">ห้องเรียน</a>
-        <a href="#schedule">ตารางเรียน</a>
-        <a href="#tools">Tools</a>
+      <div class="dashboard-brand-block">
+        <a class="brand" href="index.html#home" aria-label="AiX Club home">
+          <img src="AiX%20logo/textblack.png" alt="AiX Club">
+        </a>
+        <div class="dashboard-label">
+          <span>Student Dashboard</span>
+          <strong>พื้นที่เรียนของฉัน</strong>
+        </div>
+      </div>
+      <nav class="main-nav dashboard-nav" aria-label="Dashboard navigation">
+        <a class="dashboard-nav-link active" href="#overview" data-dashboard-nav>
+          <i class="fa-solid fa-gauge-high"></i><span>ภาพรวม</span>
+        </a>
+        <a class="dashboard-nav-link" href="#courses" data-dashboard-nav>
+          <i class="fa-solid fa-graduation-cap"></i><span>ห้องเรียน</span>
+        </a>
+        <a class="dashboard-nav-link" href="#schedule" data-dashboard-nav>
+          <i class="fa-regular fa-calendar-check"></i><span>ตาราง</span>
+        </a>
+        <a class="dashboard-nav-link" href="#tools" data-dashboard-nav>
+          <i class="fa-solid fa-toolbox"></i><span>Tools</span>
+        </a>
       </nav>
       <div class="nav-actions">
-        <button class="link-btn" id="logoutBtn" type="button">ออกจากระบบ</button>
+        <a class="dashboard-home-link" href="index.html#catalog">คอร์สทั้งหมด</a>
+        <button class="link-btn dashboard-logout" id="logoutBtn" type="button">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i><span>ออกจากระบบ</span>
+        </button>
       </div>
       <button class="mobile-menu" id="dashboardMobileMenu" aria-label="Open menu">
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
     <div class="mobile-panel" id="dashboardMobilePanel">
-      <a href="index.html#catalog">คอร์สเรียน</a>
-      <a href="#payment">ชำระเงิน</a>
-      <a href="#payment-history">ประวัติชำระเงิน</a>
-      <a href="#courses">ห้องเรียน</a>
-      <a href="#schedule">ตารางเรียน</a>
-      <a href="#tools">Tools</a>
-      <button class="link-btn" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
+      <a href="#overview" data-dashboard-nav><i class="fa-solid fa-gauge-high"></i>ภาพรวม</a>
+      <a href="#courses" data-dashboard-nav><i class="fa-solid fa-graduation-cap"></i>ห้องเรียน</a>
+      <a href="#schedule" data-dashboard-nav><i class="fa-regular fa-calendar-check"></i>ตารางเรียน</a>
+      <a href="#tools" data-dashboard-nav><i class="fa-solid fa-toolbox"></i>Tools</a>
+      <a href="index.html#catalog"><i class="fa-solid fa-layer-group"></i>คอร์สทั้งหมด</a>
+      <button class="link-btn" id="mobileLogoutBtn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i>ออกจากระบบ</button>
     </div>
   </header>
 
   <main class="dashboard-page">
-    <section class="section dashboard-hero">
+    <section class="section dashboard-hero" id="overview">
+      <img class="dashboard-hero-art" src="assets/generated/dashboard-hero-gpt55.png" alt="" aria-hidden="true">
       <div class="container dashboard-grid">
         <article class="dashboard-profile">
           <img id="memberAvatar" src="AiX%20logo/iconblack.png" alt="Member avatar">
@@ -53,6 +68,22 @@
             <h1 id="memberName">กำลังโหลดสมาชิก</h1>
             <p id="memberEmail"></p>
           </div>
+        </article>
+        <article class="dashboard-continue-card" id="continueLearningCard">
+          <div class="dashboard-continue-head">
+            <span><i class="fa-solid fa-play"></i></span>
+            <div>
+              <p class="eyebrow">Continue Learning</p>
+              <h2>เรียนต่อจากล่าสุด</h2>
+            </div>
+          </div>
+          <h3 id="continueLearningTitle">กำลังโหลดบทเรียนล่าสุด</h3>
+          <p id="continueLearningMeta">ระบบจะจำบทเรียนล่าสุดที่เปิดเรียนไว้</p>
+          <div class="dashboard-learning-progress" aria-label="Learning progress">
+            <div><span id="continueProgressBar"></span></div>
+            <strong id="continueProgressText">0%</strong>
+          </div>
+          <a class="primary-btn full" id="continueLearningLink" href="#courses">เรียนต่อ</a>
         </article>
         <article class="dashboard-status" id="payment">
           <span class="badge" id="paymentBadge">กำลังโหลด</span>
@@ -87,31 +118,20 @@
           <strong id="coursesCountText">0 คอร์ส</strong>
         </article>
       </div>
-    </section>
 
-    <section class="section payment-history-section" id="payment-history">
-      <div class="container payment-history-wrap">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Payment History</p>
-            <h2>ประวัติชำระเงินและใบเสร็จ</h2>
-            <p>รายการชำระเงินของสมาชิกและลิงก์ใบเสร็จจาก Stripe จะแสดงที่นี่</p>
-          </div>
-        </div>
-        <div class="payment-history-list" id="paymentHistory"></div>
-      </div>
-    </section>
-
-    <section class="section member-notification-section" id="notifications">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Notifications</p>
-            <h2>แจ้งเตือนจาก AiX Club</h2>
-            <p>ตารางสอนและประกาศสำคัญสำหรับสมาชิกจะแสดงที่นี่</p>
-          </div>
-        </div>
-        <div class="member-alert-grid" id="memberAlerts"></div>
+      <div class="container dashboard-quick-actions" aria-label="Quick actions">
+        <a id="quickContinueLink" href="#courses">
+          <i class="fa-solid fa-play"></i>
+          <span>เข้าเรียนต่อ</span>
+        </a>
+        <a href="#schedule">
+          <i class="fa-regular fa-calendar"></i>
+          <span>ดูตารางเรียน</span>
+        </a>
+        <a href="#tools">
+          <i class="fa-solid fa-toolbox"></i>
+          <span>เปิด Tools</span>
+        </a>
       </div>
     </section>
 
@@ -153,9 +173,38 @@
         <div class="member-resource-grid" id="memberResources"></div>
       </div>
     </section>
+
+    <section class="section member-notification-section" id="notifications">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Notifications</p>
+            <h2>แจ้งเตือนจาก AiX Club</h2>
+            <p>ตารางสอนและประกาศสำคัญสำหรับสมาชิกจะแสดงที่นี่</p>
+          </div>
+        </div>
+        <div class="member-alert-grid" id="memberAlerts"></div>
+      </div>
+    </section>
+
+    <section class="section payment-history-section billing-section" id="billing">
+      <div class="container payment-history-wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Account & Receipts</p>
+            <h2>บัญชีและใบเสร็จ</h2>
+            <p>ประวัติชำระเงินและลิงก์ใบเสร็จจาก Stripe แยกไว้ในส่วนบัญชีด้านล่าง</p>
+          </div>
+        </div>
+        <div class="payment-history-list" id="paymentHistory"></div>
+      </div>
+    </section>
   </main>
 
+  <script src="/site-footer.js?v=footer-ai-2"></script>
   <div class="toast" id="toast"></div>
-  <script src="dashboard.js?v=payments-1"></script>
+  <script src="dashboard.js?v=footer-ai-2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
+  <script src="site-motion.js?v=footer-ai-2" defer></script>
 </body>
 </html>

@@ -19,7 +19,17 @@ const memberResources = document.getElementById("memberResources");
 const memberAlerts = document.getElementById("memberAlerts");
 const memberSchedule = document.getElementById("memberSchedule");
 const paymentHistory = document.getElementById("paymentHistory");
+const continueLearningTitle = document.getElementById("continueLearningTitle");
+const continueLearningMeta = document.getElementById("continueLearningMeta");
+const continueProgressBar = document.getElementById("continueProgressBar");
+const continueProgressText = document.getElementById("continueProgressText");
+const continueLearningLink = document.getElementById("continueLearningLink");
+const quickContinueLink = document.getElementById("quickContinueLink");
 const toast = document.getElementById("toast");
+const dashboardNavLinks = Array.from(document.querySelectorAll("[data-dashboard-nav]"));
+const dashboardMobilePanel = document.getElementById("dashboardMobilePanel");
+const dashboardMobileMenu = document.getElementById("dashboardMobileMenu");
+const PROGRESS_KEY = "aix_learning_progress_v1";
 
 let toastTimer = null;
 
@@ -54,22 +64,136 @@ function requireToken() {
   if (!token()) window.location.replace("/login");
 }
 
+function courseStartUrl(courseId) {
+  return `/course/${encodeURIComponent(courseId)}/start`;
+}
+
+function courseLearnUrl(courseId, moduleIndex = 0) {
+  return `/course/${encodeURIComponent(courseId)}/learn?module=${Math.max(Number(moduleIndex) || 0, 0)}&ready=1`;
+}
+
+function learningEntryUrl(href, courseId) {
+  const value = String(href || "");
+  const match = value.match(/^\/course\/([^/?#]+)\/content(?:[?#].*)?$/);
+  if (match) return courseStartUrl(decodeURIComponent(match[1]));
+  return value || courseStartUrl(courseId);
+}
+
+function numberFromText(value) {
+  const match = String(value || "").match(/\d+/);
+  return match ? Number(match[0]) : 0;
+}
+
+function readLearningProgress() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function mergeServerProgress(progressList = []) {
+  if (!Array.isArray(progressList) || !progressList.length) return;
+  const store = readLearningProgress();
+  const courses = store.courses && typeof store.courses === "object" ? store.courses : {};
+
+  progressList.forEach((progress) => {
+    if (!progress?.courseId) return;
+    const existing = courses[progress.courseId] || {};
+    const serverTime = Date.parse(progress.updatedAt || 0);
+    const localTime = Date.parse(existing.updatedAt || 0);
+    const shouldUseServer = !existing.courseId
+      || Number(progress.completedCount || 0) > Number(existing.completedCount || 0)
+      || serverTime >= localTime;
+    if (!shouldUseServer) return;
+
+    courses[progress.courseId] = {
+      ...existing,
+      ...progress,
+      completedCount: Number(progress.completedCount || 0),
+      totalModules: Number(progress.totalModules || 0),
+      activeIndex: Number(progress.activeIndex || 0)
+    };
+  });
+
+  const latestCourseId = Object.values(courses)
+    .sort((a, b) => Date.parse(b.updatedAt || 0) - Date.parse(a.updatedAt || 0))[0]?.courseId || store.latestCourseId;
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify({
+    ...store,
+    latestCourseId,
+    courses
+  }));
+}
+
+function courseLearningProgress(course) {
+  const store = readLearningProgress();
+  const record = store.courses?.[course.id] || {};
+  const total = Math.max(
+    Number(record.totalModules) || 0,
+    Number(course.lessonsCount) || 0,
+    numberFromText(course.lessons)
+  );
+  const completedRaw = Number(record.completedCount) || 0;
+  const completed = total ? Math.min(completedRaw, total) : completedRaw;
+  const activeIndex = Math.min(
+    Math.max(Number(record.activeIndex) || 0, 0),
+    Math.max((total || 1) - 1, 0)
+  );
+  const percent = total ? Math.round((completed / total) * 100) : 0;
+  const started = completed > 0;
+  return {
+    ...record,
+    activeIndex,
+    completedCount: completed,
+    totalModules: total,
+    percent,
+    started,
+    url: started ? courseLearnUrl(course.id, activeIndex) : courseStartUrl(course.id)
+  };
+}
+
+function latestLearningProgress(courses = []) {
+  const candidates = courses.map((course) => ({
+    course,
+    progress: courseLearningProgress(course)
+  }));
+  return candidates
+    .filter((item) => item.progress.started)
+    .sort((a, b) => Date.parse(b.progress.updatedAt || 0) - Date.parse(a.progress.updatedAt || 0))[0]
+    || candidates[0]
+    || null;
+}
+
+function progressLabel(progress) {
+  if (!progress?.started) return "ยังไม่ได้เริ่มเรียน";
+  if (!progress.totalModules) return "เริ่มเรียนแล้ว";
+  return `เรียนไปแล้ว ${progress.completedCount}/${progress.totalModules} บท · ${progress.percent}%`;
+}
+
 function renderCourseCard(course) {
+  const progress = courseLearningProgress(course);
+  const actionLabel = progress.started ? "เรียนต่อ" : "เริ่มเรียน";
+  const badge = progress.started ? `เรียนแล้ว ${progress.percent}%` : (course.status || "พร้อมเรียน");
   return `
-    <article class="course-card">
+    <article class="course-card member-course-card ${progress.started ? "in-progress" : ""}">
       <div class="course-image">
-        <img src="${course.image || "assets/generated/hero-space-learning.jpg"}" alt="${course.title}" loading="lazy">
-        <span class="course-badge">${course.status || "พร้อมเรียน"}</span>
+        <img src="${escapeHtml(course.image || "assets/generated/hero-space-learning.jpg")}" alt="${escapeHtml(course.title)}" loading="lazy">
+        <span class="course-badge">${escapeHtml(badge)}</span>
       </div>
       <div class="course-body">
         <span class="provider">AiX Club</span>
-        <h3>${course.title}</h3>
-        <p>${course.description || course.subtitle || ""}</p>
-        <div class="course-meta">
-          <span><i class="fa-regular fa-clock"></i>${course.duration || "-"}</span>
-          <span><i class="fa-solid fa-list-check"></i>${course.lessons || "-"}</span>
+        <h3>${escapeHtml(course.title)}</h3>
+        <p>${escapeHtml(course.description || course.subtitle || "")}</p>
+        <div class="course-progress-row">
+          <div><span style="width:${progress.percent}%"></span></div>
+          <strong>${escapeHtml(progressLabel(progress))}</strong>
         </div>
-        <a class="primary-btn full" href="/course/${course.id}/content">เข้าเรียน</a>
+        <div class="course-meta">
+          <span><i class="fa-regular fa-clock"></i>${escapeHtml(course.duration || "-")}</span>
+          <span><i class="fa-solid fa-list-check"></i>${escapeHtml(course.lessons || "-")}</span>
+        </div>
+        <a class="primary-btn full" href="${escapeHtml(progress.url)}">${actionLabel}</a>
       </div>
     </article>
   `;
@@ -134,6 +258,49 @@ function paymentRecordMethodLabel(method = "") {
   if (value.includes("card")) return "บัตรเครดิต / เดบิต";
   if (value.includes("promptpay")) return "PromptPay";
   return value ? escapeHtml(method) : "Stripe";
+}
+
+function renderContinueLearning(paid, courses = [], expired = false) {
+  if (!continueLearningTitle || !continueLearningLink) return;
+
+  if (!paid) {
+    continueLearningTitle.textContent = expired ? "สมาชิกหมดอายุแล้ว" : "ยังไม่ได้ปลดล็อกคอร์ส";
+    continueLearningMeta.textContent = expired
+      ? "ต่ออายุสมาชิกเพื่อกลับเข้าเรียนต่อจากบทล่าสุด"
+      : "ชำระเงินเพื่อเริ่มเรียนและให้ระบบจำบทล่าสุด";
+    continueProgressBar.style.width = "0%";
+    continueProgressText.textContent = "0%";
+    continueLearningLink.href = "/payment";
+    continueLearningLink.textContent = expired ? "ต่ออายุสมาชิก" : "ชำระเงินเพื่อเข้าเรียน";
+    if (quickContinueLink) quickContinueLink.href = "/payment";
+    quickContinueLink?.querySelector("span") && (quickContinueLink.querySelector("span").textContent = expired ? "ต่ออายุสมาชิก" : "ชำระเงินก่อนเรียน");
+    return;
+  }
+
+  const latest = latestLearningProgress(courses);
+  if (!latest) {
+    continueLearningTitle.textContent = "ยังไม่มีคอร์สพร้อมเรียน";
+    continueLearningMeta.textContent = "เมื่อมีคอร์สใหม่ ระบบจะแสดงปุ่มเรียนต่อที่นี่";
+    continueProgressBar.style.width = "0%";
+    continueProgressText.textContent = "0%";
+    continueLearningLink.href = "#courses";
+    continueLearningLink.textContent = "ดูคอร์สของฉัน";
+    if (quickContinueLink) quickContinueLink.href = "#courses";
+    quickContinueLink?.querySelector("span") && (quickContinueLink.querySelector("span").textContent = "ดูคอร์สของฉัน");
+    return;
+  }
+
+  const { course, progress } = latest;
+  continueLearningTitle.textContent = course.title;
+  continueLearningMeta.textContent = progress.started
+    ? `บทล่าสุด: ${progress.moduleTitle || `รายการที่ ${progress.activeIndex + 1}`}`
+    : "เริ่มคอร์สนี้เป็นคอร์สแรก";
+  continueProgressBar.style.width = `${progress.percent}%`;
+  continueProgressText.textContent = progress.started ? `${progress.percent}%` : "0%";
+  continueLearningLink.href = progress.url;
+  continueLearningLink.textContent = progress.started ? "เรียนต่อจากล่าสุด" : "เริ่มเรียน";
+  if (quickContinueLink) quickContinueLink.href = progress.url;
+  quickContinueLink?.querySelector("span") && (quickContinueLink.querySelector("span").textContent = progress.started ? "เรียนต่อจากล่าสุด" : "เริ่มเรียน");
 }
 
 function renderPaymentHistory(payments = [], paid = false) {
@@ -222,14 +389,24 @@ function renderSchedule(paid, schedules = []) {
     return;
   }
 
-  memberSchedule.innerHTML = schedules.map((item) => `
-    <article class="member-schedule-card">
-      <span><i class="fa-regular fa-calendar-check"></i>${formatDateTime(item.startsAt)}</span>
-      <h3>${item.title}</h3>
-      <p>${item.description || item.courseTitle || "AiX Live Class"}</p>
-      <a class="secondary-btn" href="${item.meetingUrl || `/course/${item.courseId}/content`}">เข้าห้องเรียน</a>
+  memberSchedule.innerHTML = schedules.map((item) => {
+    const status = scheduleStatus(item.startsAt, item.endsAt);
+    return `
+    <article class="member-schedule-card live-class-card ${status.className}">
+      <div class="live-class-top">
+        <span class="live-class-badge"><i class="fa-solid fa-video"></i> สอนสดออนไลน์</span>
+        <strong>${escapeHtml(status.label)}</strong>
+      </div>
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.description || item.courseTitle || "AiX Live Class")}</p>
+      <div class="live-class-meta">
+        <span><i class="fa-regular fa-calendar-check"></i>${formatDateTime(item.startsAt)}</span>
+        ${item.courseTitle ? `<span><i class="fa-solid fa-graduation-cap"></i>${escapeHtml(item.courseTitle)}</span>` : ""}
+      </div>
+      <a class="primary-btn full" href="${escapeHtml(learningEntryUrl(item.meetingUrl, item.courseId))}">${status.live ? "เข้าห้องสอนสดตอนนี้" : "เตรียมเข้าเรียนสด"}</a>
     </article>
-  `).join("");
+  `;
+  }).join("");
 }
 
 function renderNotifications(paid, notifications = []) {
@@ -243,16 +420,20 @@ function renderNotifications(paid, notifications = []) {
     return;
   }
 
-  memberAlerts.innerHTML = notifications.slice(0, 4).map((notice) => `
-    <article class="member-alert-card ${notice.status === "unread" ? "unread" : ""}">
-      <span><i class="fa-regular fa-bell"></i></span>
+  memberAlerts.innerHTML = notifications.slice(0, 4).map((notice) => {
+    const isLiveNotice = Boolean(notice.scheduleId) || /ตาราง|สอน|เรียนสด|live/i.test(`${notice.title} ${notice.message}`);
+    return `
+    <article class="member-alert-card ${notice.status === "unread" ? "unread" : ""} ${isLiveNotice ? "live-notice-card" : ""}">
+      <span><i class="${isLiveNotice ? "fa-solid fa-video" : "fa-regular fa-bell"}"></i></span>
       <div>
-        <strong>${notice.title}</strong>
-        <small>${notice.message}</small>
+        ${isLiveNotice ? `<em>สอนสดออนไลน์</em>` : ""}
+        <strong>${escapeHtml(notice.title)}</strong>
+        <small>${escapeHtml(notice.message)}</small>
       </div>
       ${notice.status === "unread" ? `<button type="button" onclick="markNotificationRead('${notice.id}')">อ่านแล้ว</button>` : ""}
     </article>
-  `).join("");
+  `;
+  }).join("");
 }
 
 function formatDateTime(value) {
@@ -262,8 +443,26 @@ function formatDateTime(value) {
   return date.toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+function scheduleStatus(startsAt, endsAt) {
+  const start = Date.parse(startsAt);
+  const end = Date.parse(endsAt);
+  if (Number.isNaN(start)) return { label: "รอตารางเวลา", className: "", live: false };
+  const now = Date.now();
+  const liveEnd = Number.isNaN(end) ? start + (2 * 60 * 60 * 1000) : end;
+  if (now >= start && now <= liveEnd) return { label: "กำลังสอนสด", className: "is-live", live: true };
+  const diff = start - now;
+  if (diff < 0) return { label: "เพิ่งจบคลาส", className: "is-recent", live: false };
+  const minutes = Math.round(diff / 60000);
+  if (minutes < 60) return { label: `เริ่มใน ${minutes} นาที`, className: "is-soon", live: false };
+  const hours = Math.round(diff / 3600000);
+  if (hours < 24) return { label: `วันนี้ · อีก ${hours} ชม.`, className: "is-soon", live: false };
+  const days = Math.ceil(diff / 86400000);
+  return { label: `อีก ${days} วัน`, className: "", live: false };
+}
+
 function renderDashboard(data) {
-  const { member, payment, courses, resources = [], schedule = [], notifications = [], payments = [] } = data;
+  const { member, payment, courses, resources = [], schedule = [], notifications = [], payments = [], progress = [] } = data;
+  mergeServerProgress(progress);
   localStorage.setItem(SESSION_KEY, JSON.stringify(member));
 
   memberAvatar.src = member.avatarUrl || "AiX%20logo/iconblack.png";
@@ -288,6 +487,7 @@ function renderDashboard(data) {
   paymentMethodText.textContent = expired ? "หมดอายุ" : paymentMethodLabel(member);
   expiresAtText.textContent = paid || expired ? formatDate(payment.expiresAt) : "หลังชำระเงิน";
   coursesCountText.textContent = `${courses.length.toLocaleString("th-TH")} คอร์ส`;
+  renderContinueLearning(paid, courses, expired);
 
   courseSummary.textContent = paid
     ? `คุณมีสิทธิ์เข้าเรียน ${courses.length} คอร์ส`
@@ -297,10 +497,11 @@ function renderDashboard(data) {
   memberCourses.innerHTML = paid
     ? courses.map(renderCourseCard).join("")
     : `<article class="resource-card"><h3>${expired ? "สมาชิกหมดอายุแล้ว" : "ยังไม่ได้ปลดล็อกคอร์ส"}</h3><p>${expired ? "ต่ออายุสมาชิกเพื่อกลับเข้าเรียนคอร์ส AiX Club" : "กดชำระเงินเพื่อเข้าเรียนคอร์ส AiX Club ทั้งหมดที่เปิดให้สมาชิก"}</p></article>`;
-  renderNotifications(paid, notifications);
-  renderPaymentHistory(payments, paid);
   renderSchedule(paid, schedule);
+  renderPaymentHistory(payments, paid);
   renderResources(paid, resources);
+  renderNotifications(paid, notifications);
+  document.body.classList.add("dashboard-ready");
 }
 
 async function loadDashboard() {
@@ -336,11 +537,49 @@ async function logout() {
   window.location.replace("/index.html");
 }
 
-document.getElementById("dashboardMobileMenu")?.addEventListener("click", () => {
-  document.getElementById("dashboardMobilePanel")?.classList.toggle("open");
+function setActiveDashboardNav(id) {
+  dashboardNavLinks.forEach((link) => {
+    const linkId = link.getAttribute("href")?.replace("#", "");
+    link.classList.toggle("active", linkId === id);
+  });
+}
+
+function setupDashboardNav() {
+  if (!dashboardNavLinks.length) return;
+
+  dashboardNavLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      const id = link.getAttribute("href")?.replace("#", "");
+      if (id) setActiveDashboardNav(id);
+      dashboardMobilePanel?.classList.remove("open");
+    });
+  });
+
+  const sections = [...new Set(dashboardNavLinks
+    .map((link) => document.querySelector(link.getAttribute("href")))
+    .filter(Boolean))];
+
+  if (!("IntersectionObserver" in window) || !sections.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (visible?.target?.id) setActiveDashboardNav(visible.target.id);
+  }, {
+    rootMargin: "-25% 0px -58% 0px",
+    threshold: [0.12, 0.35, 0.65]
+  });
+
+  sections.forEach((section) => observer.observe(section));
+}
+
+dashboardMobileMenu?.addEventListener("click", () => {
+  dashboardMobilePanel?.classList.toggle("open");
 });
 
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
 document.getElementById("mobileLogoutBtn")?.addEventListener("click", logout);
 
+setupDashboardNav();
 loadDashboard();
