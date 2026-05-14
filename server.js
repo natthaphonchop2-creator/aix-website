@@ -714,6 +714,81 @@ function normalizeStoredLearningLinks() {
 normalizeStoredLearningLinks();
 db.prepare("UPDATE member_resources SET url = '/tools-box#resources' WHERE url = '/dashboard'").run();
 
+function liveClassMeetUrl(dateKey) {
+  return String(process.env[`LIVE_CLASS_MEET_${dateKey}`] || process.env.LIVE_CLASS_GOOGLE_MEET_URL || '').trim();
+}
+
+function upsertDefaultLiveSchedules() {
+  const now = new Date().toISOString();
+  const schedules = [
+    {
+      id: 'aix-live-2026-05-16',
+      courseId: 'manus-ai',
+      title: 'สอนสดออนไลน์: ทดสอบ Live Classroom วันที่ 16',
+      description: 'ทดสอบระบบเรียนสดผ่านเว็บ AiX Club พร้อมห้อง Google Meet สำหรับสมาชิก',
+      startsAt: '2026-05-16T20:00:00+07:00',
+      endsAt: '2026-05-16T22:00:00+07:00',
+      meetingUrl: liveClassMeetUrl('2026_05_16')
+    },
+    {
+      id: 'aix-live-2026-05-17',
+      courseId: 'manus-ai',
+      title: 'สอนสดออนไลน์: Workshop AI Agent วันที่ 17',
+      description: 'ทดลองสอนสดและใช้งาน Live Room สำหรับเรียนผ่านเว็บ พร้อม Google Meet',
+      startsAt: '2026-05-17T20:00:00+07:00',
+      endsAt: '2026-05-17T22:00:00+07:00',
+      meetingUrl: liveClassMeetUrl('2026_05_17')
+    },
+    {
+      id: 'aix-live-2026-05-18',
+      courseId: 'manus-ai',
+      title: 'สอนสดออนไลน์: Q&A และทดลองระบบเรียนสด วันที่ 18',
+      description: 'ทดสอบ flow เข้าเรียนสดผ่าน Dashboard, Live Room, Google Meet และหน้าเรียนประกอบ',
+      startsAt: '2026-05-18T20:00:00+07:00',
+      endsAt: '2026-05-18T22:00:00+07:00',
+      meetingUrl: liveClassMeetUrl('2026_05_18')
+    }
+  ];
+
+  const upsert = db.prepare(`
+    INSERT INTO class_schedules (
+      id, courseId, title, description, startsAt, endsAt, meetingUrl, notifyBeforeMinutes, notifyStatus, createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, 1440, 'scheduled', ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      courseId = excluded.courseId,
+      title = excluded.title,
+      description = excluded.description,
+      startsAt = excluded.startsAt,
+      endsAt = excluded.endsAt,
+      meetingUrl = CASE
+        WHEN excluded.meetingUrl != '' THEN excluded.meetingUrl
+        ELSE class_schedules.meetingUrl
+      END,
+      notifyBeforeMinutes = excluded.notifyBeforeMinutes,
+      notifyStatus = excluded.notifyStatus,
+      updatedAt = excluded.updatedAt
+  `);
+
+  const tx = db.transaction(() => {
+    schedules.forEach((schedule) => {
+      upsert.run(
+        schedule.id,
+        schedule.courseId,
+        schedule.title,
+        schedule.description,
+        new Date(schedule.startsAt).toISOString(),
+        new Date(schedule.endsAt).toISOString(),
+        schedule.meetingUrl,
+        now,
+        now
+      );
+    });
+  });
+  tx();
+}
+
+upsertDefaultLiveSchedules();
+
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
@@ -1972,6 +2047,31 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
   });
 });
 
+app.get('/api/member/schedules/:id', requireMemberSession, (req, res) => {
+  const access = memberAccess(req.member);
+  if (!access.active) {
+    return res.status(402).json({
+      error: access.expired ? 'สมาชิกหมดอายุแล้ว กรุณาต่ออายุเพื่อเข้าเรียนสด' : 'กรุณาชำระเงินเพื่อเข้าเรียนสด',
+      paymentRequired: true,
+      expired: access.expired,
+      expiresAt: access.expiresAt
+    });
+  }
+
+  const schedule = getScheduleById(req.params.id);
+  if (!schedule) return res.status(404).json({ error: 'ไม่พบตารางเรียนสดนี้' });
+
+  const courseRow = schedule.courseId
+    ? db.prepare('SELECT * FROM courses WHERE id = ? AND featured = 1').get(schedule.courseId)
+    : null;
+  const course = courseRow ? publicCourse(courseRow) : null;
+  res.json({
+    schedule,
+    course,
+    learningUrl: course ? `/course/${encodeURIComponent(course.id)}/learn?module=0&ready=1` : '/dashboard#courses'
+  });
+});
+
 app.get('/api/member/notifications', requireMemberSession, (req, res) => {
   ensureScheduleNotifications(req.member);
   const notifications = db.prepare(`
@@ -2447,6 +2547,16 @@ function getUpcomingSchedules(courseId = '') {
   return rows
     .filter((item) => Date.parse(item.startsAt) >= cutoff)
     .map(publicSchedule);
+}
+
+function getScheduleById(scheduleId) {
+  const schedule = db.prepare(`
+    SELECT s.*, c.name as courseTitle
+    FROM class_schedules s
+    LEFT JOIN courses c ON c.id = s.courseId
+    WHERE s.id = ?
+  `).get(scheduleId);
+  return publicSchedule(schedule);
 }
 
 function ensureScheduleNotifications(member) {
@@ -3160,6 +3270,10 @@ app.get('/dashboard', (req, res) => {
 
 app.get('/tools-box', (req, res) => {
   res.sendFile(path.join(__dirname, 'tools-box.html'));
+});
+
+app.get('/live/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'live-class.html'));
 });
 
 app.get('/login', (req, res) => {

@@ -79,6 +79,10 @@ function learningEntryUrl(href, courseId) {
   return value || courseStartUrl(courseId);
 }
 
+function liveRoomUrl(scheduleId) {
+  return `/live/${encodeURIComponent(scheduleId)}`;
+}
+
 function numberFromText(value) {
   const match = String(value || "").match(/\d+/);
   return match ? Number(match[0]) : 0;
@@ -424,8 +428,9 @@ function renderSchedule(paid, schedules = []) {
       <div class="live-class-meta">
         <span><i class="fa-regular fa-calendar-check"></i>${formatDateTime(item.startsAt)}</span>
         ${item.courseTitle ? `<span><i class="fa-solid fa-graduation-cap"></i>${escapeHtml(item.courseTitle)}</span>` : ""}
+        ${item.meetingUrl ? `<span><i class="fa-solid fa-video"></i>Google Meet พร้อม</span>` : `<span><i class="fa-solid fa-link-slash"></i>รอลิงก์ Meet</span>`}
       </div>
-      <a class="primary-btn full" href="${escapeHtml(learningEntryUrl(item.meetingUrl, item.courseId))}">${status.live ? "เข้าห้องสอนสดตอนนี้" : "เตรียมเข้าเรียนสด"}</a>
+      <a class="primary-btn full" href="${escapeHtml(liveRoomUrl(item.id))}">${status.live ? "เข้าห้องสอนสดตอนนี้" : "เตรียมเข้าเรียนสด"}</a>
     </article>
   `;
   }).join("");

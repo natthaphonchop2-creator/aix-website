@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Live Classroom | AiX Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=live-class-1">
+</head>
+<body>
+  <header class="site-header dashboard-header live-header">
+    <div class="container nav-bar">
+      <div class="dashboard-brand-block">
+        <a class="brand" href="/dashboard" aria-label="AiX Club dashboard">
+          <img src="/AiX%20logo/textblack.png" alt="AiX Club">
+        </a>
+        <div class="dashboard-label">
+          <span>Live Classroom</span>
+          <strong>ห้องเรียนสด</strong>
+        </div>
+      </div>
+      <nav class="main-nav dashboard-nav" aria-label="Live navigation">
+        <a class="dashboard-nav-link" href="/dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a>
+        <a class="dashboard-nav-link" href="/dashboard#schedule"><i class="fa-regular fa-calendar-check"></i><span>ตารางสอนสด</span></a>
+        <a class="dashboard-nav-link" href="/tools-box"><i class="fa-solid fa-toolbox"></i><span>Tools Box</span></a>
+      </nav>
+      <div class="nav-actions">
+        <a class="dashboard-home-link" href="/dashboard#courses">ห้องเรียนของฉัน</a>
+      </div>
+      <button class="mobile-menu" id="liveMobileMenu" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <div class="mobile-panel" id="liveMobilePanel">
+      <a href="/dashboard"><i class="fa-solid fa-gauge-high"></i>Dashboard</a>
+      <a href="/dashboard#schedule"><i class="fa-regular fa-calendar-check"></i>ตารางสอนสด</a>
+      <a href="/tools-box"><i class="fa-solid fa-toolbox"></i>Tools Box</a>
+    </div>
+  </header>
+
+  <main class="live-class-page">
+    <section class="section live-class-hero">
+      <div class="container live-class-grid">
+        <article class="live-class-main">
+          <div class="live-class-status" id="liveStatusBadge">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>กำลังโหลดห้องเรียนสด</span>
+          </div>
+          <h1 id="liveTitle">Live Classroom</h1>
+          <p id="liveDescription">กำลังเตรียมข้อมูลคลาสสด</p>
+          <div class="live-class-meta-row">
+            <span><i class="fa-regular fa-calendar-check"></i><strong id="liveDateText">-</strong></span>
+            <span><i class="fa-solid fa-graduation-cap"></i><strong id="liveCourseText">-</strong></span>
+          </div>
+          <div class="live-class-actions">
+            <a class="primary-btn large" id="joinMeetBtn" href="#" target="_blank" rel="noopener">
+              <i class="fa-solid fa-video"></i>&nbsp;เข้า Google Meet
+            </a>
+            <a class="secondary-btn large" id="openLessonBtn" href="/dashboard#courses">
+              <i class="fa-solid fa-book-open-reader"></i>&nbsp;เปิดหน้าเรียนประกอบ
+            </a>
+          </div>
+          <p class="live-class-help" id="liveHelpText">ก่อนเริ่มเรียน แนะนำให้เปิดหน้านี้ไว้คู่กับ Google Meet เพื่อจดโน้ตและกลับเข้าเนื้อหาได้เร็ว</p>
+        </article>
+
+        <aside class="live-class-side">
+          <h2>เตรียมก่อนเข้าเรียนสด</h2>
+          <div class="live-checklist">
+            <label><input type="checkbox"> เช็คกล้องและไมค์ใน Google Meet</label>
+            <label><input type="checkbox"> เปิดหน้าเรียนประกอบไว้ในอีกแท็บ</label>
+            <label><input type="checkbox"> เตรียมคำถามหรือ use case ที่อยากทดลอง</label>
+          </div>
+          <div class="live-countdown">
+            <small>สถานะเวลา</small>
+            <strong id="liveCountdownText">-</strong>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section live-workspace-section">
+      <div class="container live-workspace-grid">
+        <article class="live-note-card">
+          <div class="live-card-head">
+            <span><i class="fa-solid fa-note-sticky"></i></span>
+            <div>
+              <h2>โน้ตระหว่างเรียนสด</h2>
+              <p>บันทึกบนเครื่องนี้อัตโนมัติ ใช้สำหรับทดสอบ flow เรียนสด</p>
+            </div>
+          </div>
+          <textarea id="liveNotes" placeholder="จดสิ่งที่เรียนรู้ คำถาม หรือ prompt ที่อยากลอง..."></textarea>
+        </article>
+        <article class="live-support-card">
+          <div class="live-card-head">
+            <span><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+            <div>
+              <h2>ฟังก์ชันแนะนำสำหรับ Live</h2>
+              <p>ใช้หน้านี้เป็น control room ก่อนต่อยอดเป็นระบบเรียนสดเต็มรูปแบบ</p>
+            </div>
+          </div>
+          <div class="live-feature-list">
+            <span><i class="fa-solid fa-video"></i> ปุ่มเข้า Google Meet เฉพาะสมาชิก</span>
+            <span><i class="fa-solid fa-book-open"></i> เปิดหน้าเรียนประกอบทันที</span>
+            <span><i class="fa-solid fa-bell"></i> แจ้งเตือนจาก Dashboard</span>
+            <span><i class="fa-solid fa-clipboard-check"></i> Checklist ก่อนเริ่มคลาส</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="/site-footer.js?v=live-class-1"></script>
+  <div class="toast" id="toast"></div>
+  <script src="/live-class.js?v=live-class-1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
+  <script src="/site-motion.js?v=live-class-1" defer></script>
+</body>
+</html>
