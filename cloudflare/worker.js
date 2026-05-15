@@ -42,7 +42,15 @@ export default {
     }
 
     const courseContent = pathname.match(/^\/course\/[^/]+\/content$/);
-    const assetPath = courseContent ? "/course-content.html" : HTML_ROUTES.get(pathname);
+    const courseStart = pathname.match(/^\/course\/[^/]+\/start$/);
+    const courseLearn = pathname.match(/^\/course\/[^/]+\/learn$/);
+    const assetPath = courseLearn
+      ? "/course-learn.html"
+      : courseStart
+        ? "/course-start.html"
+        : courseContent
+          ? "/course-content.html"
+          : HTML_ROUTES.get(pathname);
 
     if (assetPath) {
       const assetUrl = new URL(assetPath, url);

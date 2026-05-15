@@ -18,6 +18,8 @@ const prevLessonBtn = document.getElementById("prevLessonBtn");
 const nextLessonBtn = document.getElementById("nextLessonBtn");
 const focusNotesBtn = document.getElementById("focusNotesBtn");
 const backToCourseLink = document.getElementById("backToCourseLink");
+const teacherKbLabel = document.getElementById("teacherKbLabel");
+const teacherKbSummary = document.getElementById("teacherKbSummary");
 const learnAiMessages = document.getElementById("learnAiMessages");
 const learnAiForm = document.getElementById("learnAiForm");
 const learnAiInput = document.getElementById("learnAiInput");
@@ -222,16 +224,84 @@ function renderReading(module, index) {
 
 function aiSeedMessage(module) {
   const firstLesson = module.lessons?.[0] || "เริ่มจากการทำความเข้าใจเป้าหมายของบทนี้";
-  return `บทนี้เริ่มจาก "${firstLesson}" ถ้าต้องการ ผมช่วยสรุปเป็น checklist, prompt ตัวอย่าง หรือแผนลงมือทำ 10 นาทีได้`;
+  return `โหลด knowledge base ของบทนี้แล้ว: "${firstLesson}"\nพิมพ์คำถาม ส่งคำตอบให้ตรวจ หรือใช้คำสั่งด้านบนเพื่อเริ่มเรียนแบบมีอาจารย์ AI ประกบ`;
+}
+
+function lessonKnowledgeSummary(module) {
+  const points = module.lessons || [];
+  return `
+    <span>lesson-kb/${escapeHtml(state.course?.id || "course")}/${state.activeIndex + 1}</span>
+    <strong>${escapeHtml(module.title)}</strong>
+    <small>${points.length} ประเด็นในบทเรียน · ${escapeHtml(module.time || "บทเรียน")}</small>
+  `;
 }
 
 function renderAi(module) {
+  teacherKbLabel.textContent = `KB: ${module.title}`;
+  teacherKbSummary.innerHTML = lessonKnowledgeSummary(module);
   learnAiMessages.innerHTML = `
-    <article class="learn-ai-message assistant">
-      <strong>AiX Coach</strong>
+    <article class="learn-ai-message assistant" data-role="assistant">
+      <strong>teacher@aix</strong>
       <p>${escapeHtml(aiSeedMessage(module))}</p>
     </article>
   `;
+}
+
+function appendAiMessage(role, content, label) {
+  const normalizedRole = role.includes("user") ? "user" : "assistant";
+  const article = document.createElement("article");
+  article.className = `learn-ai-message ${role}`;
+  article.dataset.role = normalizedRole;
+  article.innerHTML = `
+    <strong>${escapeHtml(label || (normalizedRole === "user" ? "student@aix" : "teacher@aix"))}</strong>
+    <p>${escapeHtml(content)}</p>
+  `;
+  learnAiMessages.appendChild(article);
+  learnAiMessages.scrollTop = learnAiMessages.scrollHeight;
+  return article;
+}
+
+function setAiBusy(isBusy) {
+  learnAiInput.disabled = isBusy;
+  const submit = learnAiForm?.querySelector("button[type='submit']");
+  if (submit) {
+    submit.disabled = isBusy;
+    submit.textContent = isBusy ? "run..." : "run";
+  }
+  document.querySelectorAll("[data-ai-command]").forEach((button) => {
+    button.disabled = isBusy;
+  });
+}
+
+function collectAiHistory() {
+  return Array.from(learnAiMessages.querySelectorAll(".learn-ai-message"))
+    .slice(-6)
+    .map((item) => ({
+      role: item.dataset.role || "assistant",
+      content: item.querySelector("p")?.textContent || ""
+    }))
+    .filter((item) => item.content);
+}
+
+function detectTeacherMode(question) {
+  if (/^ตรวจ|ตรวจคำตอบ|คำตอบของฉัน|ถูกไหม|ถูกหรือ/.test(question)) return "check";
+  if (/แบบฝึกหัด|ฝึก|quiz/i.test(question)) return "practice";
+  if (/สรุป|summary/i.test(question)) return "summarize";
+  return "ask";
+}
+
+async function requestAiTeacher(question, mode) {
+  const response = await apiRequest(`/api/courses/${encodeURIComponent(state.course.id)}/teacher-chat`, {
+    method: "POST",
+    body: JSON.stringify({
+      moduleIndex: state.activeIndex,
+      message: question,
+      mode,
+      notes: lessonNotes.value,
+      history: collectAiHistory()
+    })
+  });
+  return response;
 }
 
 function localAiAnswer(question, module) {
@@ -342,10 +412,45 @@ learnAiForm?.addEventListener("submit", (event) => {
   const question = learnAiInput.value.trim();
   const module = state.modules[state.activeIndex];
   if (!question || !module) return;
-  learnAiMessages.insertAdjacentHTML("beforeend", `<article class="learn-ai-message user"><strong>คุณ</strong><p>${escapeHtml(question)}</p></article>`);
-  learnAiMessages.insertAdjacentHTML("beforeend", `<article class="learn-ai-message assistant"><strong>AiX Coach</strong><p>${escapeHtml(localAiAnswer(question, module))}</p></article>`);
+  const mode = detectTeacherMode(question);
+  appendAiMessage("user", question, "student@aix");
+  const pending = appendAiMessage("assistant is-loading", "กำลังเรียกอาจารย์ AI และเปิด knowledge base ของบทนี้...", "teacher@aix");
   learnAiInput.value = "";
-  learnAiMessages.scrollTop = learnAiMessages.scrollHeight;
+  setAiBusy(true);
+  requestAiTeacher(question, mode)
+    .then((data) => {
+      pending.classList.remove("is-loading");
+      pending.querySelector("p").textContent = data.answer || localAiAnswer(question, module);
+      if (data.source === "local-fallback") pending.classList.add("fallback");
+    })
+    .catch(() => {
+      pending.classList.remove("is-loading");
+      pending.classList.add("fallback");
+      pending.querySelector("p").textContent = localAiAnswer(question, module);
+      showToast("เชื่อมต่อ AI Teacher ไม่สำเร็จ ระบบใช้คำตอบสำรองจากบทเรียนนี้ก่อน");
+    })
+    .finally(() => {
+      setAiBusy(false);
+      learnAiInput.focus();
+      learnAiMessages.scrollTop = learnAiMessages.scrollHeight;
+    });
+});
+
+document.querySelectorAll("[data-ai-command]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const module = state.modules[state.activeIndex];
+    if (!module) return;
+    const command = button.dataset.aiCommand;
+    if (command === "check") {
+      learnAiInput.value = "ตรวจคำตอบ: ";
+      learnAiInput.focus();
+      return;
+    }
+    learnAiInput.value = command === "practice"
+      ? "สร้างแบบฝึกหัดจากบทนี้ 3 ข้อ พร้อมเกณฑ์ตรวจคำตอบ"
+      : "สรุปบทนี้เป็น checklist ที่นำไปทำตามได้";
+    learnAiForm.requestSubmit();
+  });
 });
 
 initLearnPage();

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/styles.css?v=receipt-fix-1">
+  <link rel="stylesheet" href="/styles.css?v=ai-teacher-1">
 </head>
 <body class="learn-body">
   <header class="learn-topbar">
@@ -66,27 +66,38 @@
           </div>
         </article>
 
-        <aside class="learn-ai-card">
-          <div class="learn-ai-head">
-            <span><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-            <div>
-              <strong>AiX Coach</strong>
-              <small>ถามเพื่อสรุปบทเรียน วางแผนลงมือทำ หรือขอตัวอย่าง prompt</small>
+        <aside class="learn-ai-card learn-terminal-card" aria-label="AiX Teacher Terminal">
+          <div class="learn-terminal-top">
+            <div class="terminal-window-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
+            <div>
+              <strong>AiX Teacher Terminal</strong>
+              <small id="teacherKbLabel">KB: กำลังโหลดบทเรียน</small>
+            </div>
+          </div>
+          <div class="learn-terminal-kb" id="teacherKbSummary"></div>
+          <div class="learn-terminal-actions" aria-label="AI teacher commands">
+            <button type="button" data-ai-command="summarize">สรุปบทนี้</button>
+            <button type="button" data-ai-command="practice">สร้างแบบฝึกหัด</button>
+            <button type="button" data-ai-command="check">ตรวจคำตอบ</button>
           </div>
           <div class="learn-ai-messages" id="learnAiMessages"></div>
           <form class="learn-ai-form" id="learnAiForm">
-            <input id="learnAiInput" type="text" placeholder="ถาม AI เกี่ยวกับบทนี้">
-            <button type="submit">ถาม</button>
+            <label for="learnAiInput">student@aix:~$</label>
+            <input id="learnAiInput" type="text" placeholder="ถามบทเรียน หรือพิมพ์ ตรวจคำตอบ: ...">
+            <button type="submit">run</button>
           </form>
         </aside>
       </div>
     </section>
   </main>
 
-  <script src="/site-footer.js?v=receipt-fix-1"></script>
+  <script src="/site-footer.js?v=mascot-1"></script>
   <div class="toast" id="toast"></div>
-  <script src="/course-learn.js?v=learn-progress-3"></script>
+  <script src="/course-learn.js?v=ai-teacher-1"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
   <script src="/site-motion.js?v=receipt-fix-1" defer></script>
 </body>

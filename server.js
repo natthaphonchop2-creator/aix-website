@@ -72,17 +72,19 @@ function createDatabase(filename) {
 }
 
 function loadLocalEnv() {
-  const envPath = path.join(__dirname, '.env');
-  if (!fs.existsSync(envPath)) return;
+  ['.env', '.env.local'].forEach((filename) => {
+    const envPath = path.join(__dirname, filename);
+    if (!fs.existsSync(envPath)) return;
 
-  fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach((line) => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) return;
-    const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-    if (!match) return;
-    const key = match[1];
-    const value = match[2].replace(/^['"]|['"]$/g, '');
-    if (process.env[key] === undefined) process.env[key] = value;
+    fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+      if (!match) return;
+      const key = match[1];
+      const value = match[2].replace(/^['"]|['"]$/g, '');
+      if (process.env[key] === undefined || filename === '.env.local') process.env[key] = value;
+    });
   });
 }
 
@@ -112,6 +114,7 @@ const AUTH_SECRET = process.env.AUTH_SECRET || (
 );
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || (IS_PRODUCTION ? '' : 'admin@aix.club');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (IS_PRODUCTION ? '' : 'admin1234');
+const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS || 8 * 60 * 60 * 1000);
 const MEMBER_PRICE = Number(process.env.MEMBER_PRICE || 1999);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -121,6 +124,8 @@ const STRIPE_PAYMENT_METHOD_TYPES = (process.env.STRIPE_PAYMENT_METHOD_TYPES || 
   .split(',')
   .map((item) => item.trim())
   .filter(Boolean);
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 let googleJwksCache = { expiresAt: 0, keys: [] };
 let stripeClient = null;
 
@@ -165,6 +170,11 @@ app.use((req, res, next) => {
 });
 app.use((req, res, next) => {
   const blockedStaticFiles = new Set([
+    '.env',
+    '.env.local',
+    '.env.production',
+    '.env.development',
+    '.gitignore',
     'server.js',
     'package.json',
     'package-lock.json',
@@ -176,7 +186,9 @@ app.use((req, res, next) => {
     'data.db-wal'
   ]);
   const requestedFile = path.basename(req.path);
-  if (blockedStaticFiles.has(requestedFile)) return res.sendStatus(404);
+  if (blockedStaticFiles.has(requestedFile) || requestedFile.startsWith('.env') || req.path.split('/').includes('.git')) {
+    return res.sendStatus(404);
+  }
   next();
 });
 app.use('/uploads', express.static(UPLOAD_ROOT));
@@ -855,18 +867,18 @@ function verifyPassword(password, storedHash) {
   return safeTextCompare(candidate, hash);
 }
 
-function createAuthToken(member) {
+function createSignedToken(payloadData, ttlMs) {
+  const now = Date.now();
   const payload = Buffer.from(JSON.stringify({
-    sub: member.id,
-    email: member.email,
-    exp: Date.now() + AUTH_SESSION_TTL_MS,
-    iat: Date.now()
+    ...payloadData,
+    exp: now + ttlMs,
+    iat: now
   })).toString('base64url');
   const signature = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('base64url');
   return `${payload}.${signature}`;
 }
 
-function verifyAuthToken(token) {
+function verifySignedToken(token) {
   try {
     const [payload, signature] = String(token || '').split('.');
     if (!payload || !signature) return null;
@@ -880,9 +892,34 @@ function verifyAuthToken(token) {
   }
 }
 
-function getRequestToken(req) {
+function createAuthToken(member) {
+  return createSignedToken({
+    sub: member.id,
+    email: member.email
+  }, AUTH_SESSION_TTL_MS);
+}
+
+function verifyAuthToken(token) {
+  const data = verifySignedToken(token);
+  return data?.sub ? data : null;
+}
+
+function createAdminToken() {
+  return createSignedToken({
+    role: 'admin',
+    email: ADMIN_EMAIL
+  }, ADMIN_SESSION_TTL_MS);
+}
+
+function getBearerToken(req) {
   const auth = req.get('authorization') || '';
   if (auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
+  return '';
+}
+
+function getRequestToken(req) {
+  const bearer = getBearerToken(req);
+  if (bearer) return bearer;
   const cookie = req.get('cookie') || '';
   const match = cookie.match(/(?:^|;\s*)aix_session=([^;]+)/);
   return match ? decodeURIComponent(match[1]) : '';
@@ -908,6 +945,19 @@ function requireMemberSession(req, res, next) {
   }
 
   req.member = member;
+  next();
+}
+
+function requireAdminSession(req, res, next) {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า ADMIN_EMAIL หรือ ADMIN_PASSWORD บน server' });
+  }
+
+  const data = verifySignedToken(getBearerToken(req));
+  if (!data || data.role !== 'admin' || data.email !== ADMIN_EMAIL) {
+    return res.status(401).json({ error: 'Admin session หมดอายุ กรุณาเข้าสู่ระบบใหม่' });
+  }
+
   next();
 }
 
@@ -1717,18 +1767,18 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
-app.get('/api/members', (req, res) => {
+app.get('/api/members', requireAdminSession, (req, res) => {
   const members = db.prepare('SELECT * FROM members ORDER BY createdAt DESC').all();
   res.json(members.map(publicMember));
 });
 
-app.get('/api/members/:id', (req, res) => {
+app.get('/api/members/:id', requireAdminSession, (req, res) => {
   const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id);
   if (!member) return res.status(404).json({ error: 'ไม่พบสมาชิก' });
   res.json(publicMember(member));
 });
 
-app.put('/api/members/:id', (req, res) => {
+app.put('/api/members/:id', requireAdminSession, (req, res) => {
   const existing = db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบสมาชิก' });
 
@@ -1786,7 +1836,7 @@ app.put('/api/members/:id', (req, res) => {
   res.json(publicMember(member));
 });
 
-app.delete('/api/members/:id', (req, res) => {
+app.delete('/api/members/:id', requireAdminSession, (req, res) => {
   const result = db.prepare('DELETE FROM members WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'ไม่พบสมาชิก' });
   res.json({ success: true });
@@ -2528,6 +2578,167 @@ function courseModules(publicData, replays = []) {
   }];
 }
 
+function truncateText(value = '', max = 2200) {
+  const text = String(value || '').trim();
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+}
+
+function lessonKnowledgeBase(publicData, modules = [], resources = [], moduleIndex = 0) {
+  const index = Math.min(Math.max(Number(moduleIndex) || 0, 0), Math.max(modules.length - 1, 0));
+  const module = modules[index] || modules[0] || {
+    title: publicData.title || 'บทเรียน',
+    time: publicData.duration || '',
+    lessons: []
+  };
+  const relevantResources = resources
+    .filter((resource) => !resource.courseId || resource.courseId === publicData.id)
+    .slice(0, 8)
+    .map((resource) => ({
+      title: resource.title,
+      type: resource.type,
+      description: resource.description || '',
+      tags: Array.isArray(resource.tags) ? resource.tags.slice(0, 5) : []
+    }));
+
+  return {
+    courseId: publicData.id,
+    courseTitle: publicData.title,
+    courseOverview: truncateText(publicData.overview || publicData.description || '', 1400),
+    courseOutcomes: (publicData.outcomes || []).slice(0, 8),
+    moduleIndex: index,
+    moduleTitle: module.title,
+    moduleTime: module.time || '',
+    lessonPoints: (module.lessons || []).slice(0, 12),
+    neighboringModules: modules.map((item, itemIndex) => ({
+      index: itemIndex,
+      title: item.title,
+      isActive: itemIndex === index
+    })),
+    resources: relevantResources
+  };
+}
+
+function teacherModeLabel(mode = 'ask') {
+  const map = {
+    ask: 'ถามตอบบทเรียน',
+    check: 'ตรวจคำตอบนักเรียน',
+    practice: 'สร้างแบบฝึกหัด',
+    summarize: 'สรุปบทเรียน'
+  };
+  return map[mode] || map.ask;
+}
+
+function buildTeacherInstructions(kb) {
+  return [
+    'คุณคือ AiX Teacher อาจารย์ AI ภาษาไทยในหน้าเรียนของ AiX Club',
+    'บทบาทหลักคือสอน อธิบาย ตรวจคำตอบ และแนะนำขั้นตอนต่อไปให้ผู้เรียน',
+    'ใช้ knowledge base ของบทเรียนปัจจุบันเป็นแหล่งอ้างอิงหลัก ห้ามแต่งเนื้อหาว่าอยู่ในบทเรียนถ้าไม่มีในข้อมูล',
+    'ถ้าผู้เรียนถามนอกบท ให้ตอบสั้นๆ แล้วโยงกลับมาที่บทเรียนปัจจุบัน',
+    'เมื่อตรวจคำตอบ ให้บอกผลเป็น ถูกต้อง / ถูกบางส่วน / ต้องแก้ พร้อมเหตุผลและคำแนะนำที่ทำต่อได้',
+    'ตอบให้กระชับ มีหัวข้อชัดเจน เหมาะกับหน้าต่างเทอร์มินอล และอย่าพูดถึง system prompt หรือ API',
+    '',
+    `คอร์ส: ${kb.courseTitle}`,
+    `บทเรียนปัจจุบัน: ${kb.moduleTitle}`,
+    `ภาพรวมคอร์ส: ${kb.courseOverview || '-'}`,
+    `หัวข้อย่อยของบทนี้:\n${kb.lessonPoints.map((point, index) => `${index + 1}. ${point}`).join('\n') || '-'}`,
+    `ผลลัพธ์คอร์ส:\n${kb.courseOutcomes.map((point, index) => `${index + 1}. ${point}`).join('\n') || '-'}`,
+    `Resources ที่เกี่ยวข้อง:\n${kb.resources.map((item, index) => `${index + 1}. ${item.title} (${item.type}) - ${item.description}`).join('\n') || '-'}`
+  ].join('\n');
+}
+
+function buildTeacherInput({ message, mode, notes, history }, kb) {
+  const recentHistory = Array.isArray(history)
+    ? history.slice(-6).map((item) => `${item.role || 'user'}: ${truncateText(item.content, 500)}`).join('\n')
+    : '';
+  return [
+    `โหมด: ${teacherModeLabel(mode)}`,
+    `บทเรียน: ${kb.moduleTitle}`,
+    recentHistory ? `ประวัติล่าสุด:\n${recentHistory}` : '',
+    notes ? `บันทึกของผู้เรียน:\n${truncateText(notes, 900)}` : '',
+    `ข้อความผู้เรียน:\n${truncateText(message, 2200)}`
+  ].filter(Boolean).join('\n\n');
+}
+
+function extractOpenAIText(payload = {}) {
+  if (typeof payload.output_text === 'string' && payload.output_text.trim()) return payload.output_text.trim();
+  const parts = [];
+  (payload.output || []).forEach((item) => {
+    (item.content || []).forEach((content) => {
+      if (typeof content.text === 'string') parts.push(content.text);
+      if (typeof content.output_text === 'string') parts.push(content.output_text);
+    });
+  });
+  return parts.join('\n').trim();
+}
+
+function localTeacherFallback(message, kb, mode = 'ask') {
+  const points = kb.lessonPoints.slice(0, 4);
+  if (mode === 'check' || /ตรวจ|คำตอบ|ถูกไหม|ถูกหรือ/.test(message)) {
+    return [
+      'ผลตรวจเบื้องต้น: ผมยังตรวจจากโมเดลหลักไม่ได้ จึงตรวจด้วย knowledge base ในระบบก่อน',
+      points.length ? `สิ่งที่คำตอบควรแตะ: ${points.join(' / ')}` : `คำตอบควรอิงจากหัวข้อ "${kb.moduleTitle}"`,
+      'ลองเขียนคำตอบให้มี 3 ส่วน: เป้าหมาย, วิธีทำ, ผลลัพธ์ที่ตรวจสอบได้ แล้วส่งมาให้ตรวจอีกครั้ง'
+    ].join('\n');
+  }
+  if (mode === 'practice' || /แบบฝึกหัด|ฝึก|quiz/i.test(message)) {
+    return [
+      `แบบฝึกหัดจากบท "${kb.moduleTitle}"`,
+      '1. สรุปหัวข้อนี้ด้วยภาษาของตัวเอง 3 ข้อ',
+      '2. เลือกงานจริง 1 งาน แล้วบอกว่าจะใช้ AI ช่วยตรงจุดไหน',
+      '3. เขียน prompt สั้นๆ เพื่อทดลองแนวคิดนี้'
+    ].join('\n');
+  }
+  if (/สรุป|summary/i.test(message)) {
+    return `สรุปบท "${kb.moduleTitle}": ${points.join(' / ') || kb.courseOverview || 'เริ่มจากภาพรวมของบทนี้ แล้วลงมือทำตัวอย่างเล็กๆ เพื่อเช็กความเข้าใจ'}`;
+  }
+  return `จาก knowledge base ของบท "${kb.moduleTitle}" ให้เริ่มที่ ${points[0] || 'เป้าหมายของบทเรียน'} แล้วเช็กความเข้าใจด้วยการสรุปเป็นขั้นตอนสั้นๆ หากต้องการให้ตรวจคำตอบ ให้พิมพ์ขึ้นต้นว่า "ตรวจคำตอบ:"`;
+}
+
+async function generateTeacherAnswer({ message, mode, notes, history, kb, memberId }) {
+  if (!OPENAI_API_KEY) {
+    return {
+      answer: localTeacherFallback(message, kb, mode),
+      source: 'local-fallback',
+      model: 'local'
+    };
+  }
+
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      instructions: buildTeacherInstructions(kb),
+      input: buildTeacherInput({ message, mode, notes, history }, kb),
+      max_output_tokens: 850,
+      temperature: 0.35,
+      store: false,
+      safety_identifier: crypto.createHash('sha256').update(String(memberId || '')).digest('hex'),
+      metadata: {
+        service: 'aix-teacher',
+        courseId: kb.courseId,
+        moduleIndex: String(kb.moduleIndex)
+      }
+    })
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = payload.error?.message || `OpenAI API error ${response.status}`;
+    throw new Error(message);
+  }
+
+  return {
+    answer: extractOpenAIText(payload) || localTeacherFallback(message, kb, mode),
+    source: 'openai',
+    model: payload.model || OPENAI_MODEL,
+    responseId: payload.id || ''
+  };
+}
+
 function getUpcomingSchedules(courseId = '') {
   const rows = courseId
     ? db.prepare(`
@@ -2644,18 +2855,88 @@ app.get('/api/courses/:id/content', requireMemberSession, (req, res) => {
   });
 });
 
-app.get('/api/courses', (req, res) => {
+app.post('/api/courses/:id/teacher-chat', requireMemberSession, async (req, res) => {
+  const course = db.prepare('SELECT * FROM courses WHERE id = ? AND featured = 1').get(req.params.id);
+  if (!course) return res.status(404).json({ error: 'Course not found' });
+
+  const access = memberAccess(req.member);
+  if (!access.active) {
+    return res.status(402).json({
+      error: access.expired ? 'สมาชิกหมดอายุแล้ว กรุณาต่ออายุเพื่อถาม AiX Teacher' : 'กรุณาชำระเงินเพื่อถาม AiX Teacher',
+      paymentRequired: true,
+      expired: access.expired,
+      expiresAt: access.expiresAt
+    });
+  }
+
+  const message = truncateText(req.body?.message || '', 2400);
+  if (!message) return res.status(400).json({ error: 'กรุณาพิมพ์คำถามหรือคำตอบที่ต้องการให้ตรวจ' });
+
+  const publicData = publicCourse(course);
+  const replays = db.prepare(`
+    SELECT * FROM course_replays
+    WHERE courseId = ? AND visibility = 'members'
+    ORDER BY sortOrder ASC, createdAt DESC
+  `).all(publicData.id).map(publicReplay);
+  const resources = db.prepare(`
+    SELECT * FROM member_resources
+    WHERE visibility = 'members' AND (courseId = '' OR courseId = ?)
+    ORDER BY CASE WHEN courseId = ? THEN 0 ELSE 1 END, sortOrder ASC, createdAt DESC
+  `).all(publicData.id, publicData.id).map(publicResource);
+  const modules = courseModules(publicData, replays);
+  const kb = lessonKnowledgeBase(publicData, modules, resources, req.body?.moduleIndex);
+  const mode = ['ask', 'check', 'practice', 'summarize'].includes(req.body?.mode) ? req.body.mode : 'ask';
+
+  try {
+    const result = await generateTeacherAnswer({
+      message,
+      mode,
+      notes: truncateText(req.body?.notes || '', 1200),
+      history: Array.isArray(req.body?.history) ? req.body.history : [],
+      kb,
+      memberId: req.member.id
+    });
+
+    res.json({
+      ...result,
+      knowledgeBase: {
+        courseId: kb.courseId,
+        courseTitle: kb.courseTitle,
+        moduleIndex: kb.moduleIndex,
+        moduleTitle: kb.moduleTitle,
+        lessonPoints: kb.lessonPoints.length
+      }
+    });
+  } catch (error) {
+    console.error('AiX Teacher failed:', error.message);
+    res.json({
+      answer: localTeacherFallback(message, kb, mode),
+      source: 'local-fallback',
+      model: 'local',
+      warning: 'AI teacher API unavailable; returned lesson fallback instead.',
+      knowledgeBase: {
+        courseId: kb.courseId,
+        courseTitle: kb.courseTitle,
+        moduleIndex: kb.moduleIndex,
+        moduleTitle: kb.moduleTitle,
+        lessonPoints: kb.lessonPoints.length
+      }
+    });
+  }
+});
+
+app.get('/api/courses', requireAdminSession, (req, res) => {
   const courses = db.prepare('SELECT * FROM courses').all();
   res.json(courses.map(publicCourse));
 });
 
-app.get('/api/courses/:id', (req, res) => {
+app.get('/api/courses/:id', requireAdminSession, (req, res) => {
   const course = db.prepare('SELECT * FROM courses WHERE id = ?').get(req.params.id);
   if (!course) return res.status(404).json({ error: 'Course not found' });
   res.json(publicCourse(course));
 });
 
-app.post('/api/courses', (req, res) => {
+app.post('/api/courses', requireAdminSession, (req, res) => {
   const {
     name, price, originalPrice, instructor, level, hours, lessons, image, description,
     type, status, featured
@@ -2693,7 +2974,7 @@ app.post('/api/courses', (req, res) => {
   res.json(publicCourse(course));
 });
 
-app.put('/api/courses/:id', (req, res) => {
+app.put('/api/courses/:id', requireAdminSession, (req, res) => {
   const {
     name, price, originalPrice, instructor, level, hours, lessons, students, rating,
     ratingCount, image, description, type, status, featured
@@ -2728,7 +3009,7 @@ app.put('/api/courses/:id', (req, res) => {
   res.json(publicCourse(course));
 });
 
-app.delete('/api/courses/:id', (req, res) => {
+app.delete('/api/courses/:id', requireAdminSession, (req, res) => {
   const result = db.prepare('DELETE FROM courses WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'Course not found' });
   res.json({ success: true });
@@ -2785,11 +3066,11 @@ function validateCourseId(courseId, allowEmpty = false) {
   return course ? id : null;
 }
 
-app.get('/api/admin/replays', (req, res) => {
+app.get('/api/admin/replays', requireAdminSession, (req, res) => {
   res.json(adminListReplays());
 });
 
-app.post('/api/admin/replays', upload.single('video'), (req, res) => {
+app.post('/api/admin/replays', requireAdminSession, upload.single('video'), (req, res) => {
   const courseId = validateCourseId(req.body.courseId);
   const title = String(req.body.title || '').trim();
   if (!courseId) return res.status(400).json({ error: 'กรุณาเลือกคอร์สที่ถูกต้อง' });
@@ -2825,7 +3106,7 @@ app.post('/api/admin/replays', upload.single('video'), (req, res) => {
   res.json(publicReplay(replay));
 });
 
-app.put('/api/admin/replays/:id', upload.single('video'), (req, res) => {
+app.put('/api/admin/replays/:id', requireAdminSession, upload.single('video'), (req, res) => {
   const existing = db.prepare('SELECT * FROM course_replays WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบคลิปย้อนหลัง' });
 
@@ -2867,7 +3148,7 @@ app.put('/api/admin/replays/:id', upload.single('video'), (req, res) => {
   res.json(publicReplay(replay));
 });
 
-app.delete('/api/admin/replays/:id', (req, res) => {
+app.delete('/api/admin/replays/:id', requireAdminSession, (req, res) => {
   const existing = db.prepare('SELECT * FROM course_replays WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบคลิปย้อนหลัง' });
   removeLocalUpload(existing.filePath);
@@ -2875,11 +3156,11 @@ app.delete('/api/admin/replays/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/admin/resources', (req, res) => {
+app.get('/api/admin/resources', requireAdminSession, (req, res) => {
   res.json(adminListResources());
 });
 
-app.post('/api/admin/resources', upload.single('file'), (req, res) => {
+app.post('/api/admin/resources', requireAdminSession, upload.single('file'), (req, res) => {
   const courseId = validateCourseId(req.body.courseId, true);
   const title = String(req.body.title || '').trim();
   if (courseId === null) return res.status(400).json({ error: 'คอร์สไม่ถูกต้อง' });
@@ -2917,7 +3198,7 @@ app.post('/api/admin/resources', upload.single('file'), (req, res) => {
   res.json(publicResource(resource));
 });
 
-app.put('/api/admin/resources/:id', upload.single('file'), (req, res) => {
+app.put('/api/admin/resources/:id', requireAdminSession, upload.single('file'), (req, res) => {
   const existing = db.prepare('SELECT * FROM member_resources WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบ Resource' });
 
@@ -2963,7 +3244,7 @@ app.put('/api/admin/resources/:id', upload.single('file'), (req, res) => {
   res.json(publicResource(resource));
 });
 
-app.delete('/api/admin/resources/:id', (req, res) => {
+app.delete('/api/admin/resources/:id', requireAdminSession, (req, res) => {
   const existing = db.prepare('SELECT * FROM member_resources WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบ Resource' });
   removeLocalUpload(existing.filePath);
@@ -2971,11 +3252,11 @@ app.delete('/api/admin/resources/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/admin/schedules', (req, res) => {
+app.get('/api/admin/schedules', requireAdminSession, (req, res) => {
   res.json(adminListSchedules());
 });
 
-app.post('/api/admin/schedules', (req, res) => {
+app.post('/api/admin/schedules', requireAdminSession, (req, res) => {
   const courseId = validateCourseId(req.body.courseId);
   const title = String(req.body.title || '').trim();
   const startsAt = String(req.body.startsAt || '').trim();
@@ -3007,7 +3288,7 @@ app.post('/api/admin/schedules', (req, res) => {
   res.json(schedule);
 });
 
-app.put('/api/admin/schedules/:id', (req, res) => {
+app.put('/api/admin/schedules/:id', requireAdminSession, (req, res) => {
   const existing = db.prepare('SELECT * FROM class_schedules WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบตารางเรียน' });
 
@@ -3043,7 +3324,7 @@ app.put('/api/admin/schedules/:id', (req, res) => {
   res.json(schedule);
 });
 
-app.delete('/api/admin/schedules/:id', (req, res) => {
+app.delete('/api/admin/schedules/:id', requireAdminSession, (req, res) => {
   const existing = db.prepare('SELECT id FROM class_schedules WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบตารางเรียน' });
   db.prepare('DELETE FROM notifications WHERE scheduleId = ?').run(req.params.id);
@@ -3087,7 +3368,7 @@ function createNotificationsForSchedule(scheduleId) {
   return created;
 }
 
-app.post('/api/admin/schedules/:id/notify', (req, res) => {
+app.post('/api/admin/schedules/:id/notify', requireAdminSession, (req, res) => {
   const created = createNotificationsForSchedule(req.params.id);
   res.json({ success: true, created });
 });
@@ -3095,12 +3376,12 @@ app.post('/api/admin/schedules/:id/notify', (req, res) => {
 // ============================================================
 // LEADS API
 // ============================================================
-app.get('/api/leads', (req, res) => {
+app.get('/api/leads', requireAdminSession, (req, res) => {
   const leads = db.prepare('SELECT * FROM leads ORDER BY createdAt DESC').all();
   res.json(leads);
 });
 
-app.post('/api/leads', (req, res) => {
+app.post('/api/leads', requireAdminSession, (req, res) => {
   const { firstName, lastName, email, phone, lineId, business, courseId, membership, payment } = req.body;
   if (!firstName || !email) return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบ' });
 
@@ -3113,7 +3394,7 @@ app.post('/api/leads', (req, res) => {
   res.json(lead);
 });
 
-app.put('/api/leads/:id', (req, res) => {
+app.put('/api/leads/:id', requireAdminSession, (req, res) => {
   const { status } = req.body;
   const existing = db.prepare('SELECT * FROM leads WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Lead not found' });
@@ -3126,7 +3407,7 @@ app.put('/api/leads/:id', (req, res) => {
   res.json(lead);
 });
 
-app.delete('/api/leads/:id', (req, res) => {
+app.delete('/api/leads/:id', requireAdminSession, (req, res) => {
   const result = db.prepare('DELETE FROM leads WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'Lead not found' });
   res.json({ success: true });
@@ -3135,20 +3416,20 @@ app.delete('/api/leads/:id', (req, res) => {
 // ============================================================
 // USERS API
 // ============================================================
-app.get('/api/users', (req, res) => {
+app.get('/api/users', requireAdminSession, (req, res) => {
   const users = db.prepare('SELECT id, name, email, tier, enrolledCourses, joinedDate FROM users ORDER BY joinedDate DESC').all();
   users.forEach(u => { u.enrolledCourses = JSON.parse(u.enrolledCourses); });
   res.json(users);
 });
 
-app.get('/api/users/:id', (req, res) => {
+app.get('/api/users/:id', requireAdminSession, (req, res) => {
   const user = db.prepare('SELECT id, name, email, tier, enrolledCourses, joinedDate FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
   user.enrolledCourses = JSON.parse(user.enrolledCourses);
   res.json(user);
 });
 
-app.put('/api/users/:id', (req, res) => {
+app.put('/api/users/:id', requireAdminSession, (req, res) => {
   const { name, tier, enrolledCourses } = req.body;
   const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'User not found' });
@@ -3165,14 +3446,14 @@ app.put('/api/users/:id', (req, res) => {
   res.json(user);
 });
 
-app.delete('/api/users/:id', (req, res) => {
+app.delete('/api/users/:id', requireAdminSession, (req, res) => {
   const result = db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'User not found' });
   res.json({ success: true });
 });
 
 // Enroll course
-app.post('/api/users/:id/enroll', (req, res) => {
+app.post('/api/users/:id/enroll', requireAdminSession, (req, res) => {
   const { courseId } = req.body;
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
@@ -3191,13 +3472,13 @@ app.post('/api/users/:id/enroll', (req, res) => {
 // ============================================================
 // PACKAGES API
 // ============================================================
-app.get('/api/packages', (req, res) => {
+app.get('/api/packages', requireAdminSession, (req, res) => {
   const packages = db.prepare('SELECT * FROM packages').all();
   packages.forEach(p => { p.features = JSON.parse(p.features); p.popular = !!p.popular; p.enabled = !!p.enabled; });
   res.json(packages);
 });
 
-app.put('/api/packages/:id', (req, res) => {
+app.put('/api/packages/:id', requireAdminSession, (req, res) => {
   const { name, price, period, icon, features, popular, enabled } = req.body;
   const existing = db.prepare('SELECT * FROM packages WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Package not found' });
@@ -3223,7 +3504,7 @@ app.put('/api/packages/:id', (req, res) => {
 // ============================================================
 // STATS API
 // ============================================================
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', requireAdminSession, (req, res) => {
   const members = db.prepare('SELECT COUNT(*) as c FROM members').get().c;
   const leads = db.prepare('SELECT COUNT(*) as c FROM leads').get().c;
   const courses = db.prepare('SELECT COUNT(*) as c FROM courses').get().c;
@@ -3253,7 +3534,11 @@ app.post('/api/admin/login', (req, res) => {
 
   const { email, password } = req.body;
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    res.json({ success: true, token: 'admin-token-' + Date.now() });
+    res.json({
+      success: true,
+      token: createAdminToken(),
+      expiresIn: Math.floor(ADMIN_SESSION_TTL_MS / 1000)
+    });
   } else {
     res.status(401).json({ error: 'Email หรือ Password ไม่ถูกต้อง' });
   }

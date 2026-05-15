@@ -3,9 +3,9 @@
    Auth, CRUD Courses, Leads, Members, Packages
    ============================================================ */
 
-// ---- Admin Credentials ----
-const ADMIN_CREDS = { email: 'admin@aix.club', password: 'admin1234' };
 const ADMIN_API_ORIGIN = window.location.origin;
+const ADMIN_AUTH_KEY = 'aixAdminAuth';
+const ADMIN_TOKEN_KEY = 'aixAdminToken';
 
 // ---- Initialize Shared Data (same as main site) ----
 (function initSharedData() {
@@ -34,7 +34,44 @@ const ADMIN_API_ORIGIN = window.location.origin;
 })();
 
 // ---- Auth ----
-let adminLoggedIn = localStorage.getItem('aixAdminAuth') === 'true';
+let adminLoggedIn = Boolean(localStorage.getItem(ADMIN_TOKEN_KEY));
+
+function getAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
+}
+
+function showAdminLogin() {
+  document.getElementById('adminLayout')?.style.setProperty('display', 'none');
+  document.getElementById('loginPage')?.style.setProperty('display', '');
+}
+
+function clearAdminSession() {
+  localStorage.removeItem(ADMIN_AUTH_KEY);
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  adminLoggedIn = false;
+}
+
+function adminRequestHeaders(headers = {}) {
+  const next = new Headers(headers);
+  const token = getAdminToken();
+  if (token) next.set('Authorization', `Bearer ${token}`);
+  return next;
+}
+
+async function adminFetch(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: adminRequestHeaders(options.headers)
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    clearAdminSession();
+    showAdminLogin();
+    throw new Error('Admin session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+  }
+
+  return res;
+}
 
 async function adminLogin() {
   const email = document.getElementById('adminEmail').value.trim();
@@ -46,14 +83,16 @@ async function adminLogin() {
          headers: {'Content-Type': 'application/json'},
          body: JSON.stringify({ email, password: pw })
      });
-     if (res.ok) {
-         localStorage.setItem('aixAdminAuth', 'true');
+     const data = await res.json().catch(() => ({}));
+     if (res.ok && data.token) {
+         localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+         localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
          adminLoggedIn = true;
          document.getElementById('loginPage').style.display = 'none';
          document.getElementById('adminLayout').style.display = 'flex';
          initDashboard();
      } else {
-         throw new Error('Invalid');
+         throw new Error(data.error || 'Invalid');
      }
   } catch(e) {
      document.getElementById('loginError').classList.add('show');
@@ -62,8 +101,7 @@ async function adminLogin() {
 }
 
 function adminLogout() {
-  localStorage.removeItem('aixAdminAuth');
-  adminLoggedIn = false;
+  clearAdminSession();
   location.reload();
 }
 
@@ -168,14 +206,14 @@ let adminData = {
 async function reloadAdminData() {
   try {
     const [cRes, rRes, resourceRes, scheduleRes, lRes, mRes, pRes, sRes] = await Promise.all([
-      fetch(`${ADMIN_API_ORIGIN}/api/courses`),
-      fetch(`${ADMIN_API_ORIGIN}/api/admin/replays`),
-      fetch(`${ADMIN_API_ORIGIN}/api/admin/resources`),
-      fetch(`${ADMIN_API_ORIGIN}/api/admin/schedules`),
-      fetch(`${ADMIN_API_ORIGIN}/api/leads`),
-      fetch(`${ADMIN_API_ORIGIN}/api/members`),
-      fetch(`${ADMIN_API_ORIGIN}/api/packages`),
-      fetch(`${ADMIN_API_ORIGIN}/api/stats`)
+      adminFetch(`${ADMIN_API_ORIGIN}/api/courses`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/admin/replays`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/admin/resources`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/leads`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/members`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/packages`),
+      adminFetch(`${ADMIN_API_ORIGIN}/api/stats`)
     ]);
     
     const coursesArr = await cRes.json();
@@ -489,12 +527,16 @@ async function saveCourse(event) {
   const method = isEdit ? 'PUT' : 'POST';
 
   try {
-    await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const res = await adminFetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Cannot save course');
+    }
     closeAdminModal('courseModal');
     await initDashboard(); 
     adminToast(isEdit ? '✅ แก้ไขคอร์สสำเร็จ' : '✅ เพิ่มคอร์สสำเร็จ', 'success');
   } catch(e) { 
-    adminToast('❌ เกิดข้อผิดพลาด', 'error'); 
+    adminToast(`❌ ${e.message || 'เกิดข้อผิดพลาด'}`, 'error');
   }
   return false;
 }
@@ -574,7 +616,7 @@ async function saveReplay(event) {
   if (file) formData.append('video', file);
 
   try {
-    const res = await fetch(`${ADMIN_API_ORIGIN}/api/admin/replays${id ? `/${id}` : ''}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/replays${id ? `/${id}` : ''}`, {
       method: id ? 'PUT' : 'POST',
       body: formData
     });
@@ -656,7 +698,7 @@ async function saveResource(event) {
   if (file) formData.append('file', file);
 
   try {
-    const res = await fetch(`${ADMIN_API_ORIGIN}/api/admin/resources${id ? `/${id}` : ''}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/resources${id ? `/${id}` : ''}`, {
       method: id ? 'PUT' : 'POST',
       body: formData
     });
@@ -734,7 +776,7 @@ async function saveSchedule(event) {
   };
 
   try {
-    const res = await fetch(`${ADMIN_API_ORIGIN}/api/admin/schedules${id ? `/${id}` : ''}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules${id ? `/${id}` : ''}`, {
       method: id ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -754,7 +796,7 @@ async function saveSchedule(event) {
 
 async function notifySchedule(id) {
   try {
-    const res = await fetch(`${ADMIN_API_ORIGIN}/api/admin/schedules/${id}/notify`, { method: 'POST' });
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules/${id}/notify`, { method: 'POST' });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Cannot notify');
     adminToast(`✅ ส่งแจ้งเตือนแล้ว ${data.created || 0} รายการ`, 'success');
@@ -819,15 +861,19 @@ function renderLeads() {
 
 async function changeLeadStatus(leadId, newStatus) {
   try {
-    await fetch(`${ADMIN_API_ORIGIN}/api/leads/${leadId}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/leads/${leadId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Cannot update lead');
+    }
     adminToast(`✅ เปลี่ยนสถานะเป็น ${newStatus}`, 'success');
     await initDashboard();
   } catch(e) { 
-    adminToast('❌ เกิดข้อผิดพลาด', 'error'); 
+    adminToast(`❌ ${e.message || 'เกิดข้อผิดพลาด'}`, 'error');
   }
 }
 
@@ -982,7 +1028,7 @@ async function saveMember(event) {
   };
 
   try {
-    const res = await fetch(`${ADMIN_API_ORIGIN}/api/members/${id}`, { 
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/members/${id}`, {
       method: 'PUT', 
       headers: {'Content-Type':'application/json'}, 
       body: JSON.stringify(payload) 
@@ -1091,16 +1137,20 @@ async function savePackage(event) {
   };
 
   try {
-    await fetch(`${ADMIN_API_ORIGIN}/api/packages/${id}`, { 
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/packages/${id}`, {
       method: 'PUT', 
       headers: {'Content-Type':'application/json'}, 
       body: JSON.stringify(payload) 
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Cannot update package');
+    }
     closeAdminModal('packageModal');
     await initDashboard();
     adminToast('✅ แก้ไขแพ็คเกจสำเร็จ', 'success');
   } catch(e) { 
-    adminToast('❌ เกิดข้อผิดพลาด', 'error'); 
+    adminToast(`❌ ${e.message || 'เกิดข้อผิดพลาด'}`, 'error');
   }
   return false;
 }
@@ -1133,7 +1183,7 @@ async function confirmDelete() {
   if (!endpoint || !id) return;
 
   try {
-    const res = await fetch(`${ADMIN_API_ORIGIN}/api/${endpoint}/${id}`, { method: 'DELETE' });
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/${endpoint}/${id}`, { method: 'DELETE' });
     if(res.ok) {
         adminToast('✅ ลบข้อมูลสำเร็จ', 'success');
     } else {

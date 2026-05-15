@@ -5,9 +5,16 @@
   footer.className = "site-footer";
   footer.innerHTML = `
     <div class="container footer-grid">
-      <div>
+      <div class="footer-brand">
         <img src="/AiX%20logo/textwhite.png" alt="AiX Club">
         <p>แพลตฟอร์มคอร์สเรียน AI ภาษาไทย สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI ทำงานจริง</p>
+        <div class="footer-mascot" aria-label="AiX Assistant">
+          <img src="/assets/generated/aix-mascot.png" alt="">
+          <div>
+            <strong>AiX Assistant</strong>
+            <span>ผู้ช่วยเรียน AI ของสมาชิก</span>
+          </div>
+        </div>
       </div>
       <div>
         <strong>เรียน AI</strong>
