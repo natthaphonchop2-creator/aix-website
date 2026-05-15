@@ -11,6 +11,7 @@ const learnVideoCard = document.getElementById("learnVideoCard");
 const learnModuleMeta = document.getElementById("learnModuleMeta");
 const learnModuleTitle = document.getElementById("learnModuleTitle");
 const readingPanel = document.getElementById("readingPanel");
+const challengePanel = document.getElementById("challengePanel");
 const notesPanel = document.getElementById("notesPanel");
 const downloadsPanel = document.getElementById("downloadsPanel");
 const lessonNotes = document.getElementById("lessonNotes");
@@ -23,6 +24,13 @@ const teacherKbSummary = document.getElementById("teacherKbSummary");
 const learnAiMessages = document.getElementById("learnAiMessages");
 const learnAiForm = document.getElementById("learnAiForm");
 const learnAiInput = document.getElementById("learnAiInput");
+const labProblemTitle = document.getElementById("labProblemTitle");
+const labDifficulty = document.getElementById("labDifficulty");
+const labPrompt = document.getElementById("labPrompt");
+const labRunResult = document.getElementById("labRunResult");
+const runLabBtn = document.getElementById("runLabBtn");
+const editorLabel = document.getElementById("editorLabel");
+const labModeHint = document.getElementById("labModeHint");
 const toast = document.getElementById("toast");
 
 let state = {
@@ -30,7 +38,9 @@ let state = {
   modules: [],
   resources: [],
   replays: [],
-  activeIndex: 0
+  activeIndex: 0,
+  editorMode: "prompt",
+  lastRun: null
 };
 let toastTimer = null;
 
@@ -91,6 +101,10 @@ function moduleVideo(module, index) {
 
 function notesKey() {
   return `aix_lesson_notes_${state.course?.id || "course"}_${state.activeIndex}`;
+}
+
+function editorKey(mode = state.editorMode) {
+  return `aix_lesson_lab_${state.course?.id || "course"}_${state.activeIndex}_${mode}`;
 }
 
 function readLearningProgress() {
@@ -192,6 +206,100 @@ function renderVideo(module, index) {
     `;
 }
 
+function lessonChallenge(module, index) {
+  const title = module?.title || "บทเรียน";
+  const points = module?.lessons || [];
+  const firstPoint = points[0] || "เลือกงานจริงที่ต้องใช้ AI ช่วย";
+  const secondPoint = points[1] || "กำหนด input, context และ output ให้ชัดเจน";
+  const thirdPoint = points[2] || "ตั้งเกณฑ์ตรวจงานก่อนนำไปใช้";
+  const lower = `${title} ${points.join(" ")}`.toLowerCase();
+  const isVibe = /vibe|code|prototype|debug|component|mvp|product spec/.test(lower);
+  const isAgent = /agent|automation|workflow|trigger|approval|knowledge/.test(lower);
+  const isPrompt = /prompt|instruction|context|format|output/.test(lower);
+  const type = isVibe ? "Vibe code" : isAgent ? "AI Agent" : isPrompt ? "Prompt" : "AI Workflow";
+
+  return {
+    type,
+    difficulty: index < 2 ? "Foundation" : index < 5 ? "Applied" : "Project",
+    title: `โจทย์ ${index + 1}: ${title}`,
+    prompt: `สร้างคำสั่ง AI สำหรับงานจริงโดยยึดจากบทนี้: ${firstPoint}`,
+    scenario: `คุณเป็นผู้เรียน AiX ที่ต้องนำหัวข้อ "${title}" ไปใช้กับธุรกิจจริง เลือกหนึ่ง use case แล้วออกแบบคำสั่ง/ขั้นตอนให้ AI ทำงานได้โดยไม่เดาเอง`,
+    requirements: [
+      `ระบุเป้าหมายงานและ use case ให้ชัดเจน: ${firstPoint}`,
+      `ใส่ context, input และข้อจำกัดที่เกี่ยวกับ: ${secondPoint}`,
+      `กำหนดรูปแบบ output ที่ตรวจได้ เช่น ตาราง checklist JSON brief หรือ action plan`,
+      `เพิ่มเกณฑ์ตรวจคุณภาพและจุดเสี่ยงจากบทเรียน: ${thirdPoint}`,
+      "บอกวิธี iterate หาก output รอบแรกยังไม่ดีพอ"
+    ],
+    testCases: [
+      { label: "Role", detail: "มีบทบาทของ AI หรือผู้เชี่ยวชาญที่ต้องจำลอง" },
+      { label: "Context", detail: "มีข้อมูลพื้นหลังและข้อจำกัดของงาน" },
+      { label: "Task", detail: "ระบุสิ่งที่ต้องทำเป็นขั้นตอน ไม่กำกวม" },
+      { label: "Output", detail: "กำหนด format ผลลัพธ์และตัวอย่างช่องข้อมูล" },
+      { label: "Evaluation", detail: "มีเกณฑ์ตรวจ/เงื่อนไข pass-fail" }
+    ],
+    starter: {
+      prompt: [
+        `Role: คุณคือผู้ช่วย AI สำหรับ ${state.course?.title || "AiX Club"}`,
+        `Context: ฉันกำลังทำงานเรื่อง "${title}" และต้องการใช้กับธุรกิจจริง`,
+        `Task: ช่วยออกแบบวิธีทำงานตามโจทย์ "${firstPoint}"`,
+        "Input: [ใส่ข้อมูลธุรกิจ ลูกค้า เป้าหมาย และข้อจำกัด]",
+        "Output format: ตารางที่มีคอลัมน์ ขั้นตอน / เหตุผล / output ที่ต้องได้ / วิธีตรวจ",
+        `Constraints: ต้องอิงจากบทเรียนนี้ โดยเฉพาะ ${points.slice(0, 3).join(", ") || title}`,
+        "Evaluation: ตรวจว่าคำตอบครบ role, context, task, output และ risk ก่อนสรุป"
+      ].join("\n"),
+      vibe: [
+        `Feature: สร้าง workflow หรือ prototype สำหรับ "${title}"`,
+        "User story: ในฐานะผู้ใช้งาน ฉันต้องการ...",
+        "Acceptance criteria:",
+        "- ผู้ใช้กรอก input หลักได้",
+        "- ระบบสร้าง output ตาม format ที่กำหนด",
+        "- มีสถานะ error/empty/loading",
+        "- มีปุ่มให้ AiX Teacher ตรวจ output",
+        "Prompt to AI coder:",
+        "ช่วยสร้าง UI/logic ตาม criteria นี้ โดยอธิบายไฟล์ที่แก้และวิธีทดสอบ"
+      ].join("\n"),
+      output: [
+        "วาง output ที่ AI สร้างให้ตรวจตรงนี้",
+        "",
+        "ตัวอย่าง:",
+        "- เป้าหมาย:",
+        "- ขั้นตอน:",
+        "- Output:",
+        "- จุดที่ยังไม่มั่นใจ:"
+      ].join("\n")
+    }
+  };
+}
+
+function renderChallenge(module, index) {
+  const challenge = lessonChallenge(module, index);
+  labProblemTitle.textContent = challenge.title;
+  labDifficulty.textContent = challenge.difficulty;
+  labPrompt.textContent = challenge.prompt;
+  challengePanel.innerHTML = `
+    <div class="learn-challenge-brief">
+      <span>${escapeHtml(challenge.type)}</span>
+      <h2>${escapeHtml(challenge.title)}</h2>
+      <p>${escapeHtml(challenge.scenario)}</p>
+    </div>
+    <div class="learn-challenge-section">
+      <strong>Requirements</strong>
+      <ul>${challenge.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </div>
+    <div class="learn-challenge-section">
+      <strong>Test cases</strong>
+      <div class="learn-test-list">${challenge.testCases.map((item) => `
+        <article>
+          <b>${escapeHtml(item.label)}</b>
+          <span>${escapeHtml(item.detail)}</span>
+        </article>
+      `).join("")}</div>
+    </div>
+  `;
+  return challenge;
+}
+
 function renderReading(module, index) {
   const lessons = module.lessons || [];
   readingPanel.innerHTML = `
@@ -247,6 +355,101 @@ function renderAi(module) {
   `;
 }
 
+function editorModeConfig(mode = state.editorMode) {
+  const map = {
+    prompt: {
+      label: "student@aix:~/prompt.md",
+      hint: "เขียน prompt ที่จะใช้สั่ง AI ให้ทำงานจริง",
+      placeholder: "เขียน prompt ที่มี role, context, task, output format และ criteria"
+    },
+    vibe: {
+      label: "student@aix:~/vibe-spec.md",
+      hint: "เขียน spec สำหรับสั่ง AI coder หรือทำ vibe coding",
+      placeholder: "เขียน feature brief, user story, acceptance criteria และ prompt to AI coder"
+    },
+    output: {
+      label: "student@aix:~/output.txt",
+      hint: "วาง output ที่ AI สร้างมา เพื่อให้ครู AI ตรวจคุณภาพ",
+      placeholder: "วาง output หรือคำตอบที่ได้จาก AI แล้วกด Submit ให้ตรวจ"
+    }
+  };
+  return map[mode] || map.prompt;
+}
+
+function setEditorMode(mode, saveCurrent = true) {
+  if (saveCurrent && learnAiInput && state.course) {
+    localStorage.setItem(editorKey(), learnAiInput.value);
+  }
+  state.editorMode = ["prompt", "vibe", "output"].includes(mode) ? mode : "prompt";
+  document.querySelectorAll("[data-editor-mode]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.editorMode === state.editorMode);
+  });
+  const module = state.modules[state.activeIndex];
+  const challenge = lessonChallenge(module, state.activeIndex);
+  const config = editorModeConfig();
+  editorLabel.textContent = config.label;
+  labModeHint.textContent = config.hint;
+  learnAiInput.placeholder = config.placeholder;
+  learnAiInput.value = localStorage.getItem(editorKey())
+    || challenge.starter[state.editorMode]
+    || "";
+}
+
+function evaluateSubmission(text, challenge) {
+  const normalized = text.toLowerCase();
+  const checks = [
+    { label: "Role", pass: /(role|บทบาท|คุณคือ|ทำหน้าที่)/i.test(text) },
+    { label: "Context", pass: /(context|บริบท|ข้อมูล|background|ข้อจำกัด|ธุรกิจ)/i.test(text) },
+    { label: "Task", pass: /(task|งาน|ช่วย|สร้าง|วิเคราะห์|ออกแบบ|ตรวจ)/i.test(text) },
+    { label: "Output", pass: /(output|ผลลัพธ์|format|รูปแบบ|ตาราง|json|checklist|action plan)/i.test(text) },
+    { label: "Evaluation", pass: /(criteria|เกณฑ์|ตรวจ|pass|fail|quality|risk|ความเสี่ยง)/i.test(text) }
+  ];
+  const lessonHits = (state.modules[state.activeIndex]?.lessons || [])
+    .filter((point) => normalized.includes(String(point).slice(0, 14).toLowerCase()));
+  const passed = checks.filter((item) => item.pass).length;
+  const score = Math.min(100, Math.round((passed / checks.length) * 82) + Math.min(18, lessonHits.length * 6));
+  return {
+    score,
+    passed,
+    total: checks.length,
+    checks,
+    lessonHits,
+    verdict: score >= 80 ? "พร้อมส่งให้ AI ใช้งานจริง" : score >= 55 ? "ใช้ได้บางส่วน แต่ควรเพิ่มรายละเอียด" : "ยังไม่พอสำหรับใช้งานจริง"
+  };
+}
+
+function renderRunResult(result) {
+  const statusClass = result.score >= 80 ? "pass" : result.score >= 55 ? "warn" : "fail";
+  labRunResult.className = `learn-run-result ${statusClass}`;
+  labRunResult.innerHTML = `
+    <div>
+      <strong>Test Result</strong>
+      <span>${result.score}/100 · ${escapeHtml(result.verdict)}</span>
+    </div>
+    <ul>
+      ${result.checks.map((item) => `<li class="${item.pass ? "pass" : "fail"}"><i class="fa-solid ${item.pass ? "fa-check" : "fa-xmark"}"></i>${escapeHtml(item.label)}</li>`).join("")}
+    </ul>
+    <p>${result.lessonHits.length ? `อิงบทเรียนแล้ว ${result.lessonHits.length} จุด` : "ยังไม่เห็นคำสำคัญจากบทเรียนในงานที่ส่ง ลองผูกกับ requirements ให้ชัดขึ้น"}</p>
+  `;
+}
+
+function runLabCheck() {
+  const module = state.modules[state.activeIndex];
+  if (!module) return null;
+  const text = learnAiInput.value.trim();
+  if (!text) {
+    showToast("เขียนงานลง editor ก่อนกด Run");
+    learnAiInput.focus();
+    return null;
+  }
+  localStorage.setItem(editorKey(), text);
+  const challenge = lessonChallenge(module, state.activeIndex);
+  const result = evaluateSubmission(text, challenge);
+  state.lastRun = result;
+  renderRunResult(result);
+  return result;
+}
+
 function appendAiMessage(role, content, label) {
   const normalizedRole = role.includes("user") ? "user" : "assistant";
   const article = document.createElement("article");
@@ -266,8 +469,11 @@ function setAiBusy(isBusy) {
   const submit = learnAiForm?.querySelector("button[type='submit']");
   if (submit) {
     submit.disabled = isBusy;
-    submit.textContent = isBusy ? "run..." : "run";
+    submit.innerHTML = isBusy
+      ? '<i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจ'
+      : '<i class="fa-solid fa-cloud-arrow-up"></i> Submit ให้ AiX Teacher ตรวจ';
   }
+  if (runLabBtn) runLabBtn.disabled = isBusy;
   document.querySelectorAll("[data-ai-command]").forEach((button) => {
     button.disabled = isBusy;
   });
@@ -291,6 +497,8 @@ function detectTeacherMode(question) {
 }
 
 async function requestAiTeacher(question, mode) {
+  const module = state.modules[state.activeIndex];
+  const challenge = lessonChallenge(module, state.activeIndex);
   const response = await apiRequest(`/api/courses/${encodeURIComponent(state.course.id)}/teacher-chat`, {
     method: "POST",
     body: JSON.stringify({
@@ -298,7 +506,22 @@ async function requestAiTeacher(question, mode) {
       message: question,
       mode,
       notes: lessonNotes.value,
-      history: collectAiHistory()
+      history: collectAiHistory(),
+      exercise: {
+        editorMode: state.editorMode,
+        challengeTitle: challenge.title,
+        challengeType: challenge.type,
+        prompt: challenge.prompt,
+        requirements: challenge.requirements,
+        testCases: challenge.testCases,
+        localRun: state.lastRun
+          ? {
+              score: state.lastRun.score,
+              verdict: state.lastRun.verdict,
+              checks: state.lastRun.checks
+            }
+          : null
+      }
     })
   });
   return response;
@@ -307,6 +530,19 @@ async function requestAiTeacher(question, mode) {
 function localAiAnswer(question, module) {
   const lessons = (module.lessons || []).slice(0, 3);
   const lower = question.toLowerCase();
+  if (lower.includes("ตรวจ") || lower.includes("submit") || lower.includes("output")) {
+    const result = state.lastRun || evaluateSubmission(learnAiInput.value || question, lessonChallenge(module, state.activeIndex));
+    const missing = result.checks.filter((item) => !item.pass).map((item) => item.label).join(", ");
+    return [
+      `ผลตรวจสำรอง: ${result.score}/100`,
+      `Verdict: ${result.verdict}`,
+      missing ? `ต้องเพิ่ม: ${missing}` : "โครงสร้างหลักครบแล้ว",
+      "แนะนำให้เพิ่มตัวอย่าง input จริง 1 ชุด และกำหนดเกณฑ์ pass/fail ให้ชัดก่อนใช้กับงานจริง"
+    ].join("\n");
+  }
+  if (lower.includes("hint")) {
+    return `Hint: เริ่มจากเขียน Role + Context ก่อน แล้วแปลง ${lessons[0] || module.title} เป็น Task ที่ตรวจ output ได้`;
+  }
   if (lower.includes("prompt")) {
     return `ลองใช้ prompt นี้: "ช่วยอธิบาย ${module.title} ให้เป็นขั้นตอนสำหรับงานจริงของฉัน โดยแบ่งเป็น เป้าหมาย, input, ขั้นตอน, output และจุดที่ต้องตรวจสอบ"`;
   }
@@ -323,6 +559,7 @@ function renderActiveModule() {
   saveLearningProgress(module);
   renderSidebar();
   renderVideo(module, state.activeIndex);
+  state.lastRun = null;
   learnModuleMeta.textContent = `รายการที่ ${state.activeIndex + 1} · ${module.time || "บทเรียน"}`;
   learnModuleTitle.textContent = module.title;
   learnProgressText.textContent = `${state.activeIndex + 1}/${state.modules.length} รายการการเรียนรู้`;
@@ -330,10 +567,18 @@ function renderActiveModule() {
   prevLessonBtn.disabled = state.activeIndex === 0;
   nextLessonBtn.textContent = state.activeIndex === state.modules.length - 1 ? "เรียนครบแล้ว" : "ไปที่รายการถัดไป";
   renderReading(module, state.activeIndex);
+  renderChallenge(module, state.activeIndex);
+  setEditorMode(state.editorMode, false);
+  labRunResult.className = "learn-run-result";
+  labRunResult.innerHTML = `
+    <strong>Test Result</strong>
+    <p>กด Run เพื่อเช็กโครง prompt และ output ก่อนส่งให้อาจารย์ AI ตรวจ</p>
+  `;
   renderAi(module);
 }
 
 function setActiveModule(index) {
+  if (learnAiInput && state.course) localStorage.setItem(editorKey(), learnAiInput.value);
   state.activeIndex = clampIndex(index, state.modules.length);
   renderActiveModule();
 }
@@ -343,6 +588,7 @@ function setTab(tab) {
     button.classList.toggle("active", button.dataset.learnTab === tab);
   });
   readingPanel.classList.toggle("hidden", tab !== "reading");
+  challengePanel.classList.toggle("hidden", tab !== "challenge");
   notesPanel.classList.toggle("hidden", tab !== "notes");
   downloadsPanel.classList.toggle("hidden", tab !== "downloads");
 }
@@ -366,7 +612,9 @@ async function initLearnPage() {
       modules: data.modules || [],
       resources: data.resources || [],
       replays: data.replays || [],
-      activeIndex: clampIndex(params.get("module"), data.modules?.length || 0)
+      activeIndex: clampIndex(params.get("module"), data.modules?.length || 0),
+      editorMode: "prompt",
+      lastRun: null
     };
     document.title = `${state.course.title} | เรียนรู้`;
     learnCourseName.textContent = state.course.title;
@@ -407,26 +655,49 @@ lessonNotes?.addEventListener("input", () => {
   localStorage.setItem(notesKey(), lessonNotes.value);
 });
 
+learnAiInput?.addEventListener("input", () => {
+  if (state.course) localStorage.setItem(editorKey(), learnAiInput.value);
+});
+
+document.querySelectorAll("[data-editor-mode]").forEach((button) => {
+  button.addEventListener("click", () => setEditorMode(button.dataset.editorMode));
+});
+
+runLabBtn?.addEventListener("click", () => {
+  const result = runLabCheck();
+  if (result) showToast(`Run เสร็จแล้ว: ${result.score}/100`);
+});
+
 learnAiForm?.addEventListener("submit", (event) => {
   event.preventDefault();
-  const question = learnAiInput.value.trim();
+  const submission = learnAiInput.value.trim();
   const module = state.modules[state.activeIndex];
-  if (!question || !module) return;
-  const mode = detectTeacherMode(question);
-  appendAiMessage("user", question, "student@aix");
-  const pending = appendAiMessage("assistant is-loading", "กำลังเรียกอาจารย์ AI และเปิด knowledge base ของบทนี้...", "teacher@aix");
-  learnAiInput.value = "";
+  if (!submission || !module) return;
+  const result = state.lastRun || runLabCheck();
+  const challenge = lessonChallenge(module, state.activeIndex);
+  const reviewPrompt = [
+    `ตรวจงานแบบ AiX Practice Lab`,
+    `Mode: ${state.editorMode}`,
+    `โจทย์: ${challenge.title}`,
+    `คำอธิบายโจทย์: ${challenge.prompt}`,
+    `Local run: ${result ? `${result.score}/100 - ${result.verdict}` : "ยังไม่ได้ run"}`,
+    "",
+    "งานของผู้เรียน:",
+    submission
+  ].join("\n");
+  appendAiMessage("user", `Submit ${state.editorMode}: ${submission.slice(0, 520)}${submission.length > 520 ? "..." : ""}`, "student@aix");
+  const pending = appendAiMessage("assistant is-loading", "กำลังตรวจงานเทียบกับ rubric, test cases และ knowledge base ของบทนี้...", "teacher@aix");
   setAiBusy(true);
-  requestAiTeacher(question, mode)
+  requestAiTeacher(reviewPrompt, "check")
     .then((data) => {
       pending.classList.remove("is-loading");
-      pending.querySelector("p").textContent = data.answer || localAiAnswer(question, module);
+      pending.querySelector("p").textContent = data.answer || localAiAnswer(reviewPrompt, module);
       if (data.source === "local-fallback") pending.classList.add("fallback");
     })
     .catch(() => {
       pending.classList.remove("is-loading");
       pending.classList.add("fallback");
-      pending.querySelector("p").textContent = localAiAnswer(question, module);
+      pending.querySelector("p").textContent = localAiAnswer(reviewPrompt, module);
       showToast("เชื่อมต่อ AI Teacher ไม่สำเร็จ ระบบใช้คำตอบสำรองจากบทเรียนนี้ก่อน");
     })
     .finally(() => {
@@ -442,14 +713,41 @@ document.querySelectorAll("[data-ai-command]").forEach((button) => {
     if (!module) return;
     const command = button.dataset.aiCommand;
     if (command === "check") {
-      learnAiInput.value = "ตรวจคำตอบ: ";
+      learnAiForm.requestSubmit();
+      return;
+    }
+    if (command === "hint") {
+      appendAiMessage("user", "ขอ hint สำหรับโจทย์นี้", "student@aix");
+      const pending = appendAiMessage("assistant is-loading", "กำลังหา hint จากบทเรียนนี้...", "teacher@aix");
+      setAiBusy(true);
+      requestAiTeacher(`ขอ hint สำหรับโจทย์ ${lessonChallenge(module, state.activeIndex).title} โดยยังไม่เฉลยทั้งหมด`, "ask")
+        .then((data) => {
+          pending.classList.remove("is-loading");
+          pending.querySelector("p").textContent = data.answer || localAiAnswer("hint", module);
+        })
+        .catch(() => {
+          pending.classList.remove("is-loading");
+          pending.classList.add("fallback");
+          pending.querySelector("p").textContent = localAiAnswer("hint", module);
+        })
+        .finally(() => setAiBusy(false));
       learnAiInput.focus();
       return;
     }
-    learnAiInput.value = command === "practice"
-      ? "สร้างแบบฝึกหัดจากบทนี้ 3 ข้อ พร้อมเกณฑ์ตรวจคำตอบ"
-      : "สรุปบทนี้เป็น checklist ที่นำไปทำตามได้";
-    learnAiForm.requestSubmit();
+    appendAiMessage("user", "สรุปโจทย์และ rubric ของบทนี้", "student@aix");
+    const pending = appendAiMessage("assistant is-loading", "กำลังสรุปโจทย์จาก knowledge base...", "teacher@aix");
+    setAiBusy(true);
+    requestAiTeacher(`สรุปโจทย์ฝึกและ rubric ของ ${lessonChallenge(module, state.activeIndex).title} ให้เป็น checklist สั้นๆ`, "summarize")
+      .then((data) => {
+        pending.classList.remove("is-loading");
+        pending.querySelector("p").textContent = data.answer || localAiAnswer("summary", module);
+      })
+      .catch(() => {
+        pending.classList.remove("is-loading");
+        pending.classList.add("fallback");
+        pending.querySelector("p").textContent = localAiAnswer("summary", module);
+      })
+      .finally(() => setAiBusy(false));
   });
 });
 

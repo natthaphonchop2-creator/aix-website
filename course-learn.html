@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/styles.css?v=ai-teacher-1">
+  <link rel="stylesheet" href="/styles.css?v=ai-lab-1">
 </head>
 <body class="learn-body">
   <header class="learn-topbar">
@@ -50,10 +50,12 @@
           </div>
           <div class="learn-tabs" role="tablist" aria-label="Lesson material">
             <button class="active" type="button" data-learn-tab="reading">เนื้อหาอ่านประกอบ</button>
+            <button type="button" data-learn-tab="challenge">โจทย์ฝึก</button>
             <button type="button" data-learn-tab="notes">หมายเหตุ</button>
             <button type="button" data-learn-tab="downloads">ดาวน์โหลด</button>
           </div>
           <div class="learn-tab-panel" id="readingPanel"></div>
+          <div class="learn-tab-panel hidden" id="challengePanel"></div>
           <div class="learn-tab-panel hidden" id="notesPanel">
             <label for="lessonNotes">บันทึกของฉัน</label>
             <textarea id="lessonNotes" placeholder="จดสิ่งที่เข้าใจ คำถาม หรือสิ่งที่อยากกลับมาทบทวน"></textarea>
@@ -66,38 +68,63 @@
           </div>
         </article>
 
-        <aside class="learn-ai-card learn-terminal-card" aria-label="AiX Teacher Terminal">
-          <div class="learn-terminal-top">
-            <div class="terminal-window-dots" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+        <section class="learn-lab-card" aria-label="AI practice workspace">
+          <div class="learn-lab-head">
             <div>
-              <strong>AiX Teacher Terminal</strong>
-              <small id="teacherKbLabel">KB: กำลังโหลดบทเรียน</small>
+              <span>AiX Practice Lab</span>
+              <h2 id="labProblemTitle">กำลังเตรียมโจทย์ฝึก</h2>
             </div>
+            <strong id="labDifficulty">Prompt</strong>
           </div>
-          <div class="learn-terminal-kb" id="teacherKbSummary"></div>
-          <div class="learn-terminal-actions" aria-label="AI teacher commands">
-            <button type="button" data-ai-command="summarize">สรุปบทนี้</button>
-            <button type="button" data-ai-command="practice">สร้างแบบฝึกหัด</button>
-            <button type="button" data-ai-command="check">ตรวจคำตอบ</button>
+          <p class="learn-lab-prompt" id="labPrompt">ระบบจะสร้างโจทย์ฝึกตามบทเรียนนี้ เพื่อให้คุณลองสั่ง AI แล้วส่งให้อาจารย์ AI ตรวจ</p>
+          <div class="learn-editor-tabs" aria-label="Practice modes">
+            <button class="active" type="button" data-editor-mode="prompt"><i class="fa-solid fa-terminal"></i> Prompt</button>
+            <button type="button" data-editor-mode="vibe"><i class="fa-solid fa-code"></i> Vibe code</button>
+            <button type="button" data-editor-mode="output"><i class="fa-solid fa-square-poll-vertical"></i> Output</button>
           </div>
-          <div class="learn-ai-messages" id="learnAiMessages"></div>
-          <form class="learn-ai-form" id="learnAiForm">
-            <label for="learnAiInput">student@aix:~$</label>
-            <input id="learnAiInput" type="text" placeholder="ถามบทเรียน หรือพิมพ์ ตรวจคำตอบ: ...">
-            <button type="submit">run</button>
+          <form class="learn-ai-form learn-lab-form" id="learnAiForm">
+            <div class="learn-editor-title">
+              <label for="learnAiInput" id="editorLabel">student@aix:~/prompt.md</label>
+              <span id="labModeHint">เขียน prompt ที่จะใช้สั่ง AI ให้ทำงานจริง</span>
+            </div>
+            <textarea id="learnAiInput" spellcheck="false" placeholder="เขียน prompt หรือคำสั่ง AI ของคุณที่นี่"></textarea>
+            <div class="learn-lab-controls">
+              <button class="secondary-btn" id="runLabBtn" type="button"><i class="fa-solid fa-play"></i> Run</button>
+              <button class="primary-btn" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Submit ให้ AiX Teacher ตรวจ</button>
+            </div>
           </form>
-        </aside>
+          <div class="learn-run-result" id="labRunResult">
+            <strong>Test Result</strong>
+            <p>กด Run เพื่อเช็กโครง prompt และ output ก่อนส่งให้อาจารย์ AI ตรวจ</p>
+          </div>
+          <aside class="learn-ai-card learn-terminal-card" aria-label="AiX Teacher review">
+            <div class="learn-terminal-top">
+              <div class="terminal-window-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div>
+                <strong>AiX Teacher Review</strong>
+                <small id="teacherKbLabel">KB: กำลังโหลดบทเรียน</small>
+              </div>
+            </div>
+            <div class="learn-terminal-kb" id="teacherKbSummary"></div>
+            <div class="learn-terminal-actions" aria-label="AI teacher commands">
+              <button type="button" data-ai-command="hint">ขอ Hint</button>
+              <button type="button" data-ai-command="summarize">สรุปโจทย์</button>
+              <button type="button" data-ai-command="check">ตรวจงาน</button>
+            </div>
+            <div class="learn-ai-messages" id="learnAiMessages"></div>
+          </aside>
+        </section>
       </div>
     </section>
   </main>
 
   <script src="/site-footer.js?v=mascot-1"></script>
   <div class="toast" id="toast"></div>
-  <script src="/course-learn.js?v=ai-teacher-1"></script>
+  <script src="/course-learn.js?v=ai-lab-1"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
   <script src="/site-motion.js?v=receipt-fix-1" defer></script>
 </body>

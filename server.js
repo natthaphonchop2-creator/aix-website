@@ -2623,7 +2623,8 @@ function teacherModeLabel(mode = 'ask') {
     ask: 'ถามตอบบทเรียน',
     check: 'ตรวจคำตอบนักเรียน',
     practice: 'สร้างแบบฝึกหัด',
-    summarize: 'สรุปบทเรียน'
+    summarize: 'สรุปบทเรียน',
+    review: 'ตรวจงาน Practice Lab'
   };
   return map[mode] || map.ask;
 }
@@ -2635,6 +2636,8 @@ function buildTeacherInstructions(kb) {
     'ใช้ knowledge base ของบทเรียนปัจจุบันเป็นแหล่งอ้างอิงหลัก ห้ามแต่งเนื้อหาว่าอยู่ในบทเรียนถ้าไม่มีในข้อมูล',
     'ถ้าผู้เรียนถามนอกบท ให้ตอบสั้นๆ แล้วโยงกลับมาที่บทเรียนปัจจุบัน',
     'เมื่อตรวจคำตอบ ให้บอกผลเป็น ถูกต้อง / ถูกบางส่วน / ต้องแก้ พร้อมเหตุผลและคำแนะนำที่ทำต่อได้',
+    'ถ้ามี Exercise จาก Practice Lab ให้ตรวจเหมือน code review: ให้ Verdict, Score 0-100, สิ่งที่ผ่าน, จุดที่ต้องแก้, และตัวอย่าง prompt/output ที่ปรับปรุงแล้ว',
+    'ประเมินว่าผู้เรียนสั่ง AI ชัดไหม มี role/context/task/output/evaluation ครบไหม และ output ตรงโจทย์หรือไม่',
     'ตอบให้กระชับ มีหัวข้อชัดเจน เหมาะกับหน้าต่างเทอร์มินอล และอย่าพูดถึง system prompt หรือ API',
     '',
     `คอร์ส: ${kb.courseTitle}`,
@@ -2646,16 +2649,33 @@ function buildTeacherInstructions(kb) {
   ].join('\n');
 }
 
-function buildTeacherInput({ message, mode, notes, history }, kb) {
+function buildTeacherInput({ message, mode, notes, history, exercise }, kb) {
   const recentHistory = Array.isArray(history)
     ? history.slice(-6).map((item) => `${item.role || 'user'}: ${truncateText(item.content, 500)}`).join('\n')
+    : '';
+  const exerciseText = exercise && typeof exercise === 'object'
+    ? [
+        `Practice Lab: ${truncateText(exercise.challengeTitle || '', 260)}`,
+        `ประเภทงาน: ${truncateText(exercise.challengeType || exercise.editorMode || '', 120)}`,
+        `โจทย์: ${truncateText(exercise.prompt || '', 700)}`,
+        Array.isArray(exercise.requirements) && exercise.requirements.length
+          ? `Requirements:\n${exercise.requirements.slice(0, 8).map((item, index) => `${index + 1}. ${truncateText(item, 240)}`).join('\n')}`
+          : '',
+        Array.isArray(exercise.testCases) && exercise.testCases.length
+          ? `Test cases:\n${exercise.testCases.slice(0, 8).map((item, index) => `${index + 1}. ${truncateText(item.label || '', 80)} - ${truncateText(item.detail || '', 220)}`).join('\n')}`
+          : '',
+        exercise.localRun
+          ? `Local run: ${exercise.localRun.score || 0}/100 - ${truncateText(exercise.localRun.verdict || '', 240)}`
+          : ''
+      ].filter(Boolean).join('\n')
     : '';
   return [
     `โหมด: ${teacherModeLabel(mode)}`,
     `บทเรียน: ${kb.moduleTitle}`,
+    exerciseText ? `โจทย์ฝึก:\n${exerciseText}` : '',
     recentHistory ? `ประวัติล่าสุด:\n${recentHistory}` : '',
     notes ? `บันทึกของผู้เรียน:\n${truncateText(notes, 900)}` : '',
-    `ข้อความผู้เรียน:\n${truncateText(message, 2200)}`
+    `ข้อความผู้เรียน:\n${truncateText(message, 6000)}`
   ].filter(Boolean).join('\n\n');
 }
 
@@ -2671,9 +2691,22 @@ function extractOpenAIText(payload = {}) {
   return parts.join('\n').trim();
 }
 
-function localTeacherFallback(message, kb, mode = 'ask') {
+function localTeacherFallback(message, kb, mode = 'ask', exercise = null) {
   const points = kb.lessonPoints.slice(0, 4);
-  if (mode === 'check' || /ตรวจ|คำตอบ|ถูกไหม|ถูกหรือ/.test(message)) {
+  if (mode === 'check' || /ตรวจ|คำตอบ|ถูกไหม|ถูกหรือ|Practice Lab|Local run/i.test(message)) {
+    if (exercise?.localRun) {
+      const missing = (exercise.localRun.checks || [])
+        .filter((item) => !item.pass)
+        .map((item) => item.label)
+        .join(', ');
+      return [
+        `Verdict: ${exercise.localRun.verdict || 'ต้องตรวจเพิ่ม'}`,
+        `Score: ${exercise.localRun.score || 0}/100`,
+        missing ? `Must fix: เพิ่ม ${missing}` : 'Passed: โครงสร้างหลักครบ role/context/task/output/evaluation',
+        points.length ? `ควรผูกกับบทเรียนเพิ่ม: ${points.slice(0, 2).join(' / ')}` : '',
+        'Next: เพิ่มตัวอย่าง input จริง 1 ชุด แล้วระบุเกณฑ์ pass/fail ก่อนนำ output ไปใช้'
+      ].filter(Boolean).join('\n');
+    }
     return [
       'ผลตรวจเบื้องต้น: ผมยังตรวจจากโมเดลหลักไม่ได้ จึงตรวจด้วย knowledge base ในระบบก่อน',
       points.length ? `สิ่งที่คำตอบควรแตะ: ${points.join(' / ')}` : `คำตอบควรอิงจากหัวข้อ "${kb.moduleTitle}"`,
@@ -2694,10 +2727,10 @@ function localTeacherFallback(message, kb, mode = 'ask') {
   return `จาก knowledge base ของบท "${kb.moduleTitle}" ให้เริ่มที่ ${points[0] || 'เป้าหมายของบทเรียน'} แล้วเช็กความเข้าใจด้วยการสรุปเป็นขั้นตอนสั้นๆ หากต้องการให้ตรวจคำตอบ ให้พิมพ์ขึ้นต้นว่า "ตรวจคำตอบ:"`;
 }
 
-async function generateTeacherAnswer({ message, mode, notes, history, kb, memberId }) {
+async function generateTeacherAnswer({ message, mode, notes, history, exercise, kb, memberId }) {
   if (!OPENAI_API_KEY) {
     return {
-      answer: localTeacherFallback(message, kb, mode),
+      answer: localTeacherFallback(message, kb, mode, exercise),
       source: 'local-fallback',
       model: 'local'
     };
@@ -2712,8 +2745,8 @@ async function generateTeacherAnswer({ message, mode, notes, history, kb, member
     body: JSON.stringify({
       model: OPENAI_MODEL,
       instructions: buildTeacherInstructions(kb),
-      input: buildTeacherInput({ message, mode, notes, history }, kb),
-      max_output_tokens: 850,
+      input: buildTeacherInput({ message, mode, notes, history, exercise }, kb),
+      max_output_tokens: 1200,
       temperature: 0.35,
       store: false,
       safety_identifier: crypto.createHash('sha256').update(String(memberId || '')).digest('hex'),
@@ -2869,7 +2902,7 @@ app.post('/api/courses/:id/teacher-chat', requireMemberSession, async (req, res)
     });
   }
 
-  const message = truncateText(req.body?.message || '', 2400);
+  const message = truncateText(req.body?.message || '', 6500);
   if (!message) return res.status(400).json({ error: 'กรุณาพิมพ์คำถามหรือคำตอบที่ต้องการให้ตรวจ' });
 
   const publicData = publicCourse(course);
@@ -2885,7 +2918,37 @@ app.post('/api/courses/:id/teacher-chat', requireMemberSession, async (req, res)
   `).all(publicData.id, publicData.id).map(publicResource);
   const modules = courseModules(publicData, replays);
   const kb = lessonKnowledgeBase(publicData, modules, resources, req.body?.moduleIndex);
-  const mode = ['ask', 'check', 'practice', 'summarize'].includes(req.body?.mode) ? req.body.mode : 'ask';
+  const mode = ['ask', 'check', 'practice', 'summarize', 'review'].includes(req.body?.mode) ? req.body.mode : 'ask';
+  const rawExercise = req.body?.exercise && typeof req.body.exercise === 'object' ? req.body.exercise : null;
+  const exercise = rawExercise
+    ? {
+        editorMode: truncateText(rawExercise.editorMode || '', 80),
+        challengeTitle: truncateText(rawExercise.challengeTitle || '', 260),
+        challengeType: truncateText(rawExercise.challengeType || '', 120),
+        prompt: truncateText(rawExercise.prompt || '', 1000),
+        requirements: Array.isArray(rawExercise.requirements)
+          ? rawExercise.requirements.slice(0, 8).map((item) => truncateText(item, 260))
+          : [],
+        testCases: Array.isArray(rawExercise.testCases)
+          ? rawExercise.testCases.slice(0, 8).map((item) => ({
+              label: truncateText(item?.label || '', 80),
+              detail: truncateText(item?.detail || '', 240)
+            }))
+          : [],
+        localRun: rawExercise.localRun && typeof rawExercise.localRun === 'object'
+          ? {
+              score: Number(rawExercise.localRun.score || 0),
+              verdict: truncateText(rawExercise.localRun.verdict || '', 240),
+              checks: Array.isArray(rawExercise.localRun.checks)
+                ? rawExercise.localRun.checks.slice(0, 8).map((item) => ({
+                    label: truncateText(item?.label || '', 80),
+                    pass: Boolean(item?.pass)
+                  }))
+                : []
+            }
+          : null
+      }
+    : null;
 
   try {
     const result = await generateTeacherAnswer({
@@ -2893,6 +2956,7 @@ app.post('/api/courses/:id/teacher-chat', requireMemberSession, async (req, res)
       mode,
       notes: truncateText(req.body?.notes || '', 1200),
       history: Array.isArray(req.body?.history) ? req.body.history : [],
+      exercise,
       kb,
       memberId: req.member.id
     });
@@ -2910,7 +2974,7 @@ app.post('/api/courses/:id/teacher-chat', requireMemberSession, async (req, res)
   } catch (error) {
     console.error('AiX Teacher failed:', error.message);
     res.json({
-      answer: localTeacherFallback(message, kb, mode),
+      answer: localTeacherFallback(message, kb, mode, exercise),
       source: 'local-fallback',
       model: 'local',
       warning: 'AI teacher API unavailable; returned lesson fallback instead.',

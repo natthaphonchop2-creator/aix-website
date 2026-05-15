@@ -4500,14 +4500,15 @@ details {
 
 .learn-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(360px, 0.92fr) minmax(520px, 1.08fr);
   gap: 18px;
   align-items: start;
   margin-top: 22px;
 }
 
 .learn-reading-card,
-.learn-ai-card {
+.learn-ai-card,
+.learn-lab-card {
   border: 1px solid var(--line-soft);
   border-radius: 18px;
   background: #fff;
@@ -4515,6 +4516,135 @@ details {
 
 .learn-reading-card {
   padding: 22px;
+}
+
+.learn-lab-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: #f8fbff;
+  box-shadow: 0 18px 46px rgba(17, 34, 68, 0.08);
+}
+
+.learn-lab-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.learn-lab-head span,
+.learn-challenge-brief span {
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.learn-lab-head h2 {
+  margin: 4px 0 0;
+  font-size: 1.35rem;
+  line-height: 1.32;
+}
+
+.learn-lab-head > strong {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  color: var(--blue-dark);
+  border: 1px solid rgba(31, 102, 209, 0.18);
+  border-radius: 999px;
+  background: #edf4ff;
+  font-size: 0.78rem;
+}
+
+.learn-lab-prompt {
+  margin: 0;
+  color: #46556f;
+  line-height: 1.65;
+}
+
+.learn-editor-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.learn-editor-tabs button {
+  min-height: 42px;
+  color: #334155;
+  border: 1px solid rgba(31, 102, 209, 0.16);
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 900;
+  transition: border-color var(--motion), box-shadow var(--motion), transform var(--motion);
+}
+
+.learn-editor-tabs button.active,
+.learn-editor-tabs button:hover {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  box-shadow: 0 12px 24px rgba(47, 88, 238, 0.22);
+  transform: translateY(-1px);
+}
+
+.learn-editor-tabs i {
+  margin-right: 6px;
+}
+
+.learn-challenge-brief {
+  padding: 18px;
+  border: 1px solid rgba(31, 102, 209, 0.14);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.learn-challenge-brief h2 {
+  margin: 6px 0 8px;
+  font-size: 1.35rem;
+}
+
+.learn-challenge-brief p,
+.learn-challenge-section li,
+.learn-challenge-section span {
+  color: #334155;
+  line-height: 1.72;
+}
+
+.learn-challenge-section {
+  margin-top: 18px;
+}
+
+.learn-challenge-section > strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.learn-challenge-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.learn-test-list {
+  display: grid;
+  gap: 8px;
+}
+
+.learn-test-list article {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.learn-test-list b {
+  color: var(--blue-dark);
 }
 
 .learn-lesson-head {
@@ -4639,6 +4769,13 @@ details {
   box-shadow: 0 22px 58px rgba(6, 20, 56, 0.22);
 }
 
+.learn-lab-card .learn-ai-card {
+  position: static;
+  padding: 14px;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
 .learn-terminal-top {
   display: flex;
   gap: 12px;
@@ -4740,7 +4877,7 @@ details {
 }
 
 .learn-ai-messages {
-  max-height: 460px;
+  max-height: 360px;
   display: grid;
   gap: 10px;
   overflow: auto;
@@ -4792,6 +4929,134 @@ details {
   border: 1px solid rgba(96, 165, 250, 0.22);
   border-radius: 14px;
   background: rgba(2, 6, 23, 0.72);
+}
+
+.learn-lab-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 16px;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.learn-editor-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: #111827;
+}
+
+.learn-editor-title span {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.learn-lab-form textarea {
+  width: 100%;
+  min-height: 360px;
+  padding: 18px;
+  color: #dbeafe;
+  border: 0;
+  background:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px) 0 0 / 44px 44px,
+    #0b1120;
+  outline: none;
+  resize: vertical;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.96rem;
+  line-height: 1.72;
+}
+
+.learn-lab-form textarea::placeholder {
+  color: #64748b;
+}
+
+.learn-lab-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  background: #111827;
+}
+
+.learn-run-result {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(31, 102, 209, 0.14);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.learn-run-result div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.learn-run-result strong {
+  color: var(--ink);
+}
+
+.learn-run-result span,
+.learn-run-result p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.learn-run-result ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.learn-run-result li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.learn-run-result li.pass {
+  color: #047857;
+  background: #dff8ea;
+}
+
+.learn-run-result li.fail {
+  color: #b42318;
+  background: #fee4e2;
+}
+
+.learn-run-result.pass {
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+.learn-run-result.warn {
+  border-color: rgba(245, 158, 11, 0.36);
+}
+
+.learn-run-result.fail {
+  border-color: rgba(244, 63, 94, 0.32);
 }
 
 .learn-ai-form label {
@@ -5323,12 +5588,28 @@ details {
   }
 
   .learn-ai-form,
-  .learn-terminal-actions {
+  .learn-terminal-actions,
+  .learn-editor-tabs {
     grid-template-columns: 1fr;
   }
 
   .learn-ai-form label {
     white-space: normal;
+  }
+
+  .learn-editor-title,
+  .learn-lab-head,
+  .learn-lab-controls,
+  .learn-run-result div {
+    display: grid;
+  }
+
+  .learn-lab-form textarea {
+    min-height: 320px;
+  }
+
+  .learn-test-list article {
+    grid-template-columns: 1fr;
   }
 
   .learn-tabs {
