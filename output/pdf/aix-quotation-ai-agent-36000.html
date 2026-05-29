@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ใบเสนอราคา AiX Business AI Agent</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #111827;
+      --muted: #667085;
+      --line: #d8dee8;
+      --soft: #f5f7fb;
+      --paper: #ffffff;
+      --dark: #101828;
+      --blue: #155eef;
+      --green: #0f766e;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #e5e9ef;
+      font-family: "Sukhumvit Set", "Noto Sans Thai", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      padding: 13mm 16mm 11mm;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      break-after: page;
+    }
+
+    .page:last-child {
+      break-after: auto;
+    }
+
+    .top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16mm;
+      padding-bottom: 6mm;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .logo {
+      width: 36mm;
+      height: auto;
+      display: block;
+    }
+
+    .company {
+      margin-top: 4mm;
+      color: var(--muted);
+      font-size: 9.1pt;
+      line-height: 1.58;
+    }
+
+    .meta {
+      min-width: 54mm;
+      text-align: right;
+      color: var(--muted);
+      font-size: 9.2pt;
+      line-height: 1.62;
+    }
+
+    .meta strong {
+      display: block;
+      color: var(--ink);
+      font-size: 18pt;
+      line-height: 1.2;
+      margin-bottom: 2mm;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin: 8mm 0 3mm;
+      font-size: 24pt;
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 3.5mm;
+      font-size: 15.5pt;
+      line-height: 1.25;
+    }
+
+    h3 {
+      margin: 0 0 2mm;
+      font-size: 11.5pt;
+      line-height: 1.35;
+    }
+
+    p {
+      margin: 0 0 3mm;
+      color: var(--muted);
+      font-size: 9.7pt;
+    }
+
+    .lead {
+      max-width: 160mm;
+      color: var(--muted);
+      font-size: 10.6pt;
+      line-height: 1.56;
+      margin-bottom: 4mm;
+    }
+
+    .section {
+      margin-top: 5mm;
+    }
+
+    .client-box,
+    .box,
+    .total-panel {
+      border: 1px solid var(--line);
+      border-radius: 3mm;
+      background: #ffffff;
+    }
+
+    .client-box {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .client-cell {
+      padding: 3.2mm;
+      border-left: 1px solid var(--line);
+    }
+
+    .client-cell:first-child {
+      border-left: 0;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 7.5pt;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.2mm;
+    }
+
+    .value {
+      color: var(--ink);
+      font-size: 9.4pt;
+      font-weight: 800;
+      line-height: 1.36;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--line);
+      border-radius: 3mm;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .table th,
+    .table td {
+      padding: 2.65mm 3.2mm;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      vertical-align: top;
+      font-size: 9.2pt;
+    }
+
+    .table tr:first-child th {
+      border-top: 0;
+    }
+
+    .table th:first-child,
+    .table td:first-child {
+      border-left: 0;
+    }
+
+    .table th {
+      color: var(--ink);
+      background: var(--soft);
+      font-size: 8.4pt;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .table td {
+      color: var(--muted);
+    }
+
+    .table .item {
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .table .amount {
+      color: var(--ink);
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 900;
+    }
+
+    .table .discount {
+      color: var(--green);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 74mm;
+      gap: 6mm;
+      align-items: start;
+      margin-top: 5mm;
+    }
+
+    .box {
+      padding: 3.7mm;
+      background: var(--soft);
+    }
+
+    .box ul {
+      margin: 0;
+      padding-left: 4.5mm;
+      color: var(--muted);
+      font-size: 9pt;
+    }
+
+    .box li {
+      margin-bottom: 1.8mm;
+    }
+
+    .total-panel {
+      overflow: hidden;
+    }
+
+    .total-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4mm;
+      padding: 2.55mm 4mm;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9.3pt;
+    }
+
+    .total-row:first-child {
+      border-top: 0;
+    }
+
+    .total-row strong {
+      color: var(--ink);
+    }
+
+    .total-row.final {
+      color: #ffffff;
+      background: var(--dark);
+      font-size: 12.2pt;
+      font-weight: 900;
+    }
+
+    .total-row.final strong {
+      color: #ffffff;
+      font-size: 16pt;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 1.3mm 2.4mm;
+      border-radius: 999px;
+      color: var(--green);
+      background: #e0f6ef;
+      font-size: 8pt;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .grid-2,
+    .grid-4 {
+      display: grid;
+      gap: 4mm;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 4mm;
+      align-items: stretch;
+    }
+
+    .payment-card {
+      padding: 4.5mm;
+      border: 1px solid var(--line);
+      border-radius: 3mm;
+      background: #ffffff;
+    }
+
+    .payment-card.soft {
+      background: var(--soft);
+    }
+
+    .bank-logo {
+      width: 45mm;
+      height: auto;
+      display: block;
+      margin-bottom: 3mm;
+    }
+
+    .promptpay-box {
+      display: grid;
+      grid-template-columns: 1fr 48mm;
+      gap: 4mm;
+      align-items: center;
+      margin-top: 3mm;
+    }
+
+    .promptpay-qr {
+      width: 48mm;
+      height: auto;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 2mm;
+      background: #ffffff;
+    }
+
+    .agent {
+      min-height: 36mm;
+      padding: 4mm;
+      border: 1px solid var(--line);
+      border-radius: 2.8mm;
+      background: #ffffff;
+    }
+
+    .agent span {
+      display: inline-block;
+      margin-bottom: 2mm;
+      color: var(--blue);
+      font-size: 8pt;
+      font-weight: 900;
+    }
+
+    .agent p {
+      margin-bottom: 0;
+      font-size: 8.8pt;
+      line-height: 1.55;
+    }
+
+    .terms {
+      margin: 0;
+      padding-left: 4.8mm;
+      color: var(--muted);
+      font-size: 9.5pt;
+    }
+
+    .terms li {
+      margin-bottom: 2mm;
+    }
+
+    .signatures {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10mm;
+      margin-top: 11mm;
+    }
+
+    .signature {
+      min-height: 36mm;
+      padding: 5mm;
+      border: 1px solid var(--line);
+      border-radius: 3mm;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .line {
+      height: 16mm;
+      border-bottom: 1px solid #9aa3b2;
+      margin-bottom: 3mm;
+    }
+
+    .signature p {
+      margin-bottom: 1mm;
+      color: var(--ink);
+      font-size: 9.5pt;
+      font-weight: 800;
+    }
+
+    .signature small {
+      color: var(--muted);
+      font-size: 8.3pt;
+    }
+
+    .footer-note {
+      position: absolute;
+      left: 16mm;
+      right: 16mm;
+      bottom: 8mm;
+      color: var(--muted);
+      font-size: 7.6pt;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <header class="top">
+      <div>
+        <img class="logo" src="assets/aix-logo.png" alt="AiX">
+        <div class="company">
+          AiX<br>
+          ผู้ติดต่อ: ภูมิ โทร. 098-757-0796<br>
+          บริการออกแบบและวางระบบ AI Agent สำหรับธุรกิจ<br>
+          เอกสารนี้จัดทำเพื่อใช้ประกอบการพิจารณาอนุมัติโครงการ
+        </div>
+      </div>
+      <div class="meta">
+        <strong>ใบเสนอราคา</strong>
+        เลขที่: AIX-QT-20260525-001<br>
+        วันที่: 25 พฤษภาคม 2569<br>
+        อายุใบเสนอราคา: 15 วัน
+      </div>
+    </header>
+
+    <h1>โครงการวางระบบ Business AI Agent</h1>
+    <p class="lead">AiX ขอเสนอค่าบริการสำหรับการออกแบบและจัดทำระบบ AI Agent สำหรับใช้งานในธุรกิจ โดยแยก Agent ตามหน้าที่หลัก ได้แก่ ตรวจสอบ เขียน ตกแต่ง และคนคุม เพื่อช่วยลดงานซ้ำ เพิ่มความเร็วในการทำงาน และทำให้ทีมมีขั้นตอนใช้งาน AI ที่ชัดเจน</p>
+
+    <section class="client-box">
+      <div class="client-cell">
+        <div class="label">เสนอให้</div>
+        <div class="value">
+          ห้างหุ้นส่วนจำกัด หงษ์แดง789<br>
+          ผู้ติดต่อ: คุณจักรพงศ์ ตงศิริ (หนุ่ย), หุ้นส่วนผู้จัดการ<br>
+          โทร. 0-4271-3795, 08-8559-8791 | Email: eta.nui789@gmail.com<br>
+          TAX ID: 0-4735-36000-49-1<br>
+          1803/4 ถ.รัฐพัฒนา ต.ธาตุเชิงชุม อ.เมืองสกลนคร จ.สกลนคร 47000
+        </div>
+      </div>
+      <div class="client-cell">
+        <div class="label">รูปแบบบริการ</div>
+        <div class="value">จัดทำระบบครั้งแรก + ดูแลต่อเนื่อง 1 ปี</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>รายการเสนอราคา</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width: 48%;">รายการ</th>
+            <th>รายละเอียด</th>
+            <th style="width: 25%; text-align: right;">จำนวนเงิน</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="item">ค่าจัดทำระบบ Business AI Agent</td>
+            <td>วิเคราะห์งาน ออกแบบ Agent แยกหน้าที่ สร้าง Workflow, Prompt, Template และเตรียมระบบให้ทีมเริ่มใช้งานได้</td>
+            <td class="amount">36,000 บาท</td>
+          </tr>
+          <tr>
+            <td class="item">ค่าดูแลระบบ 1 ปี</td>
+            <td>ดูแล ปรับปรุง และให้คำแนะนำการใช้งานตลอด 12 เดือนหลังเริ่มโครงการ</td>
+            <td class="amount discount">ฟรี</td>
+          </tr>
+          <tr>
+            <td class="item">หักค่าเดินทางที่ได้สำรองจ่ายแล้ว</td>
+            <td>นำค่าเดินทางจำนวน 1,400 บาทมาหักออกจากยอดชำระของโครงการนี้</td>
+            <td class="amount discount">-1,400 บาท</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="summary">
+        <div class="box">
+          <h3>หมายเหตุสำคัญ</h3>
+          <ul>
+            <li>ค่า AI, API, Token, Software Subscription หรือเครื่องมือภายนอก คิดตามจริงและไม่รวมในค่าบริการนี้</li>
+            <li>หากมีค่าใช้จ่ายจากผู้ให้บริการภายนอก AiX จะแจ้งให้ลูกค้าอนุมัติก่อนใช้งาน</li>
+            <li>ยอดเสนอราคานี้ไม่มี VAT และยอดสุทธิที่ต้องชำระคือ 34,600 บาท</li>
+          </ul>
+        </div>
+
+        <div class="total-panel">
+          <div class="total-row">
+            <span>ยอดค่าบริการ</span>
+            <strong>36,000 บาท</strong>
+          </div>
+          <div class="total-row">
+            <span>ค่าดูแล 1 ปี</span>
+            <strong class="discount">ฟรี</strong>
+          </div>
+          <div class="total-row">
+            <span>หักค่าเดินทางสำรองจ่าย</span>
+            <strong class="discount">-1,400 บาท</strong>
+          </div>
+          <div class="total-row final">
+            <span>ยอดสุทธิที่ต้องชำระ (ไม่มี VAT)</span>
+            <strong>34,600 บาท</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </section>
+
+  <section class="page">
+    <header class="top">
+      <div>
+        <img class="logo" src="assets/aix-logo.png" alt="AiX">
+        <div class="company">รายละเอียดบริการประกอบใบเสนอราคา</div>
+      </div>
+      <div class="meta">
+        <strong>ขอบเขตบริการ</strong>
+        AIX-QT-20260525-001<br>
+        วันที่: 25 พฤษภาคม 2569
+      </div>
+    </header>
+
+    <section class="section" style="margin-top: 11mm;">
+      <h2>สิ่งที่ลูกค้าจะได้รับ</h2>
+      <table class="table">
+        <tbody>
+          <tr>
+            <td class="item" style="width: 34%;">วิเคราะห์งานและออกแบบระบบ</td>
+            <td>ประชุมเพื่อเก็บโจทย์ธุรกิจ เลือกงานที่เหมาะกับการเริ่มทำเป็น AI Agent และออกแบบลำดับการทำงานให้ทีมใช้งานจริงได้</td>
+          </tr>
+          <tr>
+            <td class="item">จัดทำ Agent 4 บทบาทหลัก</td>
+            <td>ออกแบบคำสั่ง วิธีใช้งาน และมาตรฐานผลลัพธ์ของ Agent ตรวจสอบ, Agent เขียน, Agent ตกแต่ง และ Agent คนคุม</td>
+          </tr>
+          <tr>
+            <td class="item">จัดทำ Workflow และ Template</td>
+            <td>เตรียมรูปแบบคำสั่ง Template งาน และขั้นตอนส่งต่องานระหว่าง Agent เพื่อให้ทีมใช้งานซ้ำได้</td>
+          </tr>
+          <tr>
+            <td class="item">ทดลองใช้งานและปรับระบบ</td>
+            <td>นำระบบไปทดลองกับงานจริง ปรับผลลัพธ์ให้เหมาะกับธุรกิจ และแก้จุดที่ยังไม่ตรงกับวิธีทำงานของทีม</td>
+          </tr>
+          <tr>
+            <td class="item">แนะนำการใช้งานให้ทีม</td>
+            <td>อธิบายวิธีใช้งานระบบ ขั้นตอนตรวจงาน และข้อควรระวัง เพื่อให้ทีมเริ่มใช้งานได้อย่างมั่นใจ</td>
+          </tr>
+          <tr>
+            <td class="item">ดูแลต่อเนื่อง 1 ปี</td>
+            <td>ให้คำแนะนำ ปรับปรุงคำสั่ง และช่วยประเมินการต่อยอด Workflow ตามการใช้งานจริงตลอดระยะเวลาดูแล</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>Agent หลักที่จัดทำในโครงการ</h2>
+      <div class="grid-4">
+        <div class="agent">
+          <span>01 ตรวจสอบ</span>
+          <h3>Agent ตรวจสอบ</h3>
+          <p>ช่วยตรวจความครบถ้วน ความถูกต้องเบื้องต้น และจุดที่ควรให้ทีมพิจารณาก่อนใช้งานจริง</p>
+        </div>
+        <div class="agent">
+          <span>02 เขียน</span>
+          <h3>Agent เขียน</h3>
+          <p>ช่วยร่างข้อความ เอกสาร คำตอบลูกค้า สคริปต์ หรือเนื้อหาตามรูปแบบที่ธุรกิจกำหนด</p>
+        </div>
+        <div class="agent">
+          <span>03 ตกแต่ง</span>
+          <h3>Agent ตกแต่ง</h3>
+          <p>ช่วยปรับภาษา จัดรูปแบบ และเตรียมชิ้นงานให้พร้อมส่งต่อหรือนำเสนอมากขึ้น</p>
+        </div>
+        <div class="agent">
+          <span>04 คนคุม</span>
+          <h3>Agent คนคุม</h3>
+          <p>รับโจทย์ แบ่งงาน ส่งต่อให้ Agent ที่เหมาะสม และรวบรวมผลลัพธ์ให้ทีมตรวจขั้นสุดท้าย</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section grid-2">
+      <div class="box">
+        <h2>ขอบเขตที่ไม่รวมในราคา</h2>
+        <ul>
+          <li>ค่า AI/API/Token และค่าเครื่องมือภายนอกทุกประเภท</li>
+          <li>ค่าพัฒนา Software เฉพาะทางขนาดใหญ่ที่อยู่นอกเหนือ Workflow ที่ตกลงกัน</li>
+          <li>ค่าระบบหรือบัญชีของ Third-party Platform ที่ลูกค้าต้องสมัครใช้งานเอง</li>
+          <li>งานเพิ่มเติมที่เปลี่ยนขอบเขตหลักของโครงการหลังอนุมัติใบเสนอราคา</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h2>แนวทางดูแลหลังส่งมอบ</h2>
+        <ul>
+          <li>ปรับ Prompt และ Template จากผลการใช้งานจริง</li>
+          <li>ให้คำแนะนำการใช้งานและแนวทางควบคุมคุณภาพผลลัพธ์</li>
+          <li>ช่วยประเมินงานถัดไปที่เหมาะกับการนำ AI Agent ไปใช้</li>
+          <li>สรุปประเด็นที่ควรปรับปรุงเป็นรอบตามความเหมาะสมของโครงการ</li>
+        </ul>
+      </div>
+    </section>
+  </section>
+
+  <section class="page">
+    <header class="top">
+      <div>
+        <img class="logo" src="assets/aix-logo.png" alt="AiX">
+        <div class="company">เงื่อนไขและการอนุมัติใบเสนอราคา</div>
+      </div>
+      <div class="meta">
+        <strong>การอนุมัติ</strong>
+        AIX-QT-20260525-001<br>
+        วันที่: 25 พฤษภาคม 2569
+      </div>
+    </header>
+
+    <section class="section payment-grid" style="margin-top: 11mm;">
+      <div class="payment-card soft">
+        <h2>สรุปยอดชำระ</h2>
+        <ul>
+          <li>ค่าจัดทำระบบ Business AI Agent: 36,000 บาท</li>
+          <li>ค่าดูแลระบบ 1 ปี: ฟรี</li>
+          <li>หักค่าเดินทางที่ได้สำรองจ่ายแล้ว: 1,400 บาท</li>
+          <li><strong style="color: var(--ink);">ยอดสุทธิที่ต้องชำระ: 34,600 บาท ไม่มี VAT</strong></li>
+          <li>ผู้ติดต่อ: ภูมิ โทร. 098-757-0796</li>
+          <li>ที่อยู่: 5/3 ซอยงามดูพลี แขวงทุ่งมหาเมฆ เขตสาทร กรุงเทพฯ 10120</li>
+        </ul>
+      </div>
+      <div class="payment-card">
+        <h2>ช่องทางชำระเงิน</h2>
+        <img class="bank-logo" src="assets/bangkok-bank-logo.png" alt="Bangkok Bank">
+        <div class="promptpay-box">
+          <div>
+            <p><strong style="color: var(--ink);">ธนาคารกรุงเทพ</strong><br>
+            ชื่อบัญชี: ณัฐพล ชอบจิตต์<br>
+            เลขบัญชี: 398-0-996767<br>
+            พร้อมเพย์ / เบอร์โทร: 098-757-0796</p>
+            <p>หลังชำระเงินสามารถส่งหลักฐานการโอนให้ผู้ติดต่อ ภูมิ โทร. 098-757-0796</p>
+          </div>
+          <img class="promptpay-qr" src="assets/promptpay-qr.jpeg" alt="PromptPay QR">
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>เงื่อนไขประกอบการเสนอราคา</h2>
+      <ol class="terms">
+        <li>ใบเสนอราคานี้มีผล 15 วันนับจากวันที่ออกเอกสาร</li>
+        <li>ยอดสุทธิที่ต้องชำระหลังหักค่าเดินทางที่สำรองจ่ายแล้ว คือ 34,600 บาท ไม่มี VAT</li>
+        <li>การเริ่มงานจะเริ่มหลังจากลูกค้าอนุมัติใบเสนอราคาและชำระเงินผ่านบัญชีธนาคารที่ระบุในเอกสารนี้</li>
+        <li>ค่า AI, API, Token และเครื่องมือภายนอกเป็นค่าใช้จ่ายตามจริง โดยลูกค้าจะเป็นผู้อนุมัติก่อนเกิดค่าใช้จ่าย</li>
+        <li>ระบบ AI Agent ออกแบบมาเพื่อช่วยเพิ่มประสิทธิภาพการทำงาน ผลลัพธ์สำคัญควรผ่านการตรวจสอบและอนุมัติจากผู้รับผิดชอบของลูกค้าก่อนใช้งานจริง</li>
+      </ol>
+    </section>
+
+    <section class="signatures">
+      <div class="signature">
+        <div class="line"></div>
+        <p>ผู้เสนอราคา</p>
+        <small>นายณัฐพล ชอบจิตต์</small>
+      </div>
+      <div class="signature">
+        <div class="line"></div>
+        <p>ผู้อนุมัติใบเสนอราคา</p>
+        <small>ห้างหุ้นส่วนจำกัด หงษ์แดง789</small>
+      </div>
+    </section>
+
+  </section>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
   "name": "aix-website",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "server.js",
   "engines": {
@@ -18,13 +18,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^12.9.0",
+    "better-sqlite3": "^12.10.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.1.1",
-    "stripe": "^22.1.1"
+    "stripe": "^22.2.0"
   },
   "devDependencies": {
-    "wrangler": "^4.90.1"
+    "wrangler": "^4.95.0"
   }
 }
