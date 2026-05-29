@@ -928,6 +928,7 @@ input, select, textarea { font-family: var(--font-body); outline: none; border: 
 
 .admin-input {
   width: 100%;
+  min-height: 44px;
   padding: 10px 14px;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border-subtle);
@@ -1306,4 +1307,49 @@ textarea.admin-input {
   .content-area { padding: 20px 16px; }
   .admin-form-row { grid-template-columns: 1fr; }
   .data-table-wrap { overflow-x: auto; }
+}
+
+/* Responsive fit guard for all admin viewports */
+.login-card,
+.admin-modal,
+.content-area,
+.data-table-wrap,
+.packages-grid > *,
+.recent-grid > *,
+.stat-card {
+  min-width: 0;
+}
+
+.login-card {
+  max-width: min(420px, calc(100vw - 32px));
+}
+
+.login-card a,
+.btn-admin,
+.mobile-admin-tab,
+.header-back-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-modal {
+  max-width: min(760px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+
+@media (max-width: 420px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 32px 22px;
+  }
+
+  .login-logo h1 {
+    font-size: clamp(1.05rem, 6vw, 1.3rem);
+  }
 }

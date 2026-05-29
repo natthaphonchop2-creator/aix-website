@@ -109,10 +109,11 @@ function renderGoogleButton() {
   const target = document.getElementById("googleAuthButton");
   if (!target || !state.googleInitialized || !window.google?.accounts?.id) return;
   target.innerHTML = "";
+  const googleButtonWidth = Math.min(420, Math.max(320, target.closest(".google-box")?.getBoundingClientRect().width - 24 || 360));
   window.google.accounts.id.renderButton(target, {
     theme: "outline",
     size: "large",
-    width: Math.min(380, target.getBoundingClientRect().width || 360),
+    width: googleButtonWidth,
     text: state.mode === "register" ? "signup_with" : "signin_with",
     locale: "th",
     logo_alignment: "left",

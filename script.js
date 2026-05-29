@@ -94,25 +94,25 @@ const resources = [
     title: "Prompt Templates",
     category: "Prompt Engineering",
     icon: "fa-message",
-    description: "ชุด Prompt สำหรับคิดกลยุทธ์ เขียนคอนเทนต์ วิเคราะห์ลูกค้า สรุปรายงาน และสั่งงาน AI ให้ได้ผลลัพธ์ซ้ำได้"
+    description: "Prompt สำเร็จรูปสำหรับกลยุทธ์ คอนเทนต์ และรายงาน"
   },
   {
     title: "Agent Workflow",
     category: "Agent",
     icon: "fa-robot",
-    description: "Blueprint สำหรับสร้าง AI Agent แบบเป็นขั้นตอน ตั้งแต่กำหนดหน้าที่ เครื่องมือ ข้อมูล ไปจนถึงการอนุมัติผลลัพธ์"
+    description: "Blueprint สำหรับหน้าที่ เครื่องมือ ข้อมูล และจุดอนุมัติ"
   },
   {
     title: "Research Playbook",
     category: "Research",
     icon: "fa-brain",
-    description: "Template สำหรับทำ Deep Research วิเคราะห์เอกสาร สรุป insight และวางแผนโปรเจกต์ด้วย AI"
+    description: "Template ทำรีเสิร์ช สรุป insight และวางแผนงาน"
   },
   {
     title: "Automation Checklist",
     category: "Automation",
     icon: "fa-gears",
-    description: "เช็กลิสต์การเชื่อมฟอร์ม CRM, Sheet, Email, AI และ workflow automation ให้ทำงานต่อกันอย่างเป็นระบบ"
+    description: "เช็กลิสต์เชื่อม CRM, Sheet, Email และ AI"
   }
 ];
 
@@ -126,6 +126,7 @@ const state = {
   googleCredential: "",
   googleProfile: null,
   googleMode: "signup",
+  googleInitialized: false,
   otpPhone: "",
   otpVerifiedPhone: "",
   phoneVerificationToken: "",
@@ -596,6 +597,7 @@ function setAuthTab(mode) {
   const form = mode === "signup" ? memberForm : loginForm;
   window.setTimeout(() => {
     form?.querySelector("[name='email']")?.focus();
+    renderGoogleAuthButtons();
   }, 80);
 }
 
@@ -664,6 +666,42 @@ function setGoogleFallback(message) {
   });
 }
 
+function googleButtonWidth(target) {
+  const boxWidth = target?.closest(".google-box")?.getBoundingClientRect().width || 0;
+  const targetWidth = target?.getBoundingClientRect().width || 0;
+  const availableWidth = Math.max(boxWidth, targetWidth);
+  if (!availableWidth) return 420;
+  return Math.min(420, Math.max(280, Math.floor(availableWidth - 24)));
+}
+
+function renderGoogleButton(target, options) {
+  if (!target || !window.google?.accounts?.id || !state.googleInitialized) return;
+  target.innerHTML = "";
+  window.google.accounts.id.renderButton(target, {
+    theme: "outline",
+    size: "large",
+    width: googleButtonWidth(target),
+    locale: "th",
+    logo_alignment: "left",
+    ...options
+  });
+}
+
+function renderGoogleAuthButtons() {
+  renderGoogleButton(document.getElementById("googleSignupButton"), {
+    text: "signup_with",
+    click_listener: () => {
+      state.googleMode = "signup";
+    }
+  });
+  renderGoogleButton(document.getElementById("googleLoginButton"), {
+    text: "signin_with",
+    click_listener: () => {
+      state.googleMode = "login";
+    }
+  });
+}
+
 async function initGoogleLogin() {
   let config;
   try {
@@ -701,30 +739,8 @@ async function initGoogleLogin() {
       callback: handleGoogleCredential,
       auto_select: false
     });
-
-    window.google.accounts.id.renderButton(document.getElementById("googleSignupButton"), {
-      theme: "outline",
-      size: "large",
-      width: 360,
-      text: "signup_with",
-      locale: "th",
-      logo_alignment: "left",
-      click_listener: () => {
-        state.googleMode = "signup";
-      }
-    });
-
-    window.google.accounts.id.renderButton(document.getElementById("googleLoginButton"), {
-      theme: "outline",
-      size: "large",
-      width: 360,
-      text: "signin_with",
-      locale: "th",
-      logo_alignment: "left",
-      click_listener: () => {
-        state.googleMode = "login";
-      }
-    });
+    state.googleInitialized = true;
+    renderGoogleAuthButtons();
   }, 150);
 }
 
@@ -772,22 +788,37 @@ function renderClassFilters() {
   });
 }
 
-function matchesFilter(course) {
-  if (state.activeFilter === "ทั้งหมด") return true;
-  return course.type === state.activeFilter || course.level === state.activeFilter || course.skills.includes(state.activeFilter);
-}
+const filterAliases = {
+  Agent: ["agent", "ai agent"],
+  Automation: ["automation", "workflow", "make", "n8n"],
+  Creative: ["creative", "content", "video", "graphic", "image"],
+  Coding: ["coding", "prototype", "vibe coding", "developer"],
+  Prompt: ["prompt", "prompt engineering", "prompt chain"]
+};
 
-function matchesSearch(course) {
-  const search = state.search.trim().toLowerCase();
-  if (!search) return true;
+function courseSearchText(course) {
   return [
     course.title,
     course.type,
     course.level,
     course.instructor,
     course.description,
-    ...course.skills
-  ].join(" ").toLowerCase().includes(search);
+    ...(Array.isArray(course.skills) ? course.skills : []),
+    ...(Array.isArray(course.topics) ? course.topics : [])
+  ].join(" ").toLowerCase();
+}
+
+function matchesFilter(course) {
+  if (state.activeFilter === "ทั้งหมด") return true;
+  const aliases = filterAliases[state.activeFilter] || [state.activeFilter];
+  const text = courseSearchText(course);
+  return aliases.some((alias) => text.includes(alias.toLowerCase()));
+}
+
+function matchesSearch(course) {
+  const search = state.search.trim().toLowerCase();
+  if (!search) return true;
+  return courseSearchText(course).includes(search);
 }
 
 function courseCta(course) {
@@ -800,12 +831,37 @@ function courseCta(course) {
   return `<a class="primary-btn full" href="/payment">ชำระเงินเพื่อเข้าเรียน</a>`;
 }
 
+function courseVisualIcon(course) {
+  const iconMap = {
+    Agent: "fa-robot",
+    Automation: "fa-gears",
+    Creative: "fa-pen-nib",
+    Coding: "fa-code",
+    Prompt: "fa-brain"
+  };
+  return iconMap[course.level] || "fa-graduation-cap";
+}
+
+function courseVisualTone(course) {
+  return normalizeText(course.level || course.type || "ai").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
+
 function renderCourses() {
   const filtered = courses.filter((course) => matchesFilter(course) && matchesSearch(course));
   classesGrid.innerHTML = filtered.map((course) => `
     <article class="course-card">
-      <div class="course-image">
-        <img src="${course.image}" alt="${course.title}" loading="lazy">
+      <div class="course-image course-visual course-visual-${courseVisualTone(course)}">
+        <div class="course-visual-window">
+          <i class="fa-solid ${courseVisualIcon(course)}"></i>
+          <span></span>
+          <span></span>
+          <strong>${course.level}</strong>
+        </div>
+        <div class="course-visual-panel">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
         <span class="course-badge">${course.status}</span>
       </div>
       <div class="course-body">

@@ -1,15 +1,17 @@
 (() => {
   if (document.querySelector(".site-footer")) return;
 
+  const isHomePage = /^\/(?:index\.html)?$/.test(window.location.pathname);
+  const sectionHref = (id) => (isHomePage ? `#${id}` : `/index.html#${id}`);
   const footer = document.createElement("footer");
   footer.className = "site-footer";
   footer.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        <img src="/AiX%20logo/textwhite.png" alt="AiX Club">
+        <img class="footer-logo" src="/AiX%20logo/textblack.png" alt="AiX Club">
         <p>แพลตฟอร์มคอร์สเรียน AI ภาษาไทย สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI ทำงานจริง</p>
         <div class="footer-mascot" aria-label="AiX Assistant">
-          <img src="/assets/generated/aix-mascot.png" alt="">
+          <img src="/assets/generated/aix-mascot-celebrate.png" alt="">
           <div>
             <strong>AiX Assistant</strong>
             <span>ผู้ช่วยเรียน AI ของสมาชิก</span>
@@ -18,16 +20,14 @@
       </div>
       <div>
         <strong>เรียน AI</strong>
-        <a href="/index.html#paths">เส้นทางเรียน AI</a>
-        <a href="/index.html#catalog">คอร์สเรียน AI</a>
-        <a href="/index.html#tools">AI Tools & Templates</a>
-        <a href="/index.html#business">AI สำหรับธุรกิจ</a>
+        <a href="${sectionHref("paths")}">เส้นทางเรียน AI</a>
+        <a href="${sectionHref("catalog")}">คอร์สเรียน AI</a>
+        <a href="${sectionHref("tools")}">AI Tools & Templates</a>
+        <a href="${sectionHref("business")}">AI สำหรับธุรกิจ</a>
       </div>
       <div>
         <strong>สมาชิก</strong>
         <a href="/dashboard">Dashboard</a>
-        <a href="/tools-box">Tools Box</a>
-        <a href="/dashboard#schedule">Live Classroom</a>
         <a href="/payment">ชำระเงิน</a>
         <a href="/dashboard#schedule">ตารางสอนสด</a>
         <a href="/dashboard#billing">ใบเสร็จและบัญชี</a>

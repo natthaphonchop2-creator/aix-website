@@ -22,46 +22,29 @@
   <title>AiX Club | คอร์สเรียน AI สำหรับธุรกิจ AI Agent และ Automation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=ai-teacher-1">
+  <link rel="stylesheet" href="styles.css?v=process-keyword-1">
   <script src="https://accounts.google.com/gsi/client?hl=th" async defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">ข้ามไปเนื้อหาหลัก</a>
   <header class="site-header">
-    <div class="top-strip">
-      <div class="container strip-inner">
-        <a href="#home">สำหรับผู้เรียน</a>
-        <a href="#business">สำหรับธุรกิจ</a>
-        <a href="#answers">คำถามยอดนิยม</a>
-        <a href="#membership">AiX Member</a>
-      </div>
-    </div>
-
     <div class="container nav-bar">
       <a class="brand" href="#home" aria-label="AiX Club home">
         <img src="AiX%20logo/textblack.png" alt="AiX Club">
       </a>
 
-      <button class="explore-btn" data-scroll="catalog">
-        <i class="fa-solid fa-grip"></i>
-        สำรวจคอร์ส
-      </button>
-
-      <label class="global-search" aria-label="Search courses">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="globalSearch" type="search" placeholder="ค้นหา AI Agent, Prompt, Automation, Content">
-      </label>
-
       <nav class="main-nav" aria-label="Main navigation">
-        <button data-scroll="paths">เส้นทางเรียน</button>
+        <button data-scroll="paths">เรียนรู้</button>
         <button data-scroll="catalog">คอร์สเรียน</button>
-        <button data-scroll="tools">เครื่องมือ</button>
+        <button data-scroll="tools">เครื่องมือ AI</button>
+        <button data-scroll="business">สำหรับองค์กร</button>
       </nav>
 
       <div class="nav-actions">
         <button class="link-btn" id="loginBtn">เข้าสู่ระบบ</button>
-        <button class="primary-btn" data-open-signup>สมัคร AiX Member</button>
+        <button class="primary-btn" data-open-signup>เริ่มเรียนฟรี</button>
       </div>
 
       <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">
@@ -70,74 +53,148 @@
     </div>
 
     <div class="mobile-panel" id="mobilePanel">
-      <button data-scroll="paths">เส้นทางเรียน</button>
+      <button data-scroll="paths">เรียนรู้</button>
       <button data-scroll="catalog">คอร์สเรียน</button>
-      <button data-scroll="tools">เครื่องมือ</button>
+      <button data-scroll="tools">เครื่องมือ AI</button>
+      <button data-scroll="business">สำหรับองค์กร</button>
       <button id="mobileLoginBtn" type="button">เข้าสู่ระบบ</button>
-      <button data-open-signup>สมัคร AiX Member</button>
+      <button data-open-signup>เริ่มเรียนฟรี</button>
     </div>
   </header>
 
-  <main>
+  <main id="main-content">
     <section class="hero" id="home">
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">คอร์สเรียน AI สำหรับธุรกิจและผู้ประกอบการ</p>
-          <h1>เรียน AI ให้สร้าง AI Agent, Automation และ Content System ได้จริง</h1>
-          <p class="hero-lead">AiX Club คือแพลตฟอร์มเรียน AI สำหรับคนทำธุรกิจที่อยากใช้ AI ในงานจริง ตั้งแต่ Prompt Engineering, AI Agent, Workflow Automation, Deep Research ไปจนถึงการทำคอนเทนต์ด้วย AI พร้อมคลาสสด วิดีโอย้อนหลัง เครื่องมือ และ Community</p>
-          <div class="hero-actions">
-            <button class="primary-btn large" data-scroll="catalog">สำรวจคอร์สเรียน</button>
-            <button class="secondary-btn large" data-scroll="paths">ดูเส้นทางเรียน</button>
+          <div class="hero-pill"><i class="fa-solid fa-arrow-trend-up"></i> แพลตฟอร์มเรียน AI สำหรับคนทำงานและธุรกิจไทย</div>
+          <h1><span>เรียน <em>AI</em></span><span>ให้ใช้ทำงานจริง</span></h1>
+          <p class="hero-lead"><span>คอร์สสั้น เข้าใจง่าย ใช้ได้เลยในงานจริง</span><span>สำหรับผู้ประกอบการ ทีมธุรกิจ และครีเอเตอร์</span></p>
+          <div class="hero-rating" aria-label="คะแนนรีวิว 4.9 จาก 5 จากผู้เรียนจริง">
+            <span aria-hidden="true">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </span>
+            <strong>4.9/5</strong>
+            <small>จากผู้เรียนจริง</small>
           </div>
-          <div class="hero-proof">
-            <span><i class="fa-solid fa-video"></i> คลาสสด + ดูย้อนหลัง</span>
-            <span><i class="fa-solid fa-certificate"></i> เหมาะกับผู้เริ่มต้นถึงใช้งานจริง</span>
-            <span><i class="fa-solid fa-users"></i> Community สำหรับลงมือทำ</span>
+          <div class="hero-actions">
+            <button class="primary-btn large" data-open-signup>เริ่มเรียนฟรี</button>
+            <button class="secondary-btn large" data-scroll="catalog">ดูคอร์สทั้งหมด</button>
+          </div>
+          <div class="hero-join">
+            <div class="avatar-stack" aria-hidden="true">
+              <span>น</span>
+              <span>AI</span>
+              <span>ธ</span>
+              <span>+</span>
+            </div>
+            <p><strong>เข้าร่วมแล้วกว่า 200+ คน</strong><span>จากธุรกิจและองค์กรทั่วไทย</span></p>
           </div>
         </div>
-        <div class="hero-media">
-          <img src="assets/generated/hero-space-learning.jpg" alt="คอร์สเรียน AI สำหรับธุรกิจบนแพลตฟอร์ม AiX Club">
-          <figure class="hero-mascot" aria-label="AiX Assistant">
-            <img src="assets/generated/aix-mascot.png" alt="มาสคอส AiX Assistant">
-            <figcaption>
-              <strong>AiX Assistant</strong>
-              <span>คู่คิดระหว่างเรียน</span>
-            </figcaption>
-          </figure>
+
+        <div class="hero-media learning-preview" aria-label="ตัวอย่างบทเรียน AiX Club">
+          <div class="lesson-sidebar">
+            <strong>บทเรียน</strong>
+            <span class="is-done">1. เข้าใจ AI สำหรับธุรกิจ</span>
+            <span class="is-active">1.2 AI ในงานธุรกิจ</span>
+            <span>1.3 Prompt ที่ใช้ซ้ำได้</span>
+            <span>2. สร้าง Agent ตัวแรก</span>
+            <span>3. ทำ Automation</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-window">
+              <div class="window-dots"><span></span><span></span><span></span></div>
+              <h2>1.2 AI ในงานธุรกิจ</h2>
+              <p>ออกแบบ Prompt และ Workflow เพื่อลดงานซ้ำของทีม</p>
+              <div class="code-card">
+                <span>ตัวอย่าง Prompt สำหรับวิเคราะห์ลูกค้า</span>
+                <code>1 บทบาท: นักวิเคราะห์การตลาด</code>
+                <code>2 เป้าหมาย: จัดกลุ่มลูกค้า</code>
+                <code>3 ข้อมูล: อายุ, พฤติกรรม, ปัญหา</code>
+                <code>4 ผลลัพธ์: Insight พร้อมแผนสื่อสาร</code>
+              </div>
+              <div class="progress-card">
+                <span>บทเรียน 1.2 จาก 12</span>
+                <strong>20%</strong>
+                <div><i></i></div>
+              </div>
+            </div>
+            <div class="floating-chip chat"><i class="fa-solid fa-comment-dots"></i></div>
+            <div class="floating-chip chart"><i class="fa-solid fa-chart-simple"></i></div>
+            <img class="hero-robot" src="assets/generated/aix-mascot-mimo.png" alt="มาสคอส AiX Assistant" decoding="async" fetchpriority="high">
+          </div>
         </div>
       </div>
     </section>
 
     <section class="trust-band">
       <div class="container trust-grid">
-        <p>เรียน AI แบบลงมือทำในแพลตฟอร์มเดียว</p>
-        <span>คลาสสดกลุ่มเล็ก</span>
-        <span>วิดีโอย้อนหลัง</span>
-        <span>AI Tools</span>
-        <span>Prompt Templates</span>
-        <span>Community</span>
+        <article>
+          <i class="fa-solid fa-graduation-cap"></i>
+          <div><strong>200+</strong><span>นักเรียนและผู้ประกอบการ</span></div>
+        </article>
+        <article>
+          <i class="fa-solid fa-building"></i>
+          <div><strong>50+</strong><span>ธุรกิจและองค์กรที่ไว้วางใจ</span></div>
+        </article>
+        <article>
+          <i class="fa-solid fa-star"></i>
+          <div><strong>4.9/5</strong><span>คะแนนรีวิวจากผู้เรียน</span></div>
+        </article>
+        <article>
+          <i class="fa-solid fa-clock"></i>
+          <div><strong>30+</strong><span>คอร์สเรียนคุณภาพ</span></div>
+        </article>
+        <article>
+          <i class="fa-solid fa-shield-halved"></i>
+          <div><strong>อัปเดตเนื้อหา</strong><span>ตามเทรนด์ AI ล่าสุด</span></div>
+        </article>
       </div>
     </section>
 
     <section class="section answer-section" id="answers">
-      <div class="container answer-grid">
-        <div>
-          <p class="eyebrow">Quick Answer</p>
-          <h2>AiX Club คืออะไร?</h2>
-          <p class="section-copy">AiX Club คือแพลตฟอร์มคอร์สเรียน AI ภาษาไทยสำหรับผู้ประกอบการ คนทำงาน และทีมธุรกิจที่ต้องการนำ AI ไปใช้ลดงานซ้ำ สร้างระบบหลังบ้าน ทำคอนเทนต์ วิเคราะห์ข้อมูล และสร้าง AI Agent โดยไม่ต้องเริ่มจากทฤษฎีล้วน</p>
+      <div class="container process-section">
+        <div class="section-head center">
+          <div>
+            <h2><span class="process-keyword">เรียน</span>รู้ → <span class="process-keyword">ฝึก</span>ใช้ → <span class="process-keyword">สร้าง</span>ผลงานได้จริง</h2>
+            <p>ทุกคอร์สออกแบบเป็นลำดับสั้น ๆ พร้อมตัวอย่างธุรกิจ เพื่อให้คุณเริ่มจากเข้าใจ แล้วต่อด้วยการลงมือทำทันที</p>
+          </div>
         </div>
-        <div class="answer-list">
-          <article>
-            <strong>เหมาะกับใคร</strong>
-            <p>เจ้าของธุรกิจ, Solo Entrepreneur, Marketer, Creator, Consultant และทีมที่ต้องการใช้ AI ในงานประจำวัน</p>
+        <div class="process-grid">
+          <article class="path-card process-card">
+            <span class="process-number">1</span>
+            <div class="process-visual">
+              <i class="fa-solid fa-play"></i>
+              <span></span>
+              <span></span>
+            </div>
+            <h3>Learn</h3>
+            <strong>เรียนรู้ให้เข้าใจ</strong>
+            <p>บทเรียนสั้น อ่านง่าย พร้อมตัวอย่างการใช้ AI ในงานจริงของธุรกิจ</p>
           </article>
-          <article>
-            <strong>เรียนอะไรบ้าง</strong>
-            <p>AI Agent, Prompt Engineering, Manus AI, Claude, Automation, Deep Research, AI Video, AI Graphic และ Vibe Coding</p>
+          <article class="path-card process-card">
+            <span class="process-number">2</span>
+            <div class="process-visual dark">
+              <code>AI → Workflow</code>
+              <code>Prompt → Output</code>
+            </div>
+            <h3>Practice</h3>
+            <strong>ฝึกใช้จนคล่อง</strong>
+            <p>ลองทำตามด้วย Prompt, Checklist และแบบฝึกหัดที่แปลงเป็นงานของคุณได้</p>
           </article>
-          <article>
-            <strong>ผลลัพธ์ที่คาดหวัง</strong>
-            <p>สร้าง workflow ใช้งานจริง, ลดเวลาทำงานซ้ำ, ทำระบบคอนเทนต์, สร้างผู้ช่วย AI และนำ template ไปปรับใช้กับธุรกิจของตัวเอง</p>
+          <article class="path-card process-card">
+            <span class="process-number">3</span>
+            <div class="process-visual">
+              <i class="fa-solid fa-chart-line"></i>
+              <span></span>
+              <span></span>
+            </div>
+            <h3>Build</h3>
+            <strong>สร้างผลงานใช้งานจริง</strong>
+            <p>นำไปทำ Agent, Automation, Content System หรือ Prototype ให้ทีมใช้ต่อได้</p>
           </article>
         </div>
       </div>
@@ -148,7 +205,8 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">Learning Paths</p>
-            <h2>เส้นทางเรียน AI ตามเป้าหมายธุรกิจ</h2>
+            <h2>เลือกเส้นทางที่ใช่สำหรับคุณ</h2>
+            <p>เลือกตามเป้าหมายงาน แล้วใช้ filter เพื่อข้ามไปดูคอร์สที่ตรงกับเส้นทางนั้นได้ทันที</p>
           </div>
           <button class="text-link" data-scroll="catalog">ดูคอร์สทั้งหมด <i class="fa-solid fa-arrow-right"></i></button>
         </div>
@@ -156,29 +214,74 @@
         <div class="path-grid">
           <article class="path-card">
             <i class="fa-solid fa-robot"></i>
-            <h3>AI Agent Builder</h3>
-            <p>เรียนสร้าง AI Agent สำหรับตอบลูกค้า สรุปรายงาน วางแผนงาน และช่วยจัดการงานซ้ำในธุรกิจ</p>
+            <h3>ผู้ประกอบการ & เจ้าของธุรกิจ</h3>
+            <ul>
+              <li>เข้าใจ AI สำหรับธุรกิจ</li>
+              <li>วางกลยุทธ์ด้วย AI</li>
+              <li>ลดต้นทุน เพิ่มกำไร</li>
+            </ul>
+            <small>12 คอร์ส</small>
             <button data-filter-shortcut="Agent">เริ่มเส้นทางนี้</button>
           </article>
           <article class="path-card">
             <i class="fa-solid fa-gears"></i>
-            <h3>Business Automation</h3>
-            <p>ออกแบบ workflow automation เชื่อมเครื่องมือ ลดงาน manual และวางระบบหลังบ้านให้ทำงานต่อเนื่อง</p>
+            <h3>การตลาด & คอนเทนต์</h3>
+            <ul>
+              <li>เขียนคอนเทนต์ด้วย AI</li>
+              <li>ยิงแอด & วิเคราะห์ลูกค้า</li>
+              <li>ทำคอนเทนต์หลายรูปแบบ</li>
+            </ul>
+            <small>18 คอร์ส</small>
             <button data-filter-shortcut="Automation">เริ่มเส้นทางนี้</button>
           </article>
           <article class="path-card">
             <i class="fa-solid fa-pen-nib"></i>
-            <h3>Creative AI</h3>
-            <p>ใช้ AI ทำภาพ วิดีโอ โฆษณา และ content marketing ที่คุมโทนแบรนด์และผลิตซ้ำได้</p>
+            <h3>การทำงานอัตโนมัติ</h3>
+            <ul>
+              <li>ใช้ AI + No-code</li>
+              <li>เชื่อมต่อเครื่องมือต่าง ๆ</li>
+              <li>สร้าง Workflow อัตโนมัติ</li>
+            </ul>
+            <small>16 คอร์ส</small>
             <button data-filter-shortcut="Creative">เริ่มเส้นทางนี้</button>
           </article>
           <article class="path-card">
             <i class="fa-solid fa-code"></i>
-            <h3>AI-Assisted Coding</h3>
-            <p>ใช้ AI ช่วยคิดสเปก เขียน prototype เว็บ แอป และระบบธุรกิจ เพื่อส่งต่อให้ทีมพัฒนาหรือทำ MVP</p>
+            <h3>ทีมธุรกิจ & องค์กร</h3>
+            <ul>
+              <li>Upskill ทีมด้วย AI</li>
+              <li>AI สำหรับทุกแผนก</li>
+              <li>เพิ่มประสิทธิภาพองค์กร</li>
+            </ul>
+            <small>20 คอร์ส</small>
             <button data-filter-shortcut="Coding">เริ่มเส้นทางนี้</button>
           </article>
+          <article class="path-card">
+            <i class="fa-solid fa-brain"></i>
+            <h3>ครีเอเตอร์ & ฟรีแลนซ์</h3>
+            <ul>
+              <li>สร้างผลงานด้วย AI</li>
+              <li>เพิ่มรายได้หลายช่องทาง</li>
+              <li>สร้างแบรนด์ส่วนตัว</li>
+            </ul>
+            <small>14 คอร์ส</small>
+            <button data-filter-shortcut="Prompt">เริ่มเส้นทางนี้</button>
+          </article>
         </div>
+      </div>
+    </section>
+
+    <section class="section alt-section ai-guide-section" id="tools">
+      <div class="container resource-layout">
+        <div class="ai-guide-copy">
+          <img src="assets/generated/aix-mascot-builder.png" alt="AiX Assistant ช่วยเรียน AI" loading="lazy" decoding="async">
+          <div>
+            <p class="eyebrow">AI Tools</p>
+            <h2>เครื่องมือช่วยเรียนและลงมือทำ</h2>
+            <p class="section-copy">รวมเทมเพลต Prompt, Agent, Research และ Automation สำหรับใช้ต่อทันที</p>
+          </div>
+        </div>
+        <div class="resource-grid" id="resourceList"></div>
       </div>
     </section>
 
@@ -187,8 +290,8 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">AI Course Catalog</p>
-            <h2>คอร์สเรียน AI สำหรับธุรกิจ ตั้งแต่เริ่มต้นถึงลงมือทำ</h2>
-            <p>เลือกคอร์สตามงานที่ต้องการแก้ เช่น สร้าง AI Agent, เขียน Prompt, ทำ Automation, ทำคอนเทนต์ หรือใช้ AI ช่วยสร้าง prototype</p>
+            <h2>คอร์สเรียน AI สำหรับธุรกิจ</h2>
+            <p>เลือกคอร์สตามงานที่ต้องการแก้ เช่น สร้าง AI Agent, เขียน Prompt, ทำ Automation, ทำคอนเทนต์ หรือใช้ AI ช่วยสร้าง Prototype</p>
           </div>
         </div>
 
@@ -204,36 +307,96 @@
       </div>
     </section>
 
-    <section class="section alt-section" id="tools">
-      <div class="container resource-layout">
-        <div>
-          <p class="eyebrow">AI Tools & Resources</p>
-          <h2>เครื่องมือและ Template สำหรับเอา AI ไปใช้ในธุรกิจทันที</h2>
-          <p class="section-copy">สมาชิกจะได้ resource สำหรับลงมือทำจริง เช่น Prompt Template, Agent Workflow Blueprint, Research Playbook, Automation Checklist และตัวอย่าง workflow สำหรับธุรกิจ</p>
+    <section class="section business-section" id="business">
+      <div class="container">
+        <div class="section-head center">
+          <div>
+            <p class="eyebrow">เสียงจากผู้เรียน</p>
+            <h2>ผลลัพธ์ที่เกิดขึ้นจริง</h2>
+          </div>
         </div>
-        <div class="resource-grid" id="resourceList"></div>
+        <div class="testimonial-grid">
+          <article>
+            <div class="stars">★★★★★</div>
+            <p>“เรียนแล้วนำไปใช้กับธุรกิจได้เลย ช่วยลดเวลาทำงานเอกสารและคอนเทนต์ได้ชัดเจน”</p>
+            <strong>คุณธนกร ว.</strong>
+            <span>เจ้าของธุรกิจ E-commerce</span>
+          </article>
+          <article>
+            <div class="stars">★★★★★</div>
+            <p>“คอร์สสั้น กระชับ เข้าใจง่าย ทีมการตลาดใช้ AI ทำงานเร็วขึ้น 3 เท่า”</p>
+            <strong>คุณพิมพ์ ศ.</strong>
+            <span>Marketing Manager</span>
+          </article>
+          <article>
+            <div class="stars">★★★★★</div>
+            <p>“ชอบที่มีแบบฝึกหัดและโปรเจกต์จริง ทำให้เห็นไอเดียเอาไปใช้กับลูกค้า”</p>
+            <strong>คุณณรงค์ จ.</strong>
+            <span>ที่ปรึกษาธุรกิจ</span>
+          </article>
+        </div>
+
+        <div class="business-case-block">
+          <div class="case-block-head">
+            <p class="eyebrow">เคสตัวอย่าง</p>
+            <h3>งานจริงที่เอา AI ไปช่วยได้ทันที</h3>
+          </div>
+          <div class="business-case-grid">
+            <article class="business-case-card">
+              <i class="fa-solid fa-store"></i>
+              <span>E-commerce</span>
+              <h4>สรุปแชทลูกค้าและทำคอนเทนต์สินค้า</h4>
+              <p>ใช้ AI แยกคำถามซ้ำ วิเคราะห์ปัญหาลูกค้า และเปลี่ยนเป็นโพสต์ขายหรือ FAQ</p>
+              <strong>ลดเวลาตอบและเขียนคอนเทนต์รายวัน</strong>
+            </article>
+            <article class="business-case-card">
+              <i class="fa-solid fa-bullhorn"></i>
+              <span>Marketing</span>
+              <h4>แตกแคมเปญจาก insight ลูกค้า</h4>
+              <p>ป้อนรีวิว ข้อความ inbox หรือ survey แล้วให้ AI สรุป pain point, angle และ headline</p>
+              <strong>ได้ไอเดียแคมเปญเร็วขึ้นและทดสอบได้เป็นชุด</strong>
+            </article>
+            <article class="business-case-card">
+              <i class="fa-solid fa-headset"></i>
+              <span>Customer Service</span>
+              <h4>ทำฐานความรู้และคำตอบมาตรฐาน</h4>
+              <p>เปลี่ยนเอกสารสินค้า ขั้นตอนบริการ และคำถามลูกค้าให้เป็น prompt/template สำหรับทีม</p>
+              <strong>ตอบสม่ำเสมอขึ้น และ onboarding ทีมใหม่ง่ายขึ้น</strong>
+            </article>
+            <article class="business-case-card">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>Management</span>
+              <h4>สรุปรายงานให้ผู้บริหารอ่านเร็ว</h4>
+              <p>ใช้ AI สรุปยอดขาย ค่าใช้จ่าย feedback และ next action จากไฟล์หรือข้อมูลรายสัปดาห์</p>
+              <strong>ประชุมเร็วขึ้น เห็นประเด็นตัดสินใจชัดขึ้น</strong>
+            </article>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="section business-section" id="business">
+    <section class="section business-section detail-business-section" id="business-detail">
       <div class="container">
         <div class="section-head">
           <div>
             <p class="eyebrow">For Business</p>
             <h2>เรียน AI เพื่อใช้กับงานธุรกิจ ไม่ใช่แค่รู้จักเครื่องมือ</h2>
-            <p>AiX Club ออกแบบเนื้อหาให้ตอบโจทย์งานจริงของธุรกิจไทย เช่น งานขาย การตลาด Customer Service การวิเคราะห์ข้อมูล การทำรายงาน และระบบคอนเทนต์</p>
+            <p>เนื้อหาถูกออกแบบจาก workflow ที่ทีมธุรกิจใช้จริง เช่น งานขาย การตลาด Customer Service การวิเคราะห์ข้อมูล การทำรายงาน และระบบคอนเทนต์</p>
           </div>
         </div>
-        <div class="answer-list compact">
-          <article>
+        <div class="answer-list compact business-benefit-grid">
+          <article class="business-benefit-card benefit-blue">
+            <span class="benefit-icon"><i class="fa-solid fa-bolt"></i></span>
             <strong>ลดงานซ้ำ</strong>
             <p>ใช้ AI และ Automation ช่วยสรุปข้อมูล ตอบคำถามเบื้องต้น จัดการเอกสาร และเตรียมรายงาน</p>
           </article>
-          <article>
+          <article class="business-benefit-card benefit-cyan">
+            <span class="benefit-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
             <strong>เพิ่มความเร็วการทำคอนเทนต์</strong>
             <p>วางระบบ Prompt และ Content Workflow ให้ทีมสร้างไอเดีย เขียน และปรับโทนแบรนด์ได้เร็วขึ้น</p>
           </article>
-          <article>
+          <article class="business-benefit-card benefit-pink">
+            <span class="benefit-icon"><i class="fa-solid fa-diagram-project"></i></span>
             <strong>สร้างระบบที่ใช้ซ้ำได้</strong>
             <p>เรียนวิธีเปลี่ยนความรู้และขั้นตอนทำงานให้เป็น Template, Agent และ Workflow ที่ปรับใช้ซ้ำได้</p>
           </article>
@@ -242,35 +405,23 @@
     </section>
 
     <section class="section membership-section" id="membership">
-      <div class="container membership-grid">
-        <article class="membership-card">
-          <span class="badge">AiX Member</span>
-          <h2>สมัคร AiX Member เพื่อเข้าเรียนคอร์ส AI และใช้ Resource สำหรับธุรกิจ</h2>
-          <p>สมาชิก AiX Member เข้าถึงคอร์สเรียน AI, คลาสสด, วิดีโอย้อนหลัง, Prompt Template, Workflow Blueprint และ Community สำหรับถามตอบระหว่างลงมือทำ</p>
-          <div class="price-row">
-            <strong>1,999</strong>
-            <span>บาท</span>
-          </div>
+      <div class="container membership-grid final-cta">
+        <article class="final-cta-copy">
+          <h2>เริ่มต้นวันนี้ เปลี่ยนธุรกิจของคุณด้วย <em>AI</em></h2>
           <ul>
-            <li><i class="fa-solid fa-check"></i> คอร์สเรียน AI สำหรับธุรกิจและผู้ประกอบการ</li>
-            <li><i class="fa-solid fa-check"></i> คลาสสดกลุ่มเล็กและวิดีโอย้อนหลัง</li>
-            <li><i class="fa-solid fa-check"></i> Prompt Templates และ Workflow Blueprint</li>
-            <li><i class="fa-solid fa-check"></i> Community สำหรับถามตอบและอัปเดตเทรนด์ AI</li>
+            <li><i class="fa-solid fa-check"></i> เริ่มเรียนฟรี 3 วัน</li>
+            <li><i class="fa-solid fa-check"></i> เข้าถึงคอร์สและเครื่องมือ</li>
+            <li><i class="fa-solid fa-check"></i> ยกเลิกได้ตลอดเวลา</li>
           </ul>
         </article>
 
-        <article class="signup-card member-entry-card">
-          <span class="provider">สมัครสมาชิกออนไลน์</span>
-          <h3>สมัครและเข้าสู่ระบบสมาชิก</h3>
-          <p>สมัครด้วย Google หรือ Email/Password แล้วเข้าหน้าสมาชิกได้ทันที บัญชีเริ่มต้นเป็นสมาชิกสถานะยังไม่ชำระเงิน</p>
-          <div class="member-entry-actions">
-            <button class="primary-btn full" type="button" data-open-signup>สมัคร AiX Member</button>
-            <button class="secondary-btn full" type="button" data-open-login>เข้าสู่ระบบสมาชิก</button>
+        <article class="final-cta-actions member-entry-card">
+          <div class="cta-mascot-wrap">
+            <img class="cta-mascot" src="assets/generated/aix-mascot-celebrate.png" alt="" aria-hidden="true" loading="lazy" decoding="async">
           </div>
-          <div class="member-checklist">
-            <span><i class="fa-solid fa-envelope-circle-check"></i> ตรวจรูปแบบอีเมลก่อนสมัคร</span>
-            <span><i class="fa-solid fa-lock"></i> Session สมาชิก 7 วัน</span>
-            <span><i class="fa-brands fa-google"></i> รองรับ Google login</span>
+          <div class="member-entry-actions">
+            <button class="primary-btn full" type="button" data-open-signup>เริ่มเรียนฟรี 3 วัน</button>
+            <button class="secondary-btn full" type="button" data-open-login>เข้าสู่ระบบสมาชิก</button>
           </div>
         </article>
       </div>
@@ -313,41 +464,6 @@
       </div>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <img src="AiX%20logo/textwhite.png" alt="AiX Club">
-        <p>แพลตฟอร์มคอร์สเรียน AI ภาษาไทย สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI ทำงานจริง</p>
-        <div class="footer-mascot" aria-label="AiX Assistant">
-          <img src="/assets/generated/aix-mascot.png" alt="">
-          <div>
-            <strong>AiX Assistant</strong>
-            <span>ผู้ช่วยเรียน AI ของสมาชิก</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <strong>เรียน AI</strong>
-        <a href="#paths">เส้นทางเรียน AI</a>
-        <a href="#catalog">คอร์สเรียน AI</a>
-        <a href="#tools">AI Tools & Templates</a>
-        <a href="#business">AI สำหรับธุรกิจ</a>
-      </div>
-      <div>
-        <strong>สมาชิก</strong>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/payment">ชำระเงิน</a>
-        <a href="/dashboard#schedule">ตารางสอนสด</a>
-        <a href="/dashboard#billing">ใบเสร็จและบัญชี</a>
-      </div>
-      <div>
-        <strong>ติดต่อ AiX Club</strong>
-        <a href="tel:0987570796">098-757-0796</a>
-        <a href="mailto:natthaphon.chop2@gmail.com">natthaphon.chop2@gmail.com</a>
-      </div>
-    </div>
-  </footer>
 
   <div class="modal-backdrop" id="classModal" aria-hidden="true">
     <div class="modal-panel">
@@ -558,8 +674,8 @@
     ]
   }
   </script>
-  <script src="script.js?v=classroom-uniform-1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
-  <script src="site-motion.js?v=receipt-fix-1" defer></script>
+  <script src="script.js?v=remove-course-mascots-1"></script>
+  <script src="/assets/vendor/gsap.min.js?v=3.15.0-global" defer></script>
+  <script src="site-motion.js?v=business-cases-1" defer></script>
 </body>
 </html>
