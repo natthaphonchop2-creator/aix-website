@@ -8,22 +8,21 @@
   footer.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        <img class="footer-logo" src="/AiX%20logo/textblack.png" alt="AiX Club">
-        <p>แพลตฟอร์มคอร์สเรียน AI ภาษาไทย สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI ทำงานจริง</p>
-        <div class="footer-mascot" aria-label="AiX Assistant">
-          <img src="/assets/generated/aix-mascot-celebrate.png" alt="">
+        <img class="footer-logo" src="/AiX%20logo/textblack.png" alt="AiX Club" width="232" height="92" loading="lazy" decoding="async">
+        <p>แพลตฟอร์มสมาชิกเรียน AI ต่อเนื่องทั้งปี สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI กับงานจริง</p>
+        <div class="footer-brand-note" aria-label="AiX learning system">
           <div>
-            <strong>AiX Assistant</strong>
-            <span>ผู้ช่วยเรียน AI ของสมาชิก</span>
+            <strong>AiX Learning OS</strong>
+            <span>Update, Path, Practice, Resource</span>
           </div>
         </div>
       </div>
       <div>
         <strong>เรียน AI</strong>
-        <a href="${sectionHref("paths")}">เส้นทางเรียน AI</a>
+        <a href="${sectionHref("member-loop")}">สมาชิกได้อะไร</a>
+        <a href="${sectionHref("learning-system")}">วิธีเรียนใน AiX</a>
         <a href="${sectionHref("catalog")}">คอร์สเรียน AI</a>
-        <a href="${sectionHref("tools")}">AI Tools & Templates</a>
-        <a href="${sectionHref("business")}">AI สำหรับธุรกิจ</a>
+        <a href="${sectionHref("business-cases")}">AI สำหรับธุรกิจ</a>
       </div>
       <div>
         <strong>สมาชิก</strong>

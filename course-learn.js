@@ -563,7 +563,7 @@ function renderActiveModule() {
   learnModuleMeta.textContent = `รายการที่ ${state.activeIndex + 1} · ${module.time || "บทเรียน"}`;
   learnModuleTitle.textContent = module.title;
   learnProgressText.textContent = `${state.activeIndex + 1}/${state.modules.length} รายการการเรียนรู้`;
-  learnProgressBar.style.width = `${Math.round(((state.activeIndex + 1) / state.modules.length) * 100)}%`;
+  learnProgressBar.style.transform = `scaleX(${(state.activeIndex + 1) / state.modules.length})`;
   prevLessonBtn.disabled = state.activeIndex === 0;
   nextLessonBtn.textContent = state.activeIndex === state.modules.length - 1 ? "เรียนครบแล้ว" : "ไปที่รายการถัดไป";
   renderReading(module, state.activeIndex);
