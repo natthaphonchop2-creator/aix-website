@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AiX Club | ประวัติผู้สอน AI</title>
+    <meta
+      name="description"
+      content="รู้จักผู้สอน AI ของ AiX Club สำหรับเจ้าของธุรกิจ ทีมปฏิบัติการ และคนทำงานที่ต้องการใช้ AI ให้เกิดผลในงานจริง"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --aix-ink: #050506;
+        --aix-ink-2: #17191d;
+        --aix-paper: #ffffff;
+        --aix-soft: #f3f5f8;
+        --aix-soft-2: #e9edf3;
+        --aix-line: #d8dee8;
+        --aix-muted: #5f6673;
+        --aix-muted-2: #8a92a0;
+        --aix-signal: #2d6fff;
+        --aix-signal-soft: #e9f0ff;
+        --radius-xl: 44px;
+        --radius-lg: 32px;
+        --radius-md: 22px;
+        --shadow-soft: 0 24px 70px rgba(5, 5, 6, 0.12);
+        --shadow-card: 0 18px 50px rgba(5, 5, 6, 0.08);
+        --container: min(1180px, calc(100vw - 40px));
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 15% 8%, rgba(45, 111, 255, 0.08), transparent 26rem),
+          linear-gradient(180deg, #ffffff 0%, #f7f8fb 42%, #ffffff 100%);
+        color: var(--aix-ink);
+        font-family: "Noto Sans Thai", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-shell {
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.86);
+        border-bottom: 1px solid rgba(216, 222, 232, 0.78);
+        backdrop-filter: blur(18px);
+      }
+
+      .nav-inner {
+        width: var(--container);
+        margin: 0 auto;
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .brand-mark,
+      .logo-tile {
+        display: grid;
+        place-items: center;
+        background: var(--aix-ink);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 12px 34px rgba(5, 5, 6, 0.18);
+        overflow: hidden;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 15px;
+      }
+
+      .brand-mark img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+      }
+
+      .brand-name {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .brand-name strong {
+        font-size: 17px;
+        line-height: 1.05;
+      }
+
+      .brand-name span {
+        color: var(--aix-muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        color: var(--aix-muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .nav-links a {
+        border-radius: 999px;
+        padding: 8px 0;
+        transition: color 180ms ease;
+      }
+
+      .nav-links a:hover {
+        color: var(--aix-ink);
+      }
+
+      .nav-action,
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        border-radius: 999px;
+        font-weight: 800;
+        line-height: 1;
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          background 180ms ease;
+      }
+
+      .nav-action {
+        background: var(--aix-ink);
+        color: var(--aix-paper);
+        padding: 0 18px;
+        font-size: 14px;
+        box-shadow: 0 14px 28px rgba(5, 5, 6, 0.16);
+      }
+
+      .button {
+        padding: 0 22px;
+        border: 1px solid var(--aix-ink);
+        font-size: 15px;
+      }
+
+      .button.primary {
+        background: var(--aix-ink);
+        color: var(--aix-paper);
+        box-shadow: 0 18px 35px rgba(5, 5, 6, 0.18);
+      }
+
+      .button.secondary {
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--aix-ink);
+      }
+
+      .button:hover,
+      .nav-action:hover {
+        transform: translateY(-2px);
+      }
+
+      .hero {
+        width: var(--container);
+        margin: 0 auto;
+        padding: 82px 0 82px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.03fr) minmax(420px, 0.97fr);
+        align-items: center;
+        gap: 56px;
+      }
+
+      .hero-copy {
+        position: relative;
+        z-index: 2;
+      }
+
+      .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 20px;
+        color: var(--aix-ink-2);
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .section-label::before {
+        content: "";
+        width: 28px;
+        height: 2px;
+        border-radius: 999px;
+        background: var(--aix-signal);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 780px;
+        font-size: clamp(48px, 7vw, 92px);
+        line-height: 0.98;
+        font-weight: 900;
+      }
+
+      h1 span {
+        display: block;
+      }
+
+      .lead {
+        max-width: 620px;
+        margin-top: 28px;
+        color: #30343b;
+        font-size: 20px;
+        line-height: 1.85;
+        font-weight: 500;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 34px;
+      }
+
+      .hero-proof {
+        margin-top: 42px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        max-width: 690px;
+      }
+
+      .proof-item {
+        min-height: 112px;
+        padding: 18px;
+        border: 1px solid var(--aix-line);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.74);
+        box-shadow: 0 16px 34px rgba(5, 5, 6, 0.05);
+      }
+
+      .proof-item strong {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .proof-item span {
+        display: block;
+        margin-top: 10px;
+        color: var(--aix-muted);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .hero-media {
+        position: relative;
+      }
+
+      .portrait-card {
+        position: relative;
+        border-radius: var(--radius-xl);
+        padding: 12px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(233, 237, 243, 0.88)),
+          var(--aix-paper);
+        border: 1px solid rgba(216, 222, 232, 0.95);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+      }
+
+      .portrait-card::before {
+        content: "AiX";
+        position: absolute;
+        right: -18px;
+        bottom: -76px;
+        color: rgba(5, 5, 6, 0.045);
+        font-size: 178px;
+        line-height: 1;
+        font-weight: 900;
+        letter-spacing: 0;
+        pointer-events: none;
+      }
+
+      .portrait-frame {
+        position: relative;
+        aspect-ratio: 0.9;
+        border-radius: calc(var(--radius-xl) - 10px);
+        overflow: hidden;
+        background: var(--aix-soft);
+      }
+
+      .portrait-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 54% 52%;
+        filter: saturate(0.95) contrast(1.04);
+      }
+
+      .portrait-caption {
+        position: absolute;
+        left: 26px;
+        right: 26px;
+        bottom: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        border-radius: 26px;
+        background: rgba(5, 5, 6, 0.82);
+        color: var(--aix-paper);
+        backdrop-filter: blur(18px);
+      }
+
+      .portrait-caption strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.3;
+      }
+
+      .portrait-caption span {
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .caption-logo {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: var(--aix-paper);
+      }
+
+      .caption-logo img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+      }
+
+      .section {
+        width: var(--container);
+        margin: 0 auto;
+        padding: 76px 0;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.56fr);
+        gap: 36px;
+        align-items: end;
+        margin-bottom: 34px;
+      }
+
+      .section h2 {
+        font-size: clamp(34px, 5vw, 60px);
+        line-height: 1.08;
+        font-weight: 900;
+      }
+
+      .section-head p {
+        color: var(--aix-muted);
+        font-size: 17px;
+        line-height: 1.75;
+        font-weight: 600;
+      }
+
+      .experience-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .experience-card,
+      .method-card,
+      .quote-panel,
+      .audience-card,
+      .cta-panel {
+        border: 1px solid var(--aix-line);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: var(--shadow-card);
+      }
+
+      .experience-card {
+        min-height: 330px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 28px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .experience-card.dark {
+        background: var(--aix-ink);
+        color: var(--aix-paper);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .experience-card.dark p,
+      .experience-card.dark .card-meta {
+        color: rgba(255, 255, 255, 0.68);
+      }
+
+      .card-meta {
+        color: var(--aix-muted);
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .experience-card h3,
+      .method-card h3,
+      .audience-card h3 {
+        margin-top: 20px;
+        font-size: 25px;
+        line-height: 1.24;
+        font-weight: 900;
+      }
+
+      .experience-card p,
+      .method-card p,
+      .audience-card p {
+        margin-top: 16px;
+        color: var(--aix-muted);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.75;
+      }
+
+      .card-number {
+        width: 54px;
+        height: 54px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: var(--aix-soft);
+        color: var(--aix-ink);
+        font-size: 17px;
+        font-weight: 900;
+      }
+
+      .experience-card.dark .card-number {
+        background: var(--aix-paper);
+      }
+
+      .method-band {
+        margin-top: 40px;
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(135deg, rgba(5, 5, 6, 0.98), rgba(23, 25, 29, 0.96)),
+          var(--aix-ink);
+        color: var(--aix-paper);
+        padding: 46px;
+        display: grid;
+        grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.22fr);
+        gap: 36px;
+        align-items: stretch;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .method-band::after {
+        content: "AiX AiX AiX";
+        position: absolute;
+        right: -70px;
+        top: 26px;
+        color: rgba(255, 255, 255, 0.035);
+        font-size: 80px;
+        line-height: 1;
+        font-weight: 900;
+        transform: rotate(90deg);
+      }
+
+      .mascot-frame {
+        position: relative;
+        border-radius: 40px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
+          #202226;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+        min-height: 420px;
+      }
+
+      .mascot-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+
+      .method-copy {
+        position: relative;
+        z-index: 1;
+      }
+
+      .method-copy h2 {
+        color: var(--aix-paper);
+      }
+
+      .method-copy > p {
+        margin-top: 20px;
+        max-width: 620px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 17px;
+        font-weight: 600;
+      }
+
+      .method-grid {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .method-card {
+        padding: 22px;
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: none;
+      }
+
+      .method-card h3 {
+        margin-top: 0;
+        color: var(--aix-paper);
+        font-size: 20px;
+      }
+
+      .method-card p {
+        color: rgba(255, 255, 255, 0.66);
+      }
+
+      .outcome-layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.68fr) minmax(0, 1.32fr);
+        gap: 22px;
+        align-items: stretch;
+      }
+
+      .quote-panel {
+        padding: 32px;
+        background: var(--aix-ink);
+        color: var(--aix-paper);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 430px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .quote-panel::before {
+        content: "AiX";
+        position: absolute;
+        right: -12px;
+        bottom: -40px;
+        color: rgba(255, 255, 255, 0.055);
+        font-size: 132px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .quote-panel p {
+        position: relative;
+        z-index: 1;
+        font-size: 28px;
+        line-height: 1.42;
+        font-weight: 900;
+      }
+
+      .quote-panel span {
+        position: relative;
+        z-index: 1;
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .audience-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .audience-card {
+        padding: 26px;
+        min-height: 207px;
+      }
+
+      .audience-card h3 {
+        margin-top: 0;
+        font-size: 22px;
+      }
+
+      .signal-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--aix-signal);
+        box-shadow: 0 0 0 8px var(--aix-signal-soft);
+        margin-bottom: 22px;
+      }
+
+      .credential-strip {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .credential {
+        border-radius: 22px;
+        border: 1px solid var(--aix-line);
+        background: rgba(255, 255, 255, 0.78);
+        padding: 18px;
+      }
+
+      .credential strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.35;
+        font-weight: 900;
+      }
+
+      .credential span {
+        display: block;
+        margin-top: 8px;
+        color: var(--aix-muted);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .cta-section {
+        width: var(--container);
+        margin: 0 auto;
+        padding: 54px 0 92px;
+      }
+
+      .cta-panel {
+        border-radius: var(--radius-xl);
+        background:
+          linear-gradient(135deg, #ffffff 0%, #f5f7fb 55%, #edf3ff 100%),
+          var(--aix-paper);
+        padding: 44px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 34px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .cta-panel::after {
+        content: "AiX";
+        position: absolute;
+        right: 22px;
+        top: -48px;
+        color: rgba(5, 5, 6, 0.045);
+        font-size: 150px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .cta-copy {
+        position: relative;
+        z-index: 1;
+      }
+
+      .cta-copy h2 {
+        font-size: clamp(30px, 4.5vw, 56px);
+        line-height: 1.1;
+        font-weight: 900;
+      }
+
+      .cta-copy p {
+        margin-top: 18px;
+        max-width: 700px;
+        color: var(--aix-muted);
+        font-size: 17px;
+        font-weight: 600;
+      }
+
+      .footer {
+        border-top: 1px solid var(--aix-line);
+        background: var(--aix-paper);
+      }
+
+      .footer-inner {
+        width: var(--container);
+        min-height: 74px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        color: var(--aix-muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .footer-inner strong {
+        color: var(--aix-ink);
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--aix-signal);
+        outline-offset: 4px;
+      }
+
+      @media (max-width: 980px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero,
+        .section-head,
+        .method-band,
+        .outcome-layout,
+        .cta-panel {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 54px;
+          gap: 38px;
+        }
+
+        .hero-proof,
+        .experience-grid,
+        .credential-strip {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .portrait-frame {
+          aspect-ratio: 1.05;
+        }
+
+        .cta-panel {
+          padding: 34px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        :root {
+          --container: min(100vw - 28px, 1180px);
+          --radius-xl: 32px;
+          --radius-lg: 26px;
+        }
+
+        .nav-inner {
+          min-height: 68px;
+        }
+
+        .brand-name span {
+          display: none;
+        }
+
+        .nav-action {
+          min-height: 40px;
+          padding: 0 14px;
+          font-size: 13px;
+        }
+
+        .hero {
+          padding: 42px 0 54px;
+        }
+
+        h1 {
+          font-size: 44px;
+          line-height: 1.03;
+        }
+
+        .lead {
+          font-size: 17px;
+          line-height: 1.8;
+        }
+
+        .hero-proof,
+        .experience-grid,
+        .method-grid,
+        .audience-grid,
+        .credential-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .section {
+          padding: 56px 0;
+        }
+
+        .section h2 {
+          font-size: 34px;
+        }
+
+        .portrait-caption {
+          left: 18px;
+          right: 18px;
+          bottom: 18px;
+          border-radius: 22px;
+          align-items: flex-start;
+        }
+
+        .method-band,
+        .cta-panel {
+          padding: 24px;
+        }
+
+        .mascot-frame {
+          min-height: 320px;
+          border-radius: 30px;
+        }
+
+        .quote-panel {
+          min-height: 320px;
+        }
+
+        .quote-panel p {
+          font-size: 24px;
+        }
+
+        .footer-inner {
+          min-height: 90px;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="nav" aria-label="AiX Club navigation">
+        <div class="nav-inner">
+          <a class="brand" href="#top" aria-label="AiX Club">
+            <span class="brand-mark">
+              <img src="assets/aix-icon-white.png" alt="" />
+            </span>
+            <span class="brand-name">
+              <strong>AiX Club</strong>
+              <span>AI for business teams</span>
+            </span>
+          </a>
+          <nav class="nav-links" aria-label="Section navigation">
+            <a href="#instructor">ผู้สอน</a>
+            <a href="#experience">ประสบการณ์</a>
+            <a href="#method">วิธีเรียน</a>
+            <a href="#outcomes">ผลลัพธ์</a>
+          </nav>
+          <a class="nav-action" href="#start">เริ่มกับ AiX</a>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="hero" id="instructor" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="section-label">ประวัติผู้สอน AiX</p>
+            <h1 id="hero-title">
+              <span>เรียน AI กับ</span>
+              <span>ผู้สอนที่เข้าใจ</span>
+              <span>ธุรกิจจริง</span>
+            </h1>
+            <p class="lead">
+              AiX Club ถ่ายทอดการใช้ AI สำหรับเจ้าของธุรกิจ ทีมปฏิบัติการ และคนทำงานที่ต้องการเปลี่ยน AI
+              จากเครื่องมือที่ลองเล่น เป็นระบบทำงานที่ใช้ได้จริงในทีม
+            </p>
+            <div class="hero-actions" aria-label="Primary actions">
+              <a class="button primary" href="#method">ดูแนวทางการสอน</a>
+              <a class="button secondary" href="#experience">รู้จักประสบการณ์ผู้สอน</a>
+            </div>
+            <div class="hero-proof" aria-label="Instructor proof points">
+              <div class="proof-item">
+                <strong>Founder</strong>
+                <span>สร้างธุรกิจและผลิตภัณฑ์จริงจากศูนย์ถึงการใช้งาน</span>
+              </div>
+              <div class="proof-item">
+                <strong>CTO</strong>
+                <span>นำทีมเทคโนโลยีและผลักดันแพลตฟอร์มสู่ตลาด</span>
+              </div>
+              <div class="proof-item">
+                <strong>Data</strong>
+                <span>วางวิธีคิดด้วยข้อมูล อัตโนมัติ และการตัดสินใจเชิงระบบ</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-media" aria-label="Instructor portrait">
+            <div class="portrait-card">
+              <div class="portrait-frame">
+                <img src="assets/instructor.jpeg" alt="Natthaphon Chopchit ผู้สอน AI ของ AiX Club" />
+              </div>
+              <div class="portrait-caption">
+                <div>
+                  <strong>Natthaphon Chopchit</strong>
+                  <span>AI Instructor / Tech Entrepreneur / Backend Developer</span>
+                </div>
+                <div class="caption-logo">
+                  <img src="assets/aix-icon-black.png" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="experience" aria-labelledby="experience-title">
+          <div class="section-head">
+            <div>
+              <p class="section-label">ประสบการณ์ที่นำมาใช้ในห้องเรียน</p>
+              <h2 id="experience-title">AiX สอนจากเคสธุรกิจ ไม่ใช่แค่สอนเครื่องมือ</h2>
+            </div>
+            <p>
+              ผู้เรียนจะได้เห็นวิธีคิดตั้งแต่การเลือกงานที่ควรใช้ AI ไปจนถึงการออกแบบ workflow ให้ทีมใช้ซ้ำได้
+              โดยอิงจากประสบการณ์ด้านธุรกิจ ผลิตภัณฑ์ เทคโนโลยี และข้อมูล
+            </p>
+          </div>
+
+          <div class="experience-grid">
+            <article class="experience-card dark">
+              <div>
+                <div class="card-number">01</div>
+                <h3>Founder & Director, LumoriX</h3>
+                <p>
+                  ประสบการณ์สร้างกลยุทธ์ ผลิตภัณฑ์ go-to-market partnership และการแปลงเทคโนโลยีให้เป็นคุณค่าทางธุรกิจ
+                </p>
+              </div>
+              <span class="card-meta">Business building</span>
+            </article>
+
+            <article class="experience-card">
+              <div>
+                <div class="card-number">02</div>
+                <h3>CTO, Propbea</h3>
+                <p>
+                  ดูแลการพัฒนาแพลตฟอร์ม real estate tokenization ตั้งแต่ MVP จนถึงการเปิดตัว พร้อมทำงานร่วมกับทีมธุรกิจและผู้เกี่ยวข้อง
+                </p>
+              </div>
+              <span class="card-meta">Product and technology</span>
+            </article>
+
+            <article class="experience-card">
+              <div>
+                <div class="card-number">03</div>
+                <h3>Data Analysis & Automation</h3>
+                <p>
+                  พัฒนางานวิเคราะห์ข้อมูล การทำรายงาน KPI และการสร้าง workflow อัตโนมัติด้วย Python เพื่อให้ทีมทำงานเร็วและแม่นยำขึ้น
+                </p>
+              </div>
+              <span class="card-meta">Data-driven operation</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="method" aria-labelledby="method-title">
+          <div class="method-band">
+            <div class="mascot-frame" aria-label="AiX learning mascot">
+              <img src="assets/aix-mascot.png" alt="AiX Club AI learning character" />
+            </div>
+            <div class="method-copy">
+              <p class="section-label">AiX Learning Method</p>
+              <h2 id="method-title">เรียนให้เข้าใจ ใช้ให้เป็นระบบ และต่อยอดได้เอง</h2>
+              <p>
+                AiX Club ออกแบบการเรียนให้เหมาะกับคนทำธุรกิจที่ไม่มีพื้นฐาน IT มาก่อน
+                เนื้อหาจึงเริ่มจากงานจริงของทีม แล้วค่อยพาไปเลือกเครื่องมือ เขียน prompt และวางระบบใช้งาน
+              </p>
+              <div class="method-grid">
+                <article class="method-card">
+                  <h3>1. Understand</h3>
+                  <p>เข้าใจว่า AI เหมาะกับงานแบบไหน งานไหนควรเริ่มก่อน และงานไหนยังไม่ควรใช้</p>
+                </article>
+                <article class="method-card">
+                  <h3>2. Generate</h3>
+                  <p>ฝึกสร้างคำสั่งและผลลัพธ์ที่ใช้ได้จริง ทั้ง content, operation, research และ decision support</p>
+                </article>
+                <article class="method-card">
+                  <h3>3. Create</h3>
+                  <p>ต่อยอดจาก prompt ไปเป็น template, workflow, assistant และระบบทำงานซ้ำสำหรับทีม</p>
+                </article>
+                <article class="method-card">
+                  <h3>4. Apply</h3>
+                  <p>นำไปใช้กับงานธุรกิจจริง พร้อมวิธีตรวจคุณภาพ ลดความเสี่ยง และวัดผลลัพธ์</p>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="outcomes" aria-labelledby="outcomes-title">
+          <div class="section-head">
+            <div>
+              <p class="section-label">ผลลัพธ์สำหรับผู้เรียน</p>
+              <h2 id="outcomes-title">AiX ช่วยให้ทีมเริ่มใช้ AI แบบมั่นใจและทำต่อได้</h2>
+            </div>
+            <p>
+              จุดสำคัญของการเรียนไม่ใช่การจำชื่อเครื่องมือ แต่คือการทำให้ทีมรู้ว่าจะใช้ AI กับงานไหน
+              ใช้อย่างไร และวัดผลอย่างไรให้เกิดประโยชน์กับธุรกิจ
+            </p>
+          </div>
+
+          <div class="outcome-layout">
+            <aside class="quote-panel">
+              <p>AI ที่ดีสำหรับธุรกิจ ต้องทำให้งานชัดขึ้น เร็วขึ้น และวัดผลได้มากขึ้น</p>
+              <span>AiX Club teaching principle</span>
+            </aside>
+
+            <div class="audience-grid">
+              <article class="audience-card">
+                <div class="signal-dot"></div>
+                <h3>สำหรับเจ้าของธุรกิจ</h3>
+                <p>เห็นภาพว่า AI จะช่วยลดต้นทุนเวลา เพิ่มความเร็ว และยกระดับการตัดสินใจในธุรกิจได้ตรงจุดใด</p>
+              </article>
+              <article class="audience-card">
+                <div class="signal-dot"></div>
+                <h3>สำหรับทีมปฏิบัติการ</h3>
+                <p>เปลี่ยนงานซ้ำ งานเอกสาร งานสรุป และงานประสานงานให้เป็น workflow ที่ทำซ้ำได้ง่ายขึ้น</p>
+              </article>
+              <article class="audience-card">
+                <div class="signal-dot"></div>
+                <h3>สำหรับทีมคอนเทนต์และขาย</h3>
+                <p>ใช้ AI เพื่อช่วยคิด วางโครง สร้างชิ้นงาน ตรวจคุณภาพ และทำงานเร็วขึ้นโดยยังคุมมาตรฐานแบรนด์</p>
+              </article>
+              <article class="audience-card">
+                <div class="signal-dot"></div>
+                <h3>สำหรับทีมที่ไม่ใช่สาย IT</h3>
+                <p>เริ่มจากภาษาธุรกิจและตัวอย่างที่คุ้นเคย ก่อนต่อยอดไปสู่เครื่องมือและระบบที่ซับซ้อนขึ้น</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="credential-strip" aria-label="Instructor credentials">
+            <div class="credential">
+              <strong>Economics & IT Background</strong>
+              <span>พื้นฐานเศรษฐศาสตร์และเทคโนโลยี ทำให้เชื่อมธุรกิจเข้ากับระบบได้ชัด</span>
+            </div>
+            <div class="credential">
+              <strong>Seoul International Invention Fair</strong>
+              <span>ได้รับรางวัล Silver Prize จากเวทีนวัตกรรมระดับนานาชาติ</span>
+            </div>
+            <div class="credential">
+              <strong>Product Launch Experience</strong>
+              <span>มีประสบการณ์ผลักดันแพลตฟอร์มจาก MVP ไปสู่การใช้งานจริง</span>
+            </div>
+            <div class="credential">
+              <strong>Data-Driven Decision</strong>
+              <span>ใช้ข้อมูล ระบบอัตโนมัติ และการวัดผลเพื่อช่วยให้ทีมตัดสินใจดีขึ้น</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="cta-section" id="start" aria-labelledby="cta-title">
+          <div class="cta-panel">
+            <div class="cta-copy">
+              <h2 id="cta-title">เริ่มใช้ AI ให้เป็นระบบกับ AiX Club</h2>
+              <p>
+                เหมาะสำหรับธุรกิจที่ต้องการให้ทีมเริ่มใช้ AI อย่างจริงจัง เข้าใจง่าย และต่อยอดได้
+                โดยมีผู้สอนที่เข้าใจทั้งธุรกิจ เทคโนโลยี และการนำไปใช้ในงานประจำวัน
+              </p>
+            </div>
+            <a class="button primary" href="#instructor">กลับไปดูผู้สอน</a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <strong>AiX Club</strong>
+          <span>AI learning for founders, operators, and business teams.</span>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
