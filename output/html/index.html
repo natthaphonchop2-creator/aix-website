@@ -892,23 +892,40 @@
       }
 
       .course-overview::before {
-        content: "AIx";
+        content: "Claude";
         position: absolute;
-        right: -22px;
-        top: -34px;
+        right: -58px;
+        top: -28px;
         color: rgba(255, 255, 255, 0.055);
-        font-size: 150px;
+        font-size: 118px;
         line-height: 1;
         font-weight: 900;
         pointer-events: none;
       }
 
+      .course-logo-lockup,
       .course-overview h3,
       .course-overview p,
       .course-stats,
       .course-note {
         position: relative;
         z-index: 1;
+      }
+
+      .course-logo-lockup {
+        width: fit-content;
+        max-width: 100%;
+        margin-bottom: 22px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        padding: 12px 14px;
+        box-shadow: 0 18px 44px rgba(5, 5, 6, 0.24);
+      }
+
+      .course-logo-lockup img {
+        width: 168px;
+        height: auto;
       }
 
       .course-overview h3 {
@@ -1077,6 +1094,63 @@
         color: var(--aix-signal);
         padding: 6px 10px;
         font-size: 11px;
+        font-weight: 900;
+      }
+
+      .course-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .course-detail-card {
+        border: 1px solid rgba(216, 222, 232, 0.94);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.86);
+        padding: 22px;
+        box-shadow: 0 14px 34px rgba(5, 5, 6, 0.055);
+      }
+
+      .course-detail-card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .course-detail-card h3 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.3;
+        font-weight: 900;
+      }
+
+      .course-detail-card p,
+      .course-detail-card li {
+        color: var(--aix-muted);
+        font-size: 14px;
+        font-weight: 650;
+        line-height: 1.7;
+      }
+
+      .course-detail-card p {
+        margin: 10px 0 0;
+      }
+
+      .course-detail-card ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+      }
+
+      .course-detail-card li + li {
+        margin-top: 7px;
+      }
+
+      .course-topic-list {
+        margin-top: 22px;
+      }
+
+      .course-topic-title {
+        margin: 0 0 14px;
+        font-size: 30px;
+        line-height: 1.2;
         font-weight: 900;
       }
 
@@ -1702,6 +1776,7 @@
         .experience-grid,
         .method-grid,
         .course-stats,
+        .course-detail-grid,
         .kit-list,
         .audience-grid,
         .review-summary-grid,
@@ -1784,8 +1859,17 @@
         }
 
         .course-overview h3,
+        .course-topic-title,
         .course-kit h3 {
           font-size: 26px;
+        }
+
+        .course-detail-card.wide {
+          grid-column: auto;
+        }
+
+        .course-logo-lockup img {
+          width: 142px;
         }
 
         .mascot-frame {
@@ -2034,60 +2118,106 @@
         <section class="section course-section" id="course" aria-labelledby="course-title">
           <div class="section-head">
             <div>
-              <p class="section-label">AiX Club x Manus</p>
-              <h2 id="course-title">หลักสูตรใช้งานจริง Manus AI สำหรับคนที่อยากใช้ AI ให้เต็มศักยภาพ</h2>
+              <p class="section-label">AiX Club x Claude</p>
+              <h2 id="course-title">หลักสูตร Claude AI สำหรับงานบริหาร ธุรกิจ และ AI Agent</h2>
             </div>
             <p>
-              สำหรับคนที่ใช้ AI มาสักพักแล้ว แต่ยังรู้สึกว่าใช้ได้ไม่เต็มที่ หลักสูตรนี้พาเปลี่ยนจากการถามตอบทั่วไป
-              ไปสู่การใช้ Claude และ Manus เป็น AI Agent ที่ช่วยวางแผน ค้นหา เขียน เชื่อมเครื่องมือ และลงมือทำงานได้จริง
+              สำหรับคนที่ใช้ AI มาสักพักแล้ว แต่ยังรู้สึกว่าใช้งานได้ไม่เต็มศักยภาพ
+              หลักสูตรนี้พาเข้าใจ Claude อย่างเป็นระบบ ตั้งแต่ prompt, Projects, Artifacts, Cowork,
+              Claude Code, Desktop automation ไปจนถึงการประยุกต์ใช้จริงในองค์กร
             </p>
           </div>
 
           <div class="course-layout">
             <aside class="course-overview" aria-label="Course overview">
               <div>
-                <div class="course-badge">Live Online 1 Day / 10 Hours</div>
-                <h3>เส้นทางสู่ความคล่องแคล่วด้าน AI ใน 10 ชั่วโมง</h3>
+                <div class="course-logo-lockup">
+                  <img src="assets/claude-logo.svg" alt="Claude logo" />
+                </div>
+                <div class="course-badge">Live Online / Claude AI Course</div>
+                <h3>ใช้ Claude ให้ทำงานได้เต็มศักยภาพ ไม่ใช่แค่ถามตอบ</h3>
                 <p>
-                  ไม่ใช่คอร์สที่ให้ดูสไลด์แล้วจบ แต่เป็นคลาสฝึกใช้ Manus AI และ Claude กับงานจริง
-                  พร้อม Skill Set ที่นำไปปรับใช้กับงานของทีมได้ทันที
+                  ผู้เรียนจะได้ฝึกใช้ Claude กับงานบริหาร เอกสาร วิเคราะห์ข้อมูล สร้าง Artifact
+                  และสั่งงานอัตโนมัติบน Desktop ผ่าน Cowork พร้อมเข้าใจ Claude Code สำหรับเริ่มสั่งงานเบื้องต้น
                 </p>
                 <div class="course-stats">
                   <div class="course-stat">
-                    <strong>10</strong>
-                    <span>ชั่วโมงเรียนออนไลน์สดภายใน 1 วัน</span>
+                    <strong>Claude</strong>
+                    <span>เข้าใจจุดเด่นและเลือกใช้เทียบกับ AI ตัวอื่นได้เหมาะสม</span>
                   </div>
                   <div class="course-stat">
-                    <strong>10</strong>
-                    <span>รายการฝึกปฏิบัติจริง ไม่ใช่แค่ดูสไลด์</span>
+                    <strong>Prompt</strong>
+                    <span>เขียน prompt สำหรับงานบริหารและธุรกิจแบบมืออาชีพ</span>
                   </div>
                   <div class="course-stat">
-                    <strong>MCP</strong>
-                    <span>เข้าใจการเชื่อมเครื่องมือให้ AI ทำงานแทนได้มากขึ้น</span>
+                    <strong>Cowork</strong>
+                    <span>ใช้ AI Desktop Agent เพื่อทำงานกับไฟล์และ workflow ได้เร็วขึ้น</span>
                   </div>
                   <div class="course-stat">
-                    <strong>Skill</strong>
-                    <span>ได้ชุดคำสั่งและ workflow พร้อมนำไปใช้ต่อ</span>
+                    <strong>Code</strong>
+                    <span>เริ่มใช้ Claude Code ได้แม้ไม่มีพื้นฐาน coding</span>
                   </div>
                 </div>
               </div>
               <div class="course-note">
-                เรียนออนไลน์สด 1 วัน สู่การใช้ Claude และ Manus ได้จริงในงานประจำวัน ไม่ใช่แค่รู้ว่าเครื่องมือมีอะไรบ้าง
+                จบหลักสูตรแล้วผู้เรียนจะมี workflow, prompt, project setup และแนวทางนำ Claude ไปใช้ในองค์กรได้ทันที
               </div>
             </aside>
 
-            <div class="lesson-list" aria-label="Course lessons">
+            <div class="course-main">
+              <div class="course-detail-grid">
+                <article class="course-detail-card wide">
+                  <h3>วัตถุประสงค์ของหลักสูตร</h3>
+                  <ul>
+                    <li>เข้าใจความแตกต่างของ Claude AI เมื่อเทียบกับ AI ตัวอื่น และเลือกใช้อย่างเหมาะสม</li>
+                    <li>เขียน prompt อย่างมืออาชีพสำหรับงานบริหารและธุรกิจ</li>
+                    <li>ใช้ Claude ในการสร้างเอกสาร วิเคราะห์ข้อมูล และสร้าง Artifact ได้อย่างมีประสิทธิภาพ</li>
+                    <li>ใช้ Cowork สำหรับงานอัตโนมัติบน Desktop ได้อย่างรวดเร็ว</li>
+                    <li>เข้าใจ Claude Code และสั่งงานเบื้องต้นได้แม้ไม่มีพื้นฐาน coding</li>
+                    <li>นำ AI ไปประยุกต์ใช้จริงในองค์กรได้ทันทีหลังจบหลักสูตร</li>
+                  </ul>
+                </article>
+
+                <article class="course-detail-card">
+                  <h3>หลักสูตรนี้เหมาะสำหรับ</h3>
+                  <p>
+                    ผู้ประกอบการ เจ้าของกิจการ ผู้บริหาร และทีมงานที่ต้องการ leverage AI
+                    เพื่อสร้างความได้เปรียบทางธุรกิจ และนำ AI ไปประยุกต์ใช้กับงานจริง
+                  </p>
+                </article>
+
+                <article class="course-detail-card">
+                  <h3>พื้นฐานของผู้เข้าอบรม</h3>
+                  <p>
+                    เหมาะกับผู้ที่มีพื้นฐานการใช้งาน Generative AI เบื้องต้น เช่น ChatGPT,
+                    Microsoft Copilot หรือ Gemini และต้องการขยับไปสู่การใช้งานที่จริงจังขึ้น
+                  </p>
+                </article>
+
+                <article class="course-detail-card wide">
+                  <h3>ความต้องการของระบบ</h3>
+                  <ul>
+                    <li>Windows 10 / 11, Browser เช่น Google Chrome หรือ Microsoft Edge และ Internet</li>
+                    <li>Claude Account, Claude for Desktop และ Claude Subscription สำหรับฝึกในคลาส</li>
+                    <li>บัญชีสำหรับเรียนสามารถจัดเตรียมให้ตามรอบอบรม เพื่อให้ผู้เรียนทดลองใช้ได้ครบขั้นตอน</li>
+                  </ul>
+                </article>
+              </div>
+
+              <div class="lesson-list course-topic-list" aria-label="Course lessons">
+                <h3 class="course-topic-title">หัวข้อการฝึกอบรม</h3>
               <article class="lesson-row compact">
                 <div class="lesson-number">01</div>
                 <div class="lesson-copy">
-                  <h3>จาก Chatbot สู่ AI Agent</h3>
+                  <h3>Claude คืออะไร</h3>
                   <p>
-                    เข้าใจความต่างระหว่างการถามตอบทั่วไปกับการใช้ AI Agent ที่วางแผนและช่วยทำงานเป็นขั้นตอน
+                    ทำความเข้าใจ Claude, จุดเด่นในยุค AI Agent, การเปรียบเทียบกับ ChatGPT และ Gemini
+                    รวมถึงภาพรวม Claude Model ที่ควรรู้ก่อนใช้งานจริง
                   </p>
                   <div class="lesson-tags">
-                    <span>Agent mindset</span>
-                    <span>Claude</span>
-                    <span>Manus</span>
+                    <span>Claude model</span>
+                    <span>AI Agent</span>
+                    <span>AI comparison</span>
                   </div>
                 </div>
               </article>
@@ -2095,14 +2225,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">02</div>
                 <div class="lesson-copy">
-                  <h3>ออกแบบโจทย์ให้ AI ทำงานได้ครบ</h3>
+                  <h3>เริ่มต้นใช้งาน Claude</h3>
                   <p>
-                    ฝึกเขียน brief, role, context, output format และเงื่อนไขการทำงานให้ AI เข้าใจงานเหมือนผู้ช่วยจริง
+                    สมัครและทำความรู้จัก Claude.ai ทั้ง Web และ Mobile, User Interface, Project,
+                    Memory System, แผน Free / Pro / Max / Team / Enterprise, Personalize Preference และ token
                   </p>
                   <div class="lesson-tags">
-                    <span>Prompt</span>
-                    <span>Context</span>
-                    <span>Briefing</span>
+                    <span>Claude.ai</span>
+                    <span>Project</span>
+                    <span>Token</span>
                   </div>
                 </div>
               </article>
@@ -2110,14 +2241,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">03</div>
                 <div class="lesson-copy">
-                  <h3>ให้ AI วางแผนก่อนลงมือทำ</h3>
+                  <h3>Prompt Engineering</h3>
                   <p>
-                    เปลี่ยนงานกว้าง ๆ ให้เป็น action plan ที่มีลำดับงาน เป้าหมาย วิธีตรวจ และผลลัพธ์ที่ต้องส่งมอบ
+                    หลักการเขียน prompt แบบมืออาชีพ เทคนิค role setting, reasoning steps, few-shot,
+                    system prompt และ custom instructions พร้อม workshop สำหรับงานบริหารจริง
                   </p>
                   <div class="lesson-tags">
-                    <span>Planning</span>
-                    <span>Task breakdown</span>
-                    <span>Output goal</span>
+                    <span>Prompt</span>
+                    <span>Few-shot</span>
+                    <span>Instructions</span>
                   </div>
                 </div>
               </article>
@@ -2125,14 +2257,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">04</div>
                 <div class="lesson-copy">
-                  <h3>ค้นหา สรุป และจัดข้อมูลให้พร้อมใช้</h3>
+                  <h3>Claude สำหรับงานบริหาร</h3>
                   <p>
-                    ฝึกให้ AI ช่วย research, สรุปข้อมูล, จัดประเด็น และเปลี่ยนข้อมูลกระจัดกระจายให้เป็นงานที่ตัดสินใจต่อได้
+                    สร้างเอกสารธุรกิจ รายงาน สรุปประชุม email proposal วิเคราะห์ข้อมูล
+                    สร้าง interactive dashboard ทำ deep research และสร้างไฟล์ Word, Excel, PowerPoint หรือ PDF
                   </p>
                   <div class="lesson-tags">
-                    <span>Research</span>
-                    <span>Summary</span>
-                    <span>Decision support</span>
+                    <span>Documents</span>
+                    <span>Data analytics</span>
+                    <span>Artifact</span>
                   </div>
                 </div>
               </article>
@@ -2140,14 +2273,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">05</div>
                 <div class="lesson-copy">
-                  <h3>สร้างงานเขียนและเอกสารด้วย AI</h3>
+                  <h3>Claude Projects</h3>
                   <p>
-                    ใช้ Claude และ Manus ช่วยร่าง แก้ ปรับโครง และตรวจคุณภาพงานเขียน เอกสาร หรือคอนเทนต์ของทีม
+                    เข้าใจ Project Instruction และ Knowledge สร้าง project สำหรับงานเฉพาะทาง เช่น การตลาด HR การเงิน
+                    และ workshop สร้าง AI assistant ส่วนตัวสำหรับสรุปรายงานการประชุม
                   </p>
                   <div class="lesson-tags">
-                    <span>Writing</span>
-                    <span>Document</span>
-                    <span>Content</span>
+                    <span>Project</span>
+                    <span>Knowledge</span>
+                    <span>Assistant</span>
                   </div>
                 </div>
               </article>
@@ -2155,14 +2289,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">06</div>
                 <div class="lesson-copy">
-                  <h3>ใช้งาน Manus AI กับงานแบบ end-to-end</h3>
+                  <h3>Connectors</h3>
                   <p>
-                    ฝึกมอบหมายงานให้ Manus ทำต่อเนื่อง ตั้งแต่วางแผน รวบรวมข้อมูล สร้างชิ้นงาน และสรุปผลลัพธ์
+                    ทำความเข้าใจการเชื่อมต่อ Google Service เช่น Google Drive, Google Calendar และ Gmail
+                    เพื่อให้ Claude ทำงานกับ context ขององค์กรได้ดีขึ้น
                   </p>
                   <div class="lesson-tags">
-                    <span>Manus AI</span>
-                    <span>Delegation</span>
-                    <span>Execution</span>
+                    <span>Google Drive</span>
+                    <span>Calendar</span>
+                    <span>Gmail</span>
                   </div>
                 </div>
               </article>
@@ -2170,14 +2305,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">07</div>
                 <div class="lesson-copy">
-                  <h3>เชื่อมต่อ MCP และเครื่องมือต่าง ๆ</h3>
+                  <h3>Claude for Desktop</h3>
                   <p>
-                    เข้าใจแนวคิด MCP และการเชื่อมเครื่องมือ เพื่อให้ AI เข้าถึง context หรือ action ที่จำเป็นต่อการทำงานได้มากขึ้น
+                    แนะนำ Claude for Desktop การเปิด virtual machine platform
+                    และการตั้งค่าส่วนกลางสำหรับ Cowork เพื่อเตรียมเครื่องสำหรับงานอัตโนมัติ
                   </p>
                   <div class="lesson-tags">
-                    <span>MCP</span>
-                    <span>Tools</span>
-                    <span>Connected workflow</span>
+                    <span>Desktop</span>
+                    <span>Virtual machine</span>
+                    <span>Cowork setup</span>
                   </div>
                 </div>
               </article>
@@ -2185,14 +2321,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">08</div>
                 <div class="lesson-copy">
-                  <h3>สร้าง Skill Set พร้อมใช้งาน</h3>
+                  <h3>Claude Cowork - AI Desktop Agent</h3>
                   <p>
-                    สร้างชุดคำสั่ง วิธีทำงาน template และข้อกำหนดที่นำกลับไปใช้กับงานจริงได้ทันทีหลังจบคลาส
+                    รู้จัก Cowork Mode, multi-step tasks, folder access, file management
+                    และ workshop ใช้ Cowork จัดการไฟล์พร้อมสร้างรายงาน
                   </p>
                   <div class="lesson-tags">
-                    <span>Skill set</span>
-                    <span>Template</span>
-                    <span>Reusable</span>
+                    <span>Cowork</span>
+                    <span>File management</span>
+                    <span>Automation</span>
                   </div>
                 </div>
               </article>
@@ -2200,14 +2337,15 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">09</div>
                 <div class="lesson-copy">
-                  <h3>ตรวจคุณภาพและลดความเสี่ยง</h3>
+                  <h3>Cowork Advanced + MCP Connectors</h3>
                   <p>
-                    วางวิธีตรวจคำตอบ แยกสิ่งที่ต้องตรวจซ้ำ และกำหนดมาตรฐานก่อนนำผลลัพธ์จาก AI ไปใช้จริง
+                    เชื่อมต่อเครื่องมือภายนอกผ่าน MCP เช่น Slack หรือ Notion ใช้ skills และ plugins
+                    เพื่อสร้างไฟล์ .docx, .xlsx, .pptx, .pdf รวมถึง live HTML artifact และ workflow อัตโนมัติ
                   </p>
                   <div class="lesson-tags">
-                    <span>Review</span>
-                    <span>Accuracy</span>
-                    <span>Risk control</span>
+                    <span>MCP</span>
+                    <span>Plugins</span>
+                    <span>Live HTML</span>
                   </div>
                 </div>
               </article>
@@ -2215,17 +2353,83 @@
               <article class="lesson-row compact">
                 <div class="lesson-number">10</div>
                 <div class="lesson-copy">
-                  <h3>Workshop งานจริงของผู้เรียน</h3>
+                  <h3>Web Control</h3>
                   <p>
-                    เลือกหนึ่งโจทย์จากงานจริง แล้วออกแบบเป็น workflow หรือ assistant draft ที่นำไปทดลองใช้ต่อได้
+                    ติดตั้ง Claude extension บน Chrome ฝึกเปิดเว็บไซต์ เก็บข้อมูลจากหน้าเว็บตัวอย่าง
+                    และ workshop RPA Challenge สำหรับบันทึกข้อมูลในเว็บไซต์แบบอัตโนมัติ
                   </p>
                   <div class="lesson-tags">
-                    <span>Hands-on</span>
-                    <span>Use case</span>
-                    <span>Next action</span>
+                    <span>Chrome</span>
+                    <span>Web automation</span>
+                    <span>RPA</span>
                   </div>
                 </div>
               </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">11</div>
+                <div class="lesson-copy">
+                  <h3>Claude in Excel</h3>
+                  <p>
+                    ใช้ Claude เพื่อการคำนวณอัตโนมัติ วิเคราะห์ข้อมูลใน Excel และสร้าง dashboard
+                    สำหรับติดตามข้อมูลทางธุรกิจ
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Excel</span>
+                    <span>Data analytics</span>
+                    <span>Dashboard</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">12</div>
+                <div class="lesson-copy">
+                  <h3>Skill สำหรับองค์กร</h3>
+                  <p>
+                    เข้าใจว่า skill คืออะไร วิธีสร้าง skill ประโยชน์ของ skill และ workshop
+                    เช่น Corporate Brand Identity และ Candidate Screening
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Skill</span>
+                    <span>Brand identity</span>
+                    <span>Screening</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">13</div>
+                <div class="lesson-copy">
+                  <h3>Task Schedule และ Landing Pages</h3>
+                  <p>
+                    ทำความเข้าใจ task schedule ตัวอย่างการประยุกต์ใช้งาน และเทคนิคสร้าง landing page
+                    ภายในเวลาอันสั้นด้วย Claude
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Schedule</span>
+                    <span>Landing page</span>
+                    <span>Artifact</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">14</div>
+                <div class="lesson-copy">
+                  <h3>ทำงานกับไฟล์เสียงและ Sentiment Analysis</h3>
+                  <p>
+                    ใช้ Claude ทำงานกับไฟล์เสียง ถอดเสียง วิเคราะห์ความพึงพอใจ
+                    และต่อยอดร่วมกับเครื่องมือถอดเสียง เช่น Whisper หรือ GPT-4o Transcribe
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Audio</span>
+                    <span>Transcribe</span>
+                    <span>Sentiment</span>
+                  </div>
+                </div>
+              </article>
+              </div>
             </div>
           </div>
 
@@ -2233,17 +2437,17 @@
             <div>
               <h3>สิ่งที่ผู้เรียนได้กลับไปใช้</h3>
               <p>
-                จบคลาสแล้วผู้เรียนจะไม่ได้แค่รู้จักเครื่องมือ แต่มีชุดวิธีใช้ AI Agent
-                ที่พร้อมนำไปปรับกับงานประจำวันของตัวเองหรือทีม
+                หลังเรียน ผู้เรียนจะมีทั้งแนวคิด วิธีสั่งงาน และ workflow เริ่มต้น
+                สำหรับนำ Claude ไปใช้กับงานบริหารและงานองค์กรได้ทันที
               </p>
             </div>
             <div class="kit-list">
-              <span>Skill Set พร้อมใช้งานสำหรับ Claude และ Manus</span>
-              <span>Prompt template สำหรับสั่งงาน AI Agent</span>
-              <span>Workflow ตัวอย่างสำหรับมอบหมายงานให้ AI ทำต่อ</span>
-              <span>แนวทางเชื่อม MCP และเครื่องมือที่เกี่ยวข้อง</span>
-              <span>Checklist ตรวจคุณภาพก่อนนำงาน AI ไปใช้จริง</span>
-              <span>Use case ส่วนตัว 1 งาน พร้อม next action หลังจบคลาส</span>
+              <span>Prompt framework สำหรับงานบริหารและธุรกิจ</span>
+              <span>Claude Project template สำหรับงานเฉพาะทาง</span>
+              <span>Workflow ใช้ Cowork จัดการไฟล์และสร้างรายงาน</span>
+              <span>แนวทางเริ่มต้นใช้ Claude Code แบบไม่ต้องมีพื้นฐาน coding</span>
+              <span>ตัวอย่าง Artifact, dashboard และเอกสารธุรกิจ</span>
+              <span>Checklist นำ Claude ไปประยุกต์ใช้จริงในองค์กร</span>
             </div>
           </div>
         </section>
@@ -2357,7 +2561,7 @@
                     ที่ช่วยประหยัดต้นทุนและทำงานซ้ำได้
                   </p>
                   <div class="review-tags">
-                    <span>Manus AI</span>
+                    <span>Claude skill</span>
                     <span>AI assistant</span>
                     <span>Skill setup</span>
                   </div>
@@ -2382,13 +2586,6 @@
                   <img
                     src="assets/reviews/review-thepparat.jpg"
                     alt="รีวิวผู้เรียนเรื่องการนำ AI ไปประยุกต์ใช้งานจริง"
-                    loading="lazy"
-                  />
-                </figure>
-                <figure class="review-proof">
-                  <img
-                    src="assets/reviews/review-manus-ai.jpg"
-                    alt="รีวิวผู้เรียนเรื่อง Manus AI และการสร้างผู้ช่วย AI"
                     loading="lazy"
                   />
                 </figure>
