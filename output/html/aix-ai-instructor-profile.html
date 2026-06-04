@@ -247,6 +247,7 @@
         grid-template-columns: minmax(0, 1.03fr) minmax(420px, 0.97fr);
         align-items: center;
         gap: 56px;
+        scroll-margin-top: 98px;
       }
 
       .hero::before {
@@ -363,7 +364,8 @@
 
       .proof-item::after,
       .experience-card::after,
-      .audience-card::after {
+      .audience-card::after,
+      .review-card::after {
         content: "";
         position: absolute;
         inset: 0;
@@ -379,7 +381,9 @@
       .proof-item:hover,
       .experience-card:hover,
       .audience-card:hover,
-      .credential:hover {
+      .credential:hover,
+      .review-card:hover,
+      .review-proof:hover {
         transform: translateY(-4px);
         border-color: rgba(45, 111, 255, 0.34);
         box-shadow: 0 22px 55px rgba(5, 5, 6, 0.11);
@@ -387,7 +391,8 @@
 
       .proof-item:hover::after,
       .experience-card:hover::after,
-      .audience-card:hover::after {
+      .audience-card:hover::after,
+      .review-card:hover::after {
         opacity: 1;
         transform: translateX(42%);
       }
@@ -515,6 +520,7 @@
         width: var(--container);
         margin: 0 auto;
         padding: 76px 0;
+        scroll-margin-top: 98px;
       }
 
       .bio-section {
@@ -964,10 +970,225 @@
         line-height: 1.45;
       }
 
+      .reviews-section {
+        padding-top: 38px;
+      }
+
+      .reviews-panel {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(216, 222, 232, 0.94);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(243, 245, 248, 0.9) 58%, rgba(233, 240, 255, 0.86)),
+          var(--aix-paper);
+        padding: 42px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .reviews-panel::before {
+        content: "AiX";
+        position: absolute;
+        right: -18px;
+        top: -48px;
+        color: rgba(5, 5, 6, 0.045);
+        font-size: 170px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .reviews-panel::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(
+            120deg,
+            transparent 0 22px,
+            rgba(45, 111, 255, 0.05) 22px 23px,
+            transparent 23px 68px
+          );
+        opacity: 0.68;
+        pointer-events: none;
+      }
+
+      .reviews-head,
+      .review-grid {
+        position: relative;
+        z-index: 1;
+      }
+
+      .reviews-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.58fr);
+        align-items: end;
+        gap: 34px;
+        margin-bottom: 26px;
+      }
+
+      .reviews-head h2 {
+        max-width: 760px;
+        font-size: 54px;
+        line-height: 1.08;
+        font-weight: 900;
+      }
+
+      .reviews-summary {
+        border: 1px solid rgba(216, 222, 232, 0.94);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.76);
+        padding: 22px;
+        box-shadow: 0 16px 40px rgba(5, 5, 6, 0.06);
+      }
+
+      .reviews-summary p {
+        margin: 0;
+        color: #2e333b;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.75;
+      }
+
+      .review-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .review-summary-grid span {
+        min-height: 46px;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: var(--aix-ink);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .review-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 20px;
+        align-items: start;
+      }
+
+      .review-copy-stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .review-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(216, 222, 232, 0.94);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.82);
+        padding: 24px;
+        box-shadow: 0 16px 38px rgba(5, 5, 6, 0.06);
+        transition:
+          transform 220ms ease,
+          border-color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .review-card.featured {
+        background:
+          linear-gradient(135deg, #050506 0%, #17191d 64%, #24314f 100%),
+          var(--aix-ink);
+        color: #ffffff;
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .review-card.featured::after {
+        background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.14) 48%, transparent 72%);
+      }
+
+      .review-card blockquote {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.58;
+        font-weight: 900;
+      }
+
+      .review-card p {
+        position: relative;
+        z-index: 1;
+        margin: 14px 0 0;
+        color: var(--aix-muted);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.75;
+      }
+
+      .review-card.featured p {
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      .review-tags {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .review-tags span {
+        border-radius: 999px;
+        background: var(--aix-signal-soft);
+        color: var(--aix-signal);
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .review-card.featured .review-tags span {
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+      }
+
+      .review-proof-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        align-items: start;
+      }
+
+      .review-proof {
+        position: relative;
+        overflow: hidden;
+        margin: 0;
+        border: 1px solid rgba(216, 222, 232, 0.96);
+        border-radius: 28px;
+        background: var(--aix-paper);
+        box-shadow: 0 18px 48px rgba(5, 5, 6, 0.1);
+        transition:
+          transform 220ms ease,
+          border-color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .review-proof:nth-child(2),
+      .review-proof:nth-child(4) {
+        margin-top: 34px;
+      }
+
+      .review-proof img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+      }
+
       .cta-section {
         width: var(--container);
         margin: 0 auto;
         padding: 54px 0 92px;
+        scroll-margin-top: 98px;
       }
 
       .cta-panel {
@@ -1088,6 +1309,8 @@
         .section-head,
         .method-band,
         .outcome-layout,
+        .reviews-head,
+        .review-grid,
         .cta-panel {
           grid-template-columns: 1fr;
         }
@@ -1103,6 +1326,7 @@
 
         .section h2,
         .bio-copy h2,
+        .reviews-head h2,
         .cta-copy h2 {
           font-size: 46px;
         }
@@ -1110,6 +1334,7 @@
         .hero-proof,
         .bio-highlight-grid,
         .experience-grid,
+        .review-summary-grid,
         .credential-strip {
           grid-template-columns: 1fr 1fr;
         }
@@ -1124,6 +1349,15 @@
 
         .cta-panel {
           padding: 34px;
+        }
+
+        .reviews-panel {
+          padding: 34px;
+        }
+
+        .review-proof:nth-child(2),
+        .review-proof:nth-child(4) {
+          margin-top: 0;
         }
       }
 
@@ -1168,6 +1402,8 @@
         .experience-grid,
         .method-grid,
         .audience-grid,
+        .review-summary-grid,
+        .review-proof-grid,
         .credential-strip {
           grid-template-columns: 1fr;
         }
@@ -1181,8 +1417,40 @@
         }
 
         .bio-copy h2,
+        .reviews-head h2,
         .cta-copy h2 {
           font-size: 32px;
+        }
+
+        .reviews-panel {
+          padding: 24px;
+          border-radius: 28px;
+        }
+
+        .hero,
+        .section,
+        .cta-section {
+          scroll-margin-top: 138px;
+        }
+
+        .reviews-head {
+          gap: 20px;
+          margin-bottom: 18px;
+        }
+
+        .reviews-summary,
+        .review-card,
+        .review-proof {
+          border-radius: 22px;
+        }
+
+        .review-card {
+          padding: 20px;
+        }
+
+        .review-card blockquote {
+          font-size: 18px;
+          line-height: 1.62;
         }
 
         .portrait-caption {
@@ -1239,6 +1507,7 @@
             <a href="#experience">ประสบการณ์</a>
             <a href="#method">วิธีเรียน</a>
             <a href="#outcomes">ผลลัพธ์</a>
+            <a href="#reviews">รีวิว</a>
           </nav>
           <a class="nav-action" href="#start">เริ่มกับ AiX</a>
         </div>
@@ -1497,6 +1766,107 @@
             <div class="credential">
               <strong>Thai and English</strong>
               <span>สื่อสารได้ทั้งไทยและอังกฤษ เหมาะกับการเชื่อมเนื้อหา AI, business และเครื่องมือระดับสากล</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reviews-section" id="reviews" aria-labelledby="reviews-title">
+          <div class="reviews-panel">
+            <div class="reviews-head">
+              <div>
+                <p class="section-label">รีวิวจากผู้เรียน</p>
+                <h2 id="reviews-title">เสียงจากผู้เรียนที่นำ AI ไปใช้กับงานจริง</h2>
+              </div>
+              <div class="reviews-summary">
+                <p>
+                  ผู้เรียนสะท้อนตรงกันว่า AiX ช่วยให้เห็นภาพการใช้ AI แบบลงมือทำ เข้าใจ automation มากขึ้น
+                  และนำไปต่อยอดกับงานของทีมได้จริง
+                </p>
+                <div class="review-summary-grid" aria-label="Review highlights">
+                  <span>ใช้ได้จริงกับงาน</span>
+                  <span>ตัวอย่างชัด</span>
+                  <span>ตอบคำถามดี</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="review-grid">
+              <div class="review-copy-stack" aria-label="Learner review highlights">
+                <article class="review-card featured">
+                  <blockquote>
+                    “ได้เรียนรู้แบบที่สามารถนำไปประยุกต์ใช้งานได้จริง ทำให้ AI เป็นมากกว่าถามตอบ
+                    แต่กลายเป็นผู้ช่วยทำงานแทนเรา”
+                  </blockquote>
+                  <p>
+                    ผู้เรียนเห็นภาพรวมของ automation ชัดขึ้น เข้าใจว่าแต่ละ workflow ประกอบด้วยอะไร
+                    และต่อยอดจากตัวอย่างในคลาสได้
+                  </p>
+                  <div class="review-tags">
+                    <span>Automation</span>
+                    <span>Use case</span>
+                    <span>ลงมือทำจริง</span>
+                  </div>
+                </article>
+
+                <article class="review-card">
+                  <blockquote>
+                    “จากการสร้าง skill และตั้งว่า AI ต้องทำอะไรบ้าง ทำให้ AI กลายเป็นพนักงานของเราได้จริง”
+                  </blockquote>
+                  <p>
+                    คลาสช่วยเปลี่ยนมุมมองจากการถามตอบทั่วไป ไปสู่การออกแบบ AI assistant
+                    ที่ช่วยประหยัดต้นทุนและทำงานซ้ำได้
+                  </p>
+                  <div class="review-tags">
+                    <span>Manus AI</span>
+                    <span>AI assistant</span>
+                    <span>Skill setup</span>
+                  </div>
+                </article>
+
+                <article class="review-card">
+                  <blockquote>“ถ้าไม่เคยรู้อะไรมาเลยก็ถือว่าคุ้ม”</blockquote>
+                  <p>
+                    เหมาะกับผู้เรียนที่ต้องการเริ่มจากภาพรวมและตัวอย่างที่เข้าใจง่าย
+                    ก่อนต่อยอดเป็น workflow ที่ใช้งานจริง
+                  </p>
+                  <div class="review-tags">
+                    <span>Beginner friendly</span>
+                    <span>คุ้มค่า</span>
+                    <span>ภาพรวมชัด</span>
+                  </div>
+                </article>
+              </div>
+
+              <div class="review-proof-grid" aria-label="Learner review screenshots">
+                <figure class="review-proof">
+                  <img
+                    src="assets/reviews/review-thepparat.jpg"
+                    alt="รีวิวผู้เรียนเรื่องการนำ AI ไปประยุกต์ใช้งานจริง"
+                    loading="lazy"
+                  />
+                </figure>
+                <figure class="review-proof">
+                  <img
+                    src="assets/reviews/review-manus-ai.jpg"
+                    alt="รีวิวผู้เรียนเรื่อง Manus AI และการสร้างผู้ช่วย AI"
+                    loading="lazy"
+                  />
+                </figure>
+                <figure class="review-proof">
+                  <img
+                    src="assets/reviews/review-automation-clear.jpg"
+                    alt="รีวิวผู้เรียนเรื่อง automation และตัวอย่างที่เห็นภาพชัด"
+                    loading="lazy"
+                  />
+                </figure>
+                <figure class="review-proof">
+                  <img
+                    src="assets/reviews/review-value-fit.jpg"
+                    alt="รีวิวผู้เรียนเรื่องความคุ้มค่าสำหรับผู้เริ่มต้น"
+                    loading="lazy"
+                  />
+                </figure>
+              </div>
             </div>
           </div>
         </section>
