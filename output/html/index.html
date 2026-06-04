@@ -177,7 +177,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 26px;
+        gap: 22px;
         color: var(--aix-muted);
         font-size: 14px;
         font-weight: 700;
@@ -859,6 +859,297 @@
         color: rgba(255, 255, 255, 0.66);
       }
 
+      .course-section {
+        padding-top: 42px;
+      }
+
+      .course-section .section-head {
+        align-items: start;
+      }
+
+      .course-layout {
+        display: grid;
+        grid-template-columns: minmax(300px, 0.72fr) minmax(0, 1.28fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .course-overview {
+        position: sticky;
+        top: 98px;
+        overflow: hidden;
+        min-height: 610px;
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(135deg, #050506 0%, #181b20 62%, #213252 100%),
+          var(--aix-ink);
+        color: var(--aix-paper);
+        padding: 34px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--shadow-card);
+      }
+
+      .course-overview::before {
+        content: "AIx";
+        position: absolute;
+        right: -22px;
+        top: -34px;
+        color: rgba(255, 255, 255, 0.055);
+        font-size: 150px;
+        line-height: 1;
+        font-weight: 900;
+        pointer-events: none;
+      }
+
+      .course-overview h3,
+      .course-overview p,
+      .course-stats,
+      .course-note {
+        position: relative;
+        z-index: 1;
+      }
+
+      .course-overview h3 {
+        margin: 0;
+        max-width: 330px;
+        font-size: 32px;
+        line-height: 1.18;
+        font-weight: 900;
+      }
+
+      .course-overview p {
+        margin-top: 18px;
+        max-width: 350px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 16px;
+        font-weight: 650;
+        line-height: 1.78;
+      }
+
+      .course-badge {
+        position: relative;
+        z-index: 1;
+        width: fit-content;
+        margin-bottom: 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .course-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 34px;
+      }
+
+      .course-stat {
+        min-height: 102px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 18px;
+      }
+
+      .course-stat strong {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .course-stat span {
+        display: block;
+        margin-top: 10px;
+        color: rgba(255, 255, 255, 0.66);
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .course-note {
+        margin-top: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding-top: 20px;
+        color: rgba(255, 255, 255, 0.66);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .lesson-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .lesson-row {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+        border: 1px solid rgba(216, 222, 232, 0.94);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.84);
+        padding: 22px;
+        box-shadow: 0 14px 34px rgba(5, 5, 6, 0.055);
+        transition:
+          transform 220ms ease,
+          border-color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .lesson-row::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(115deg, transparent 0%, rgba(45, 111, 255, 0.11) 48%, transparent 72%);
+        opacity: 0;
+        transform: translateX(-45%);
+        transition:
+          opacity 220ms ease,
+          transform 520ms ease;
+        pointer-events: none;
+      }
+
+      .lesson-row:hover {
+        transform: translateY(-4px);
+        border-color: rgba(45, 111, 255, 0.34);
+        box-shadow: 0 22px 55px rgba(5, 5, 6, 0.1);
+      }
+
+      .lesson-row:hover::after {
+        opacity: 1;
+        transform: translateX(42%);
+      }
+
+      .lesson-number {
+        position: relative;
+        z-index: 1;
+        width: 56px;
+        height: 56px;
+        display: grid;
+        place-items: center;
+        border-radius: 20px;
+        background: var(--aix-ink);
+        color: #ffffff;
+        font-size: 17px;
+        font-weight: 900;
+      }
+
+      .lesson-copy {
+        position: relative;
+        z-index: 1;
+      }
+
+      .lesson-copy h3 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.28;
+        font-weight: 900;
+      }
+
+      .lesson-copy p {
+        margin: 10px 0 0;
+        color: var(--aix-muted);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.72;
+      }
+
+      .lesson-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .lesson-tags span {
+        border-radius: 999px;
+        background: var(--aix-signal-soft);
+        color: var(--aix-signal);
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .course-kit {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: minmax(260px, 0.7fr) minmax(0, 1.3fr);
+        gap: 20px;
+        align-items: center;
+        border: 1px solid rgba(216, 222, 232, 0.94);
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(233, 240, 255, 0.78)),
+          var(--aix-paper);
+        padding: 28px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .course-kit h3 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.22;
+        font-weight: 900;
+      }
+
+      .course-kit p {
+        margin: 12px 0 0;
+        color: var(--aix-muted);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.72;
+      }
+
+      .kit-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .kit-list span {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid rgba(216, 222, 232, 0.9);
+        padding: 12px 14px;
+        color: #252a32;
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1.45;
+      }
+
+      .lesson-row.compact {
+        padding: 18px 20px;
+      }
+
+      .lesson-row.compact .lesson-number {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        font-size: 14px;
+      }
+
+      .lesson-row.compact .lesson-copy h3 {
+        font-size: 19px;
+      }
+
+      .lesson-row.compact .lesson-copy p {
+        margin-top: 7px;
+        font-size: 14px;
+      }
+
       .outcome-layout {
         display: grid;
         grid-template-columns: minmax(280px, 0.68fr) minmax(0, 1.32fr);
@@ -1308,6 +1599,8 @@
         .bio-panel,
         .section-head,
         .method-band,
+        .course-layout,
+        .course-kit,
         .outcome-layout,
         .reviews-head,
         .review-grid,
@@ -1335,6 +1628,7 @@
         .bio-highlight-grid,
         .experience-grid,
         .review-summary-grid,
+        .kit-list,
         .credential-strip {
           grid-template-columns: 1fr 1fr;
         }
@@ -1353,6 +1647,12 @@
 
         .reviews-panel {
           padding: 34px;
+        }
+
+        .course-overview {
+          min-height: auto;
+          position: relative;
+          top: auto;
         }
 
         .review-proof:nth-child(2),
@@ -1401,6 +1701,8 @@
         .timeline-strip,
         .experience-grid,
         .method-grid,
+        .course-stats,
+        .kit-list,
         .audience-grid,
         .review-summary-grid,
         .review-proof-grid,
@@ -1462,8 +1764,28 @@
         }
 
         .method-band,
+        .course-overview,
+        .course-kit,
         .cta-panel {
           padding: 24px;
+        }
+
+        .lesson-row {
+          grid-template-columns: 1fr;
+          gap: 14px;
+          padding: 20px;
+          border-radius: 22px;
+        }
+
+        .lesson-number {
+          width: 48px;
+          height: 48px;
+          border-radius: 16px;
+        }
+
+        .course-overview h3,
+        .course-kit h3 {
+          font-size: 26px;
         }
 
         .mascot-frame {
@@ -1506,6 +1828,7 @@
             <a href="#profile">โปรไฟล์</a>
             <a href="#experience">ประสบการณ์</a>
             <a href="#method">วิธีเรียน</a>
+            <a href="#course">หลักสูตร</a>
             <a href="#outcomes">ผลลัพธ์</a>
             <a href="#reviews">รีวิว</a>
           </nav>
@@ -1704,6 +2027,223 @@
                   <p>นำไปใช้กับงานธุรกิจจริง พร้อมวิธีตรวจคุณภาพ ลดความเสี่ยง และวัดผลลัพธ์</p>
                 </article>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section course-section" id="course" aria-labelledby="course-title">
+          <div class="section-head">
+            <div>
+              <p class="section-label">AiX Club x Manus</p>
+              <h2 id="course-title">หลักสูตรใช้งานจริง Manus AI สำหรับคนที่อยากใช้ AI ให้เต็มศักยภาพ</h2>
+            </div>
+            <p>
+              สำหรับคนที่ใช้ AI มาสักพักแล้ว แต่ยังรู้สึกว่าใช้ได้ไม่เต็มที่ หลักสูตรนี้พาเปลี่ยนจากการถามตอบทั่วไป
+              ไปสู่การใช้ Claude และ Manus เป็น AI Agent ที่ช่วยวางแผน ค้นหา เขียน เชื่อมเครื่องมือ และลงมือทำงานได้จริง
+            </p>
+          </div>
+
+          <div class="course-layout">
+            <aside class="course-overview" aria-label="Course overview">
+              <div>
+                <div class="course-badge">Live Online 1 Day / 10 Hours</div>
+                <h3>เส้นทางสู่ความคล่องแคล่วด้าน AI ใน 10 ชั่วโมง</h3>
+                <p>
+                  ไม่ใช่คอร์สที่ให้ดูสไลด์แล้วจบ แต่เป็นคลาสฝึกใช้ Manus AI และ Claude กับงานจริง
+                  พร้อม Skill Set ที่นำไปปรับใช้กับงานของทีมได้ทันที
+                </p>
+                <div class="course-stats">
+                  <div class="course-stat">
+                    <strong>10</strong>
+                    <span>ชั่วโมงเรียนออนไลน์สดภายใน 1 วัน</span>
+                  </div>
+                  <div class="course-stat">
+                    <strong>10</strong>
+                    <span>รายการฝึกปฏิบัติจริง ไม่ใช่แค่ดูสไลด์</span>
+                  </div>
+                  <div class="course-stat">
+                    <strong>MCP</strong>
+                    <span>เข้าใจการเชื่อมเครื่องมือให้ AI ทำงานแทนได้มากขึ้น</span>
+                  </div>
+                  <div class="course-stat">
+                    <strong>Skill</strong>
+                    <span>ได้ชุดคำสั่งและ workflow พร้อมนำไปใช้ต่อ</span>
+                  </div>
+                </div>
+              </div>
+              <div class="course-note">
+                เรียนออนไลน์สด 1 วัน สู่การใช้ Claude และ Manus ได้จริงในงานประจำวัน ไม่ใช่แค่รู้ว่าเครื่องมือมีอะไรบ้าง
+              </div>
+            </aside>
+
+            <div class="lesson-list" aria-label="Course lessons">
+              <article class="lesson-row compact">
+                <div class="lesson-number">01</div>
+                <div class="lesson-copy">
+                  <h3>จาก Chatbot สู่ AI Agent</h3>
+                  <p>
+                    เข้าใจความต่างระหว่างการถามตอบทั่วไปกับการใช้ AI Agent ที่วางแผนและช่วยทำงานเป็นขั้นตอน
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Agent mindset</span>
+                    <span>Claude</span>
+                    <span>Manus</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">02</div>
+                <div class="lesson-copy">
+                  <h3>ออกแบบโจทย์ให้ AI ทำงานได้ครบ</h3>
+                  <p>
+                    ฝึกเขียน brief, role, context, output format และเงื่อนไขการทำงานให้ AI เข้าใจงานเหมือนผู้ช่วยจริง
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Prompt</span>
+                    <span>Context</span>
+                    <span>Briefing</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">03</div>
+                <div class="lesson-copy">
+                  <h3>ให้ AI วางแผนก่อนลงมือทำ</h3>
+                  <p>
+                    เปลี่ยนงานกว้าง ๆ ให้เป็น action plan ที่มีลำดับงาน เป้าหมาย วิธีตรวจ และผลลัพธ์ที่ต้องส่งมอบ
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Planning</span>
+                    <span>Task breakdown</span>
+                    <span>Output goal</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">04</div>
+                <div class="lesson-copy">
+                  <h3>ค้นหา สรุป และจัดข้อมูลให้พร้อมใช้</h3>
+                  <p>
+                    ฝึกให้ AI ช่วย research, สรุปข้อมูล, จัดประเด็น และเปลี่ยนข้อมูลกระจัดกระจายให้เป็นงานที่ตัดสินใจต่อได้
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Research</span>
+                    <span>Summary</span>
+                    <span>Decision support</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">05</div>
+                <div class="lesson-copy">
+                  <h3>สร้างงานเขียนและเอกสารด้วย AI</h3>
+                  <p>
+                    ใช้ Claude และ Manus ช่วยร่าง แก้ ปรับโครง และตรวจคุณภาพงานเขียน เอกสาร หรือคอนเทนต์ของทีม
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Writing</span>
+                    <span>Document</span>
+                    <span>Content</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">06</div>
+                <div class="lesson-copy">
+                  <h3>ใช้งาน Manus AI กับงานแบบ end-to-end</h3>
+                  <p>
+                    ฝึกมอบหมายงานให้ Manus ทำต่อเนื่อง ตั้งแต่วางแผน รวบรวมข้อมูล สร้างชิ้นงาน และสรุปผลลัพธ์
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Manus AI</span>
+                    <span>Delegation</span>
+                    <span>Execution</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">07</div>
+                <div class="lesson-copy">
+                  <h3>เชื่อมต่อ MCP และเครื่องมือต่าง ๆ</h3>
+                  <p>
+                    เข้าใจแนวคิด MCP และการเชื่อมเครื่องมือ เพื่อให้ AI เข้าถึง context หรือ action ที่จำเป็นต่อการทำงานได้มากขึ้น
+                  </p>
+                  <div class="lesson-tags">
+                    <span>MCP</span>
+                    <span>Tools</span>
+                    <span>Connected workflow</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">08</div>
+                <div class="lesson-copy">
+                  <h3>สร้าง Skill Set พร้อมใช้งาน</h3>
+                  <p>
+                    สร้างชุดคำสั่ง วิธีทำงาน template และข้อกำหนดที่นำกลับไปใช้กับงานจริงได้ทันทีหลังจบคลาส
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Skill set</span>
+                    <span>Template</span>
+                    <span>Reusable</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">09</div>
+                <div class="lesson-copy">
+                  <h3>ตรวจคุณภาพและลดความเสี่ยง</h3>
+                  <p>
+                    วางวิธีตรวจคำตอบ แยกสิ่งที่ต้องตรวจซ้ำ และกำหนดมาตรฐานก่อนนำผลลัพธ์จาก AI ไปใช้จริง
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Review</span>
+                    <span>Accuracy</span>
+                    <span>Risk control</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lesson-row compact">
+                <div class="lesson-number">10</div>
+                <div class="lesson-copy">
+                  <h3>Workshop งานจริงของผู้เรียน</h3>
+                  <p>
+                    เลือกหนึ่งโจทย์จากงานจริง แล้วออกแบบเป็น workflow หรือ assistant draft ที่นำไปทดลองใช้ต่อได้
+                  </p>
+                  <div class="lesson-tags">
+                    <span>Hands-on</span>
+                    <span>Use case</span>
+                    <span>Next action</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="course-kit" aria-label="Course takeaways">
+            <div>
+              <h3>สิ่งที่ผู้เรียนได้กลับไปใช้</h3>
+              <p>
+                จบคลาสแล้วผู้เรียนจะไม่ได้แค่รู้จักเครื่องมือ แต่มีชุดวิธีใช้ AI Agent
+                ที่พร้อมนำไปปรับกับงานประจำวันของตัวเองหรือทีม
+              </p>
+            </div>
+            <div class="kit-list">
+              <span>Skill Set พร้อมใช้งานสำหรับ Claude และ Manus</span>
+              <span>Prompt template สำหรับสั่งงาน AI Agent</span>
+              <span>Workflow ตัวอย่างสำหรับมอบหมายงานให้ AI ทำต่อ</span>
+              <span>แนวทางเชื่อม MCP และเครื่องมือที่เกี่ยวข้อง</span>
+              <span>Checklist ตรวจคุณภาพก่อนนำงาน AI ไปใช้จริง</span>
+              <span>Use case ส่วนตัว 1 งาน พร้อม next action หลังจบคลาส</span>
             </div>
           </div>
         </section>
