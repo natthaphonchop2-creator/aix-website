@@ -26,11 +26,11 @@
         --aix-muted-2: #8a92a0;
         --aix-signal: #2d6fff;
         --aix-signal-soft: #e9f0ff;
-        --radius-xl: 44px;
-        --radius-lg: 32px;
-        --radius-md: 22px;
-        --shadow-soft: 0 24px 70px rgba(5, 5, 6, 0.12);
-        --shadow-card: 0 18px 50px rgba(5, 5, 6, 0.08);
+        --radius-xl: 30px;
+        --radius-lg: 24px;
+        --radius-md: 18px;
+        --shadow-soft: 0 16px 18px rgba(5, 5, 6, 0.11);
+        --shadow-card: 0 8px 8px rgba(5, 5, 6, 0.055);
         --container: min(1180px, calc(100vw - 40px));
       }
 
@@ -81,13 +81,9 @@
       .site-shell::before {
         inset: 0;
         background:
-          repeating-linear-gradient(
-            115deg,
-            transparent 0 26px,
-            rgba(45, 111, 255, 0.035) 26px 27px,
-            transparent 27px 78px
-          );
-        opacity: 0.72;
+          linear-gradient(115deg, transparent 0 38%, rgba(45, 111, 255, 0.035) 38.1% 38.4%, transparent 38.5%),
+          linear-gradient(115deg, transparent 0 67%, rgba(5, 5, 6, 0.03) 67.1% 67.3%, transparent 67.4%);
+        opacity: 0.64;
       }
 
       .site-shell::after {
@@ -271,13 +267,8 @@
         width: 430px;
         height: 180px;
         border-radius: 999px;
-        background:
-          repeating-linear-gradient(
-            135deg,
-            rgba(5, 5, 6, 0.06) 0 3px,
-            transparent 3px 18px
-          );
-        opacity: 0.55;
+        background: linear-gradient(135deg, rgba(5, 5, 6, 0.055), rgba(45, 111, 255, 0.04), transparent 72%);
+        opacity: 0.42;
         transform: rotate(-9deg);
         pointer-events: none;
       }
@@ -352,9 +343,9 @@
         min-height: 112px;
         padding: 18px;
         border: 1px solid var(--aix-line);
-        border-radius: 24px;
+        border-radius: var(--radius-md);
         background: rgba(255, 255, 255, 0.74);
-        box-shadow: 0 16px 34px rgba(5, 5, 6, 0.05);
+        box-shadow: 0 8px 8px rgba(5, 5, 6, 0.04);
         overflow: hidden;
         transition:
           transform 220ms ease,
@@ -386,7 +377,7 @@
       .review-proof:hover {
         transform: translateY(-4px);
         border-color: rgba(45, 111, 255, 0.34);
-        box-shadow: 0 22px 55px rgba(5, 5, 6, 0.11);
+        box-shadow: 0 10px 8px rgba(5, 5, 6, 0.08);
       }
 
       .proof-item:hover::after,
@@ -802,7 +793,7 @@
 
       .mascot-frame {
         position: relative;
-        border-radius: 40px;
+        border-radius: var(--radius-lg);
         background:
           linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
           #202226;
@@ -1000,6 +991,25 @@
         line-height: 1.6;
       }
 
+      .course-quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .course-quick-actions .button {
+        min-height: 42px;
+        padding: 0 16px;
+        font-size: 13px;
+      }
+
+      .course-quick-actions .button.secondary {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.88);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
       .lesson-list {
         display: grid;
         gap: 12px;
@@ -1013,10 +1023,10 @@
         gap: 18px;
         align-items: start;
         border: 1px solid rgba(216, 222, 232, 0.94);
-        border-radius: 28px;
+        border-radius: var(--radius-lg);
         background: rgba(255, 255, 255, 0.84);
         padding: 22px;
-        box-shadow: 0 14px 34px rgba(5, 5, 6, 0.055);
+        box-shadow: 0 8px 8px rgba(5, 5, 6, 0.045);
         transition:
           transform 220ms ease,
           border-color 220ms ease,
@@ -1039,7 +1049,7 @@
       .lesson-row:hover {
         transform: translateY(-4px);
         border-color: rgba(45, 111, 255, 0.34);
-        box-shadow: 0 22px 55px rgba(5, 5, 6, 0.1);
+        box-shadow: 0 10px 8px rgba(5, 5, 6, 0.08);
       }
 
       .lesson-row:hover::after {
@@ -1105,10 +1115,10 @@
 
       .course-detail-card {
         border: 1px solid rgba(216, 222, 232, 0.94);
-        border-radius: 28px;
+        border-radius: var(--radius-lg);
         background: rgba(255, 255, 255, 0.86);
         padding: 22px;
-        box-shadow: 0 14px 34px rgba(5, 5, 6, 0.055);
+        box-shadow: 0 8px 8px rgba(5, 5, 6, 0.04);
       }
 
       .course-detail-card.wide {
@@ -1128,6 +1138,7 @@
         font-size: 14px;
         font-weight: 650;
         line-height: 1.7;
+        max-width: 70ch;
       }
 
       .course-detail-card p {
@@ -1366,14 +1377,8 @@
         content: "";
         position: absolute;
         inset: 0;
-        background:
-          repeating-linear-gradient(
-            120deg,
-            transparent 0 22px,
-            rgba(45, 111, 255, 0.05) 22px 23px,
-            transparent 23px 68px
-          );
-        opacity: 0.68;
+        background: linear-gradient(120deg, transparent 0 42%, rgba(45, 111, 255, 0.045) 42.1% 42.35%, transparent 42.5%);
+        opacity: 0.72;
         pointer-events: none;
       }
 
@@ -1400,10 +1405,10 @@
 
       .reviews-summary {
         border: 1px solid rgba(216, 222, 232, 0.94);
-        border-radius: 28px;
+        border-radius: var(--radius-lg);
         background: rgba(255, 255, 255, 0.76);
         padding: 22px;
-        box-shadow: 0 16px 40px rgba(5, 5, 6, 0.06);
+        box-shadow: 0 8px 8px rgba(5, 5, 6, 0.04);
       }
 
       .reviews-summary p {
@@ -1449,10 +1454,10 @@
         position: relative;
         overflow: hidden;
         border: 1px solid rgba(216, 222, 232, 0.94);
-        border-radius: 28px;
+        border-radius: var(--radius-lg);
         background: rgba(255, 255, 255, 0.82);
         padding: 24px;
-        box-shadow: 0 16px 38px rgba(5, 5, 6, 0.06);
+        box-shadow: 0 8px 8px rgba(5, 5, 6, 0.04);
         transition:
           transform 220ms ease,
           border-color 220ms ease,
@@ -1529,9 +1534,9 @@
         overflow: hidden;
         margin: 0;
         border: 1px solid rgba(216, 222, 232, 0.96);
-        border-radius: 28px;
+        border-radius: var(--radius-lg);
         background: var(--aix-paper);
-        box-shadow: 0 18px 48px rgba(5, 5, 6, 0.1);
+        box-shadow: 0 10px 8px rgba(5, 5, 6, 0.07);
         transition:
           transform 220ms ease,
           border-color 220ms ease,
@@ -1624,18 +1629,43 @@
 
       .screen-mascot {
         position: fixed;
-        left: max(16px, env(safe-area-inset-left));
-        bottom: max(12px, env(safe-area-inset-bottom));
+        left: max(18px, env(safe-area-inset-left));
+        bottom: max(14px, env(safe-area-inset-bottom));
         z-index: 60;
-        width: clamp(86px, 7.4vw, 124px);
+        width: clamp(68px, 5.6vw, 88px);
         aspect-ratio: 192 / 208;
         pointer-events: none;
+        transform: translateZ(0);
+        opacity: 0.94;
+      }
+
+      .screen-mascot::before,
+      .screen-mascot::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .screen-mascot::before {
+        left: 12%;
+        right: 12%;
+        bottom: 4%;
+        height: 18%;
+        border-radius: 999px;
+        background:
+          linear-gradient(90deg, rgba(5, 5, 6, 0.28), rgba(45, 111, 255, 0.18)),
+          rgba(5, 5, 6, 0.18);
+        filter: blur(4px);
+        transform: translateY(4px);
+      }
+
+      .screen-mascot::after {
+        inset: 0;
         background-image: url("assets/pets/ax-class-companion.webp");
         background-repeat: no-repeat;
         background-size: 800% 900%;
         background-position: 0% 0%;
-        filter: drop-shadow(0 18px 24px rgba(5, 5, 6, 0.18));
-        transform: translateZ(0);
+        filter: drop-shadow(0 10px 10px rgba(5, 5, 6, 0.16));
         animation: axMascotIdle 5.4s steps(1, end) infinite;
       }
 
@@ -1693,7 +1723,7 @@
           transition-duration: 0.001ms !important;
         }
 
-        .screen-mascot {
+        .screen-mascot::after {
           animation: none !important;
         }
       }
@@ -1772,8 +1802,8 @@
       @media (max-width: 640px) {
         :root {
           --container: min(100vw - 28px, 1180px);
-          --radius-xl: 32px;
-          --radius-lg: 26px;
+          --radius-xl: 24px;
+          --radius-lg: 20px;
         }
 
         .nav-inner {
@@ -1835,7 +1865,7 @@
 
         .reviews-panel {
           padding: 24px;
-          border-radius: 28px;
+          border-radius: var(--radius-xl);
         }
 
         .hero,
@@ -1927,9 +1957,10 @@
         }
 
         .screen-mascot {
-          width: 52px;
+          width: 34px;
           left: max(8px, env(safe-area-inset-left));
-          bottom: max(4px, env(safe-area-inset-bottom));
+          bottom: max(10px, env(safe-area-inset-bottom));
+          opacity: 0.7;
         }
       }
     </style>
@@ -2202,6 +2233,10 @@
               <div class="course-note">
                 จบหลักสูตรแล้วผู้เรียนจะมี workflow, prompt, project setup และแนวทางนำ Claude ไปใช้ในองค์กรได้ทันที
               </div>
+              <div class="course-quick-actions" aria-label="Course next actions">
+                <a class="button primary" href="#start">เริ่มคุยรอบเรียน</a>
+                <a class="button secondary" href="#course-lessons">ดูหัวข้อทั้งหมด</a>
+              </div>
             </aside>
 
             <div class="course-main">
@@ -2244,7 +2279,7 @@
                 </article>
               </div>
 
-              <div class="lesson-list course-topic-list" aria-label="Course lessons">
+              <div class="lesson-list course-topic-list" id="course-lessons" aria-label="Course lessons">
                 <h3 class="course-topic-title">หัวข้อการฝึกอบรม</h3>
               <article class="lesson-row compact">
                 <div class="lesson-number">01</div>
