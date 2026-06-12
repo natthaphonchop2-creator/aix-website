@@ -91,28 +91,28 @@ const courses = [
 
 const resources = [
   {
-    title: "Prompt Templates",
-    category: "Prompt Engineering",
-    icon: "fa-message",
-    description: "Prompt สำเร็จรูปสำหรับกลยุทธ์ คอนเทนต์ และรายงาน"
+    title: "AI Update Brief",
+    category: "Update",
+    icon: "fa-arrows-rotate",
+    description: "สรุปเรื่อง AI ที่ควรรู้ แล้วแปลเป็นผลกระทบกับงานขาย การตลาด content และ operation"
   },
   {
-    title: "Agent Workflow",
-    category: "Agent",
-    icon: "fa-robot",
-    description: "Blueprint สำหรับหน้าที่ เครื่องมือ ข้อมูล และจุดอนุมัติ"
+    title: "Job-based Roadmap",
+    category: "Path",
+    icon: "fa-route",
+    description: "เลือกหัวข้อถัดไปจากงานที่อยากพัฒนา ไม่ต้องเริ่มจากการจำชื่อเครื่องมือ"
   },
   {
-    title: "Research Playbook",
-    category: "Research",
-    icon: "fa-brain",
-    description: "Template ทำรีเสิร์ช สรุป insight และวางแผนงาน"
+    title: "Prompt & SOP Library",
+    category: "Resource",
+    icon: "fa-folder-open",
+    description: "รวม prompt, checklist, SOP และ blueprint ที่กลับมาใช้กับทีมได้ซ้ำ"
   },
   {
-    title: "Automation Checklist",
-    category: "Automation",
-    icon: "fa-gears",
-    description: "เช็กลิสต์เชื่อม CRM, Sheet, Email และ AI"
+    title: "Replay + Practice Room",
+    category: "Member",
+    icon: "fa-circle-play",
+    description: "ทบทวนบทเรียนและฝึกกับโจทย์ธุรกิจตามเวลาของสมาชิก"
   }
 ];
 
@@ -761,7 +761,8 @@ document.querySelectorAll("[data-auth-tab]").forEach((button) => {
 });
 
 mobileMenu?.addEventListener("click", () => {
-  mobilePanel?.classList.toggle("open");
+  const isOpen = mobilePanel?.classList.toggle("open") || false;
+  mobileMenu.setAttribute("aria-expanded", String(isOpen));
 });
 
 document.querySelectorAll("[data-filter-shortcut]").forEach((button) => {
@@ -774,7 +775,7 @@ document.querySelectorAll("[data-filter-shortcut]").forEach((button) => {
 });
 
 function renderClassFilters() {
-  const filters = ["ทั้งหมด", "Live", "Coming Soon", "Agent", "Automation", "Creative", "Coding", "Prompt"];
+  const filters = ["ทั้งหมด", "Live", "Coming Soon", "Agent", "Automation", "Creative", "Coding", "Prompt", "Business"];
   classFilters.innerHTML = filters.map((filter) => (
     `<button class="filter-tab ${filter === state.activeFilter ? "active" : ""}" data-filter="${filter}">${filter}</button>`
   )).join("");
