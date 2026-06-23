@@ -51,7 +51,7 @@ function renderResult(state, title, copy) {
 
 async function verifyPayment() {
   if (!token()) {
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
     return;
   }
 

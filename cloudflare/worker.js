@@ -1,8 +1,6 @@
 const HTML_ROUTES = new Map([
   ["/admin", "/admin.html"],
   ["/dashboard", "/dashboard.html"],
-  ["/login", "/auth.html"],
-  ["/register", "/auth.html"],
   ["/payment", "/payment.html"],
   ["/payment/success", "/payment-success.html"],
   ["/payment/cancel", "/payment.html"]
@@ -39,6 +37,12 @@ export default {
         },
         { status: 501 }
       );
+    }
+
+    if (pathname === "/login" || pathname === "/register") {
+      const target = new URL("/index.html", url);
+      target.searchParams.set("auth", pathname === "/register" ? "signup" : "login");
+      return Response.redirect(target, 302);
     }
 
     const courseContent = pathname.match(/^\/course\/[^/]+\/content$/);

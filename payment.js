@@ -43,7 +43,7 @@ function selectedPaymentMethod() {
 
 async function loadPayment() {
   if (!token()) {
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
     return;
   }
   try {
@@ -84,7 +84,7 @@ async function loadPayment() {
   } catch (error) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SESSION_KEY);
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
   }
 }
 

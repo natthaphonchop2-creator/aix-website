@@ -61,7 +61,7 @@ async function apiRequest(path, options = {}) {
 }
 
 function requireToken() {
-  if (!token()) window.location.replace("/login");
+  if (!token()) window.location.replace("/index.html?auth=login");
 }
 
 function courseStartUrl(courseId) {
@@ -539,7 +539,7 @@ async function loadDashboard() {
   } catch (error) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SESSION_KEY);
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
   }
 }
 
