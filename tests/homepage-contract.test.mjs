@@ -12,7 +12,7 @@ const footer = await readFile(join(root, "site-footer.js"), "utf8");
 const themeTokens = await readFile(join(root, "docs/development/AIX_THEME_TOKENS.MD"), "utf8");
 const authMascot = await readFile(join(root, "assets/mascot/aix-auth-mascot.png"));
 const authRegisterMascot = await readFile(join(root, "assets/mascot/aix-auth-mascot-register-peek-no-panel.png"));
-const manusLogo = await readFile(join(root, "ai logo/manus.webp"));
+const manusLogo = await readFile(join(root, "assets/ai-logos/manus.webp"));
 
 function cssRuleBlock(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -186,7 +186,7 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.doesNotMatch(script, /const requiredFields = \["firstName",\s*"lastName",\s*"email"\]/);
   assert.match(script, /lastName:\s*""/);
   assert.match(script, /displayName:\s*firstName/);
-  assert.match(html, /script\.js\?v=aix-pricing-benefits-v48-20260624/);
+  assert.match(html, /script\.js\?v=aix-topic-logo-paths-v49-20260624/);
   assert.match(script, /function initAuthRouteModal\(\)/);
   assert.match(script, /params\.get\("auth"\)/);
   assert.match(script, /openAuthModal\("signup"\)/);
@@ -295,7 +295,7 @@ test("public Thai typography uses the IBM Plex Thai system from praneet-front", 
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-pricing-benefits-v48-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/, `${file} missing current CSS cache bust`);
     assert.doesNotMatch(content, /Bai\+Jamjuree|Chakra\+Petch/, `${file} still loads old Thai fonts`);
   }
 });
@@ -343,7 +343,7 @@ test("learning system section uses the static animated hero port", () => {
   assert.match(script, /window\.setInterval\(\(\) => \{/);
   assert.match(script, /initAnimatedHero\(\)/);
   assert.doesNotMatch(script, /initDisplayCards/);
-  assert.match(html, /script\.js\?v=aix-pricing-benefits-v48-20260624/);
+  assert.match(html, /script\.js\?v=aix-topic-logo-paths-v49-20260624/);
 });
 
 test("member loop section ports the hero highlight treatment statically", () => {
@@ -429,11 +429,11 @@ test("homepage sections use concise copy and tighter spacing", () => {
   assert.match(css, /\.dark \.aix-topic-logo\s*\{[\s\S]*?background:\s*#ffffff;[\s\S]*?border-color:\s*#e4e4e7;/);
   assert.match(script, /function courseTopicIcons\(course\)/);
   assert.match(script, /function courseTopicLogo\(course\)/);
-  assert.match(script, /"manus-ai":\s*\{\s*src:\s*"ai%20logo\/manus\.webp",\s*label:\s*"Manus",\s*tone:\s*"manus"\s*\}/);
-  assert.match(script, /"claude-manus-vibe-coding":\s*\{\s*src:\s*"ai%20logo\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
-  assert.match(script, /"claude-deep-dive":\s*\{\s*src:\s*"ai%20logo\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
-  assert.match(script, /"ai-video-graphic":\s*\{\s*src:\s*"ai%20logo\/higgsfield\.png",\s*label:\s*"Higgsfield",\s*tone:\s*"higgsfield"\s*\}/);
-  assert.match(script, /"ai-agent-business":\s*\{\s*src:\s*"ai%20logo\/codex\.svg",\s*label:\s*"Codex",\s*tone:\s*"codex"\s*\}/);
+  assert.match(script, /"manus-ai":\s*\{\s*src:\s*"assets\/ai-logos\/manus\.webp",\s*label:\s*"Manus",\s*tone:\s*"manus"\s*\}/);
+  assert.match(script, /"claude-manus-vibe-coding":\s*\{\s*src:\s*"assets\/ai-logos\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
+  assert.match(script, /"claude-deep-dive":\s*\{\s*src:\s*"assets\/ai-logos\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
+  assert.match(script, /"ai-video-graphic":\s*\{\s*src:\s*"assets\/ai-logos\/higgsfield\.png",\s*label:\s*"Higgsfield",\s*tone:\s*"higgsfield"\s*\}/);
+  assert.match(script, /"ai-agent-business":\s*\{\s*src:\s*"assets\/ai-logos\/codex\.svg",\s*label:\s*"Codex",\s*tone:\s*"codex"\s*\}/);
   assert.equal(manusLogo.subarray(0, 4).toString("ascii"), "RIFF");
   assert.equal(manusLogo.subarray(8, 12).toString("ascii"), "WEBP");
   assert.match(script, /course\.skills\.slice\(0,\s*2\)/);
@@ -778,7 +778,7 @@ test("site footer uses a minimal background-free design", () => {
     css,
     /\/\* AiX minimal footer redesign 2026-06-12 \*\/[\s\S]*?\.dark \.site-footer \.footer-logo\s*\{[\s\S]*?filter:\s*brightness\(0\)\s+invert\(1\)\s+contrast\(1\.35\)/
   );
-  assert.match(html, /styles\.css\?v=aix-pricing-benefits-v48-20260624/);
+  assert.match(html, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/);
 });
 
 test("homepage keeps the hover gradient nav bar in the top header", () => {
@@ -860,7 +860,7 @@ test("shared footer injects the Luma mobile navbar across public pages", async (
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-pricing-benefits-v48-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/, `${file} missing current CSS cache bust`);
     assert.match(content, /site-footer\.js\?v=site-footer-mobile-auth-modal-20260616/, `${file} missing current footer script cache bust`);
   }
 });
@@ -913,5 +913,5 @@ test("homepage light mode receives the updated decorative treatment", () => {
   assert.match(css, /html:not\(\.dark\) \.aix-pricing-header-badge,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-testimonials\s*\{[\s\S]*?background:\s*rgba\(255,\s*255,\s*255,\s*0\.68\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-stack-hero-actions \.aix-rainbow-shell,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-actions \.aix-rainbow-shell\s*\{[\s\S]*?--rainbow-beam:\s*rgba\(37,\s*99,\s*235,\s*0\.68\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-faq-section\s*\{[\s\S]*?linear-gradient\(180deg,\s*transparent 0%,\s*rgba\(244,\s*244,\s*245,\s*0\.58\) 48%,\s*transparent 100%\);/);
-  assert.match(html, /styles\.css\?v=aix-pricing-benefits-v48-20260624/);
+  assert.match(html, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/);
 });

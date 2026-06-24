@@ -1228,13 +1228,13 @@ function courseTopicIcons(course) {
 
 function courseTopicLogo(course) {
   const logosById = {
-    "manus-ai": { src: "ai%20logo/manus.webp", label: "Manus", tone: "manus" },
-    "claude-manus-vibe-coding": { src: "ai%20logo/claude.svg", label: "Claude", tone: "claude" },
-    "claude-deep-dive": { src: "ai%20logo/claude.svg", label: "Claude", tone: "claude" },
-    "ai-video-graphic": { src: "ai%20logo/higgsfield.png", label: "Higgsfield", tone: "higgsfield" },
-    "ai-agent-business": { src: "ai%20logo/codex.svg", label: "Codex", tone: "codex" }
+    "manus-ai": { src: "assets/ai-logos/manus.webp", label: "Manus", tone: "manus" },
+    "claude-manus-vibe-coding": { src: "assets/ai-logos/claude.svg", label: "Claude", tone: "claude" },
+    "claude-deep-dive": { src: "assets/ai-logos/claude.svg", label: "Claude", tone: "claude" },
+    "ai-video-graphic": { src: "assets/ai-logos/higgsfield.png", label: "Higgsfield", tone: "higgsfield" },
+    "ai-agent-business": { src: "assets/ai-logos/codex.svg", label: "Codex", tone: "codex" }
   };
-  return logosById[course.id] || { src: "ai%20logo/perplexity.svg", label: "AI", tone: "perplexity" };
+  return logosById[course.id] || { src: "assets/ai-logos/perplexity.svg", label: "AI", tone: "perplexity" };
 }
 
 function courseTopicVisuals(course) {
