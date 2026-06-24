@@ -186,7 +186,7 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.doesNotMatch(script, /const requiredFields = \["firstName",\s*"lastName",\s*"email"\]/);
   assert.match(script, /lastName:\s*""/);
   assert.match(script, /displayName:\s*firstName/);
-  assert.match(html, /script\.js\?v=aix-topic-logo-paths-v49-20260624/);
+  assert.match(html, /script\.js\?v=aix-pricing-compact-cta-v50-20260624/);
   assert.match(script, /function initAuthRouteModal\(\)/);
   assert.match(script, /params\.get\("auth"\)/);
   assert.match(script, /openAuthModal\("signup"\)/);
@@ -295,7 +295,7 @@ test("public Thai typography uses the IBM Plex Thai system from praneet-front", 
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/, `${file} missing current CSS cache bust`);
     assert.doesNotMatch(content, /Bai\+Jamjuree|Chakra\+Petch/, `${file} still loads old Thai fonts`);
   }
 });
@@ -343,7 +343,7 @@ test("learning system section uses the static animated hero port", () => {
   assert.match(script, /window\.setInterval\(\(\) => \{/);
   assert.match(script, /initAnimatedHero\(\)/);
   assert.doesNotMatch(script, /initDisplayCards/);
-  assert.match(html, /script\.js\?v=aix-topic-logo-paths-v49-20260624/);
+  assert.match(html, /script\.js\?v=aix-pricing-compact-cta-v50-20260624/);
 });
 
 test("member loop section ports the hero highlight treatment statically", () => {
@@ -523,11 +523,13 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
     "Prompt และ SOP library",
     "Practice room ตามโจทย์จริง",
     "Live สอนสดทุกอาทิตย์",
-    "ไม่ใช่แค่ลงเรียนคอร์สเดียวแล้วจบ",
-    "มีรอบสดให้ตามเรื่องใหม่ ถามตอบ และดู replay ย้อนหลังได้",
-    "เรียนตามรอบใหม่ได้ และย้อนดูซ้ำตอนต้องใช้จริง",
-    "มีของตั้งต้นให้ทีมเอาไปปรับใช้ ไม่ต้องเริ่มจากศูนย์",
-    "โฟกัสงานขาย การตลาด operation และงานหลังบ้าน"
+    "มีรอบสด ถามตอบ และ replay ย้อนหลังให้ตามเรื่องใหม่",
+    "หัวข้อใหม่ + replay",
+    "ดูซ้ำตอนต้องใช้จริง",
+    "Template + checklist",
+    "เอาไปปรับใช้กับทีม",
+    "สำหรับธุรกิจและทีม",
+    "ขาย การตลาด operation"
   ]) {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -535,9 +537,11 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
   assert.equal((html.match(/fa-solid fa-check/g) || []).length, 13);
   assert.match(html, /class="aix-pricing-benefits" role="list" aria-label="สิ่งที่รวมในสมาชิก"/);
   assert.equal((html.match(/class="aix-pricing-benefit-item" role="listitem"/g) || []).length, 3);
-  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-check" aria-hidden="true"><\/i><strong>หัวข้อใหม่ \+ replay ตลอดสมาชิก<\/strong><small>เรียนตามรอบใหม่ได้ และย้อนดูซ้ำตอนต้องใช้จริง<\/small>/);
-  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-shield-heart" aria-hidden="true"><\/i><strong>Template, checklist และ workflow blueprint<\/strong><small>มีของตั้งต้นให้ทีมเอาไปปรับใช้ ไม่ต้องเริ่มจากศูนย์<\/small>/);
-  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-heart" aria-hidden="true"><\/i><strong>เหมาะกับเจ้าของธุรกิจและทีม<\/strong><small>โฟกัสงานขาย การตลาด operation และงานหลังบ้าน<\/small>/);
+  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-check" aria-hidden="true"><\/i><strong>หัวข้อใหม่ \+ replay<\/strong><small>ดูซ้ำตอนต้องใช้จริง<\/small>/);
+  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-shield-heart" aria-hidden="true"><\/i><strong>Template \+ checklist<\/strong><small>เอาไปปรับใช้กับทีม<\/small>/);
+  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-heart" aria-hidden="true"><\/i><strong>สำหรับธุรกิจและทีม<\/strong><small>ขาย การตลาด operation<\/small>/);
+  assert.match(html, /<p class="aix-pricing-monthly-note">หรือเริ่มรายเดือน 249 บาท \/ เดือน<\/p>\s*<div class="aix-pricing-actions">/);
+  assert.match(html, /<\/div>\s*<div class="aix-pricing-live-note" aria-label="Live สอนสดทุกอาทิตย์">/);
   assert.match(html, /class="aix-pricing-features" role="list" aria-label="ฟีเจอร์สมาชิก AiX Club"/);
   assert.match(html, /class="aix-pricing-separator" role="presentation"/);
   assert.match(html, /class="aix-pricing-testimonials" data-pricing-testimonials aria-label="สรุปเสียงจากผู้เรียน"/);
@@ -571,8 +575,10 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
   assert.match(css, /\.aix-pricing-live-note\s*\{[\s\S]*?display:\s*grid;[\s\S]*?border:\s*1px solid var\(--border\);[\s\S]*?background:\s*var\(--background\);/);
   assert.match(css, /\.aix-pricing-live-note strong\s*\{[\s\S]*?font-family:\s*var\(--font-thai-display\);/);
   assert.match(css, /\/\* Prominent membership benefits \*\//);
-  assert.match(css, /\.aix-pricing-benefits \.aix-pricing-benefit-item\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*36px minmax\(0,\s*1fr\);[\s\S]*?border-radius:\s*14px;/);
-  assert.match(css, /\.aix-pricing-benefits \.aix-pricing-benefit-item i\s*\{[\s\S]*?grid-row:\s*1 \/ span 2;[\s\S]*?background:\s*linear-gradient\(135deg,\s*#16a34a,\s*#2563eb\);/);
+  assert.match(css, /\.aix-pricing-actions\s*\{[\s\S]*?gap:\s*10px;[\s\S]*?margin:\s*0 0 14px;[\s\S]*?padding-top:\s*0;/);
+  assert.match(css, /\.aix-pricing-benefits\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[\s\S]*?gap:\s*8px;/);
+  assert.match(css, /\.aix-pricing-benefits \.aix-pricing-benefit-item\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*1fr;[\s\S]*?border-radius:\s*12px;/);
+  assert.match(css, /\.aix-pricing-benefits \.aix-pricing-benefit-item i\s*\{[\s\S]*?width:\s*28px;[\s\S]*?height:\s*28px;[\s\S]*?background:\s*linear-gradient\(135deg,\s*#16a34a,\s*#2563eb\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-pricing-benefits \.aix-pricing-benefit-item\s*\{[\s\S]*?background:[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.9\);/);
   assert.match(css, /\.aix-pricing-testimonials\s*\{[\s\S]*?position:\s*relative;[\s\S]*?display:\s*grid;[\s\S]*?overflow:\s*visible;[\s\S]*?border-left:\s*3px solid var\(--primary\);/);
   assert.match(css, /\.aix-pricing-quote\s*\{[\s\S]*?position:\s*static;[\s\S]*?min-height:\s*112px;/);
@@ -778,7 +784,7 @@ test("site footer uses a minimal background-free design", () => {
     css,
     /\/\* AiX minimal footer redesign 2026-06-12 \*\/[\s\S]*?\.dark \.site-footer \.footer-logo\s*\{[\s\S]*?filter:\s*brightness\(0\)\s+invert\(1\)\s+contrast\(1\.35\)/
   );
-  assert.match(html, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/);
+  assert.match(html, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/);
 });
 
 test("homepage keeps the hover gradient nav bar in the top header", () => {
@@ -860,7 +866,7 @@ test("shared footer injects the Luma mobile navbar across public pages", async (
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/, `${file} missing current CSS cache bust`);
     assert.match(content, /site-footer\.js\?v=site-footer-mobile-auth-modal-20260616/, `${file} missing current footer script cache bust`);
   }
 });
@@ -913,5 +919,5 @@ test("homepage light mode receives the updated decorative treatment", () => {
   assert.match(css, /html:not\(\.dark\) \.aix-pricing-header-badge,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-testimonials\s*\{[\s\S]*?background:\s*rgba\(255,\s*255,\s*255,\s*0\.68\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-stack-hero-actions \.aix-rainbow-shell,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-actions \.aix-rainbow-shell\s*\{[\s\S]*?--rainbow-beam:\s*rgba\(37,\s*99,\s*235,\s*0\.68\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-faq-section\s*\{[\s\S]*?linear-gradient\(180deg,\s*transparent 0%,\s*rgba\(244,\s*244,\s*245,\s*0\.58\) 48%,\s*transparent 100%\);/);
-  assert.match(html, /styles\.css\?v=aix-topic-logo-paths-v49-20260624/);
+  assert.match(html, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/);
 });
