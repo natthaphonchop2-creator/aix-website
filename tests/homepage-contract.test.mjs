@@ -13,6 +13,8 @@ const themeTokens = await readFile(join(root, "docs/development/AIX_THEME_TOKENS
 const authMascot = await readFile(join(root, "assets/mascot/aix-auth-mascot.png"));
 const authRegisterMascot = await readFile(join(root, "assets/mascot/aix-auth-mascot-register-peek-no-panel.png"));
 const manusLogo = await readFile(join(root, "assets/ai-logos/manus.webp"));
+const workproofBefore = await readFile(join(root, "assets/generated/aix-real-work-before-generated.png"));
+const workproofAfter = await readFile(join(root, "assets/generated/aix-real-work-after-generated.png"));
 
 function cssRuleBlock(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -186,7 +188,7 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.doesNotMatch(script, /const requiredFields = \["firstName",\s*"lastName",\s*"email"\]/);
   assert.match(script, /lastName:\s*""/);
   assert.match(script, /displayName:\s*firstName/);
-  assert.match(html, /script\.js\?v=aix-pricing-compact-cta-v50-20260624/);
+  assert.match(html, /script\.js\?v=aix-workproof-raster-v54-20260624/);
   assert.match(script, /function initAuthRouteModal\(\)/);
   assert.match(script, /params\.get\("auth"\)/);
   assert.match(script, /openAuthModal\("signup"\)/);
@@ -249,7 +251,7 @@ test("homepage CSS includes responsive and motion safety rules", () => {
   assert.match(html, /aix-stack-hero/);
   assert.match(html, /aix-stack-orbit/);
   assert.match(script, /Job-based Roadmap/);
-  assert.match(footer, /แพลตฟอร์มสมาชิกเรียน AI ต่อเนื่องทั้งปี/);
+  assert.match(footer, /สมาชิกเรียน AI ต่อเนื่องทั้งปี พร้อม Live, replay/);
 });
 
 test("homepage adds full-page polish effects with responsive motion safeguards", () => {
@@ -295,7 +297,7 @@ test("public Thai typography uses the IBM Plex Thai system from praneet-front", 
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, /styles\.css\?v=aix-footer-responsive-v61-20260624/, `${file} missing current CSS cache bust`);
     assert.doesNotMatch(content, /Bai\+Jamjuree|Chakra\+Petch/, `${file} still loads old Thai fonts`);
   }
 });
@@ -343,7 +345,7 @@ test("learning system section uses the static animated hero port", () => {
   assert.match(script, /window\.setInterval\(\(\) => \{/);
   assert.match(script, /initAnimatedHero\(\)/);
   assert.doesNotMatch(script, /initDisplayCards/);
-  assert.match(html, /script\.js\?v=aix-pricing-compact-cta-v50-20260624/);
+  assert.match(html, /script\.js\?v=aix-workproof-raster-v54-20260624/);
 });
 
 test("member loop section ports the hero highlight treatment statically", () => {
@@ -510,6 +512,9 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
   assert.match(html, /class="aix-single-pricing-card" data-pricing-card aria-label="ราคา AiX Club รายเดือนและรายปี"/);
   assert.match(html, /class="aix-pricing-hover-wash" aria-hidden="true"/);
   assert.match(html, /class="aix-pricing-badge"[\s\S]*?fa-solid fa-crown[\s\S]*?Premium Membership/);
+  assert.match(html, /<strong>1,999 บาท<\/strong>\s*<span class="aix-price-period">ต่อปี<\/span>/);
+  assert.match(css, /\.aix-price-period\s*\{[\s\S]*?border-radius:\s*999px;[\s\S]*?font-weight:\s*800;/);
+  assert.match(css, /\.dark \.aix-price-period\s*\{[\s\S]*?color:\s*#bfdbfe;[\s\S]*?background:\s*rgba\(37,\s*99,\s*235,\s*0\.14\);/);
   for (const copy of [
     "Simple Pricing",
     "Premium Membership",
@@ -634,7 +639,7 @@ test("homepage applies the rotating rainbow treatment only to signup buttons", (
   assert.match(script, /new MutationObserver\(\(mutations\) =>/);
   assert.match(script, /initRainbowButtons\(authModal \|\| document\)/);
   assert.match(script, /initRainbowButtons\(classModal\)/);
-  assert.match(script, /initRainbowButtons\(\);\s*initHeroHighlight\(\);\s*initPageEffects\(\);\s*initAuthRouteModal\(\);\s*initFromHash\(\);/);
+  assert.match(script, /initRainbowButtons\(\);\s*initHeroHighlight\(\);\s*initWorkproofCompare\(\);\s*initPageEffects\(\);\s*initAuthRouteModal\(\);\s*initFromHash\(\);/);
   assert.doesNotMatch(script, /initStarButtons\(authModal \|\| document\)/);
   assert.doesNotMatch(script, /initStarButtons\(classModal\)/);
   assert.doesNotMatch(script, /initStarButtons\(\);\s*initFromHash\(\);/);
@@ -736,6 +741,11 @@ test("homepage includes learner reviews and 40+ social proof", () => {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   assert.match(css, /\.aix-reviews\s*\{[\s\S]*?padding:\s*clamp\(48px,\s*7vw,\s*88px\)\s+0;[\s\S]*?background:\s*var\(--background\);/);
+  assert.match(css, /\.aix-reviews::before\s*\{[\s\S]*?radial-gradient\(circle at 14% 14%,\s*rgba\(56,\s*189,\s*248,\s*0\.2\)[\s\S]*?content:\s*"";/);
+  assert.match(css, /\.aix-reviews\.aix-section-ambient::before\s*\{[\s\S]*?height:\s*clamp\(220px,\s*30vw,\s*360px\);[\s\S]*?rgba\(168,\s*85,\s*247,\s*0\.18\)/);
+  assert.match(css, /\.aix-reviews-copy h2::after\s*\{[\s\S]*?background:\s*linear-gradient\(90deg,\s*#60a5fa,\s*#34d399\s*48%,\s*#f59e0b\);/);
+  assert.match(css, /\.aix-review-stats div::before\s*\{[\s\S]*?background:\s*linear-gradient\(180deg,\s*#60a5fa,\s*#22d3ee\);/);
+  assert.match(css, /\.aix-testimonial-card:nth-child\(3n\s*\+\s*2\)::before\s*\{[\s\S]*?background:\s*linear-gradient\(90deg,\s*#34d399,\s*#14b8a6\);/);
   assert.match(css, /\.aix-testimonial-columns\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);[\s\S]*?max-height:\s*260px;[\s\S]*?margin-bottom:\s*0;[\s\S]*?mask-image:\s*linear-gradient/);
   assert.match(css, /@keyframes aixReviewMarquee/);
   assert.match(css, /\.aix-testimonial-track\s*\{[\s\S]*?animation:\s*aixReviewMarquee 28s linear infinite;/);
@@ -764,6 +774,12 @@ test("neutral theme tokens are installed and documented", () => {
 });
 
 test("site footer uses a minimal background-free design", () => {
+  assert.match(footer, /AiX Weekly/);
+  assert.match(footer, /Live, replay, template/);
+  assert.match(footer, /<strong>Platform<\/strong>/);
+  assert.match(footer, /<strong>ติดต่อทีม<\/strong>/);
+  assert.doesNotMatch(footer, /AiX Learning OS/);
+  assert.doesNotMatch(footer, /แพลตฟอร์มสมาชิกเรียน AI ต่อเนื่องทั้งปี สำหรับผู้ประกอบการ/);
   assert.match(
     css,
     /\/\* AiX minimal footer redesign 2026-06-12 \*\/[\s\S]*?\.site-footer\s*\{[\s\S]*?background:\s*var\(--background\);[\s\S]*?border-top:\s*1px solid var\(--border\);/
@@ -784,7 +800,12 @@ test("site footer uses a minimal background-free design", () => {
     css,
     /\/\* AiX minimal footer redesign 2026-06-12 \*\/[\s\S]*?\.dark \.site-footer \.footer-logo\s*\{[\s\S]*?filter:\s*brightness\(0\)\s+invert\(1\)\s+contrast\(1\.35\)/
   );
-  assert.match(html, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/);
+  assert.match(css, /\.site-footer \.footer-grid\s*\{[\s\S]*?width:\s*min\(var\(--container\),\s*calc\(100% - clamp\(48px,\s*8vw,\s*128px\)\)\);[\s\S]*?max-width:\s*1180px;[\s\S]*?margin-inline:\s*auto;[\s\S]*?grid-template-columns:\s*minmax\(260px,\s*1\.2fr\)\s+minmax\(120px,\s*0\.62fr\)\s+minmax\(120px,\s*0\.62fr\)\s+minmax\(190px,\s*0\.86fr\);/);
+  assert.match(css, /\.site-footer \.footer-grid > div\s*\{[\s\S]*?min-width:\s*0;/);
+  assert.match(css, /\.site-footer a\s*\{[\s\S]*?max-width:\s*100%;[\s\S]*?overflow-wrap:\s*anywhere;/);
+  assert.match(css, /@media \(max-width:\s*760px\)\s*\{[\s\S]*?\.site-footer\s*\{[\s\S]*?padding:\s*32px 0 calc\(112px \+ env\(safe-area-inset-bottom\)\);[\s\S]*?\.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\);/);
+  assert.match(css, /@media \(min-width:\s*761px\) and \(max-width:\s*1040px\)\s*\{[\s\S]*?\.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1\.15fr\)\s+minmax\(0,\s*0\.85fr\);/);
+  assert.match(html, /styles\.css\?v=aix-footer-responsive-v61-20260624/);
 });
 
 test("homepage keeps the hover gradient nav bar in the top header", () => {
@@ -866,8 +887,8 @@ test("shared footer injects the Luma mobile navbar across public pages", async (
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/, `${file} missing current CSS cache bust`);
-    assert.match(content, /site-footer\.js\?v=site-footer-mobile-auth-modal-20260616/, `${file} missing current footer script cache bust`);
+    assert.match(content, /styles\.css\?v=aix-footer-responsive-v61-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, /site-footer\.js\?v=site-footer-responsive-v61-20260624/, `${file} missing current footer script cache bust`);
   }
 });
 
@@ -906,6 +927,28 @@ test("homepage has a working light and dark mode toggle in the top navigation", 
   assert.match(script, /querySelectorAll\("\[data-theme-toggle\]"\)/);
 });
 
+test("real-work section uses clear image comparison assets", () => {
+  assert.match(html, /<section class="aix-business aix-workproof" id="business-cases" aria-labelledby="businessTitle">/);
+  assert.match(html, /ดูตัวอย่างงานจริงจากแชท รายงาน และโน้ตที่กระจัดกระจาย/);
+  assert.match(html, /data-workproof-compare/);
+  assert.match(html, /role="slider"[\s\S]*?aria-valuenow="50"[\s\S]*?data-workproof-handle/);
+  assert.match(html, /assets\/generated\/aix-real-work-before-generated\.png/);
+  assert.match(html, /assets\/generated\/aix-real-work-after-generated\.png/);
+  assert.ok(workproofBefore.byteLength > 800_000);
+  assert.ok(workproofAfter.byteLength > 900_000);
+  assert.match(css, /\/\* Static port of the image comparison feature for real-work examples \*\//);
+  assert.match(css, /\.aix-workproof-compare\s*\{[\s\S]*?--aix-compare-inset:\s*50%;[\s\S]*?isolation:\s*isolate;/);
+  assert.match(css, /\.aix-workproof-stage\s*\{[\s\S]*?aspect-ratio:\s*16 \/ 9;[\s\S]*?touch-action:\s*none;[\s\S]*?cursor:\s*ew-resize;/);
+  assert.match(css, /\.aix-workproof-after\s*\{[\s\S]*?clip-path:\s*inset\(0 0 0 var\(--aix-compare-inset\)\);/);
+  assert.match(css, /\.aix-workproof-handle\s*\{[\s\S]*?cursor:\s*ew-resize;[\s\S]*?touch-action:\s*none;/);
+  assert.match(script, /function initWorkproofCompare\(\)/);
+  assert.match(script, /document\.querySelectorAll\("\[data-workproof-compare\]"\)/);
+  assert.match(script, /compare\.style\.setProperty\("--aix-compare-inset",\s*`\$\{inset\}%`\)/);
+  assert.match(script, /stage\.addEventListener\("pointerdown"/);
+  assert.match(script, /handle\.addEventListener\("keydown"/);
+  assert.match(script, /initWorkproofCompare\(\)/);
+});
+
 test("homepage light mode receives the updated decorative treatment", () => {
   assert.match(css, /\/\* AiX light-mode visual parity 2026-06-23 \*\//);
   assert.match(css, /html:not\(\.dark\) body\s*\{[\s\S]*?radial-gradient\(circle at 18% 8%,\s*rgba\(14,\s*165,\s*233,\s*0\.08\),\s*transparent 28%\)[\s\S]*?linear-gradient\(180deg,\s*#ffffff 0%,\s*#f8fafc 46%,\s*#ffffff 100%\);/);
@@ -919,5 +962,5 @@ test("homepage light mode receives the updated decorative treatment", () => {
   assert.match(css, /html:not\(\.dark\) \.aix-pricing-header-badge,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-testimonials\s*\{[\s\S]*?background:\s*rgba\(255,\s*255,\s*255,\s*0\.68\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-stack-hero-actions \.aix-rainbow-shell,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-actions \.aix-rainbow-shell\s*\{[\s\S]*?--rainbow-beam:\s*rgba\(37,\s*99,\s*235,\s*0\.68\);/);
   assert.match(css, /html:not\(\.dark\) \.aix-faq-section\s*\{[\s\S]*?linear-gradient\(180deg,\s*transparent 0%,\s*rgba\(244,\s*244,\s*245,\s*0\.58\) 48%,\s*transparent 100%\);/);
-  assert.match(html, /styles\.css\?v=aix-pricing-compact-cta-v50-20260624/);
+  assert.match(html, /styles\.css\?v=aix-footer-responsive-v61-20260624/);
 });

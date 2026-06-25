@@ -849,6 +849,75 @@ function initHeroHighlight() {
   });
 }
 
+function initWorkproofCompare() {
+  document.querySelectorAll("[data-workproof-compare]").forEach((compare) => {
+    if (compare.dataset.workproofReady === "true") return;
+
+    const stage = compare.querySelector(".aix-workproof-stage");
+    const handle = compare.querySelector("[data-workproof-handle]");
+    if (!stage || !handle) return;
+
+    compare.dataset.workproofReady = "true";
+    let isDragging = false;
+    let inset = Number.parseFloat(handle.getAttribute("aria-valuenow") || "50");
+
+    const setInset = (nextInset) => {
+      inset = Math.min(94, Math.max(6, nextInset));
+      compare.style.setProperty("--aix-compare-inset", `${inset}%`);
+      handle.setAttribute("aria-valuenow", String(Math.round(inset)));
+    };
+
+    const updateFromClientX = (clientX) => {
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width) return;
+      setInset(((clientX - rect.left) / rect.width) * 100);
+    };
+
+    stage.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      isDragging = true;
+      compare.classList.add("is-dragging");
+      stage.setPointerCapture?.(event.pointerId);
+      updateFromClientX(event.clientX);
+    });
+
+    stage.addEventListener("pointermove", (event) => {
+      if (!isDragging) return;
+      updateFromClientX(event.clientX);
+    });
+
+    ["pointerup", "pointercancel", "pointerleave"].forEach((eventName) => {
+      stage.addEventListener(eventName, (event) => {
+        if (!isDragging) return;
+        isDragging = false;
+        compare.classList.remove("is-dragging");
+        if (stage.hasPointerCapture?.(event.pointerId)) {
+          stage.releasePointerCapture(event.pointerId);
+        }
+      });
+    });
+
+    handle.addEventListener("keydown", (event) => {
+      const keyStep = event.shiftKey ? 10 : 5;
+      if (["ArrowLeft", "ArrowDown"].includes(event.key)) {
+        event.preventDefault();
+        setInset(inset - keyStep);
+      } else if (["ArrowRight", "ArrowUp"].includes(event.key)) {
+        event.preventDefault();
+        setInset(inset + keyStep);
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        setInset(6);
+      } else if (event.key === "End") {
+        event.preventDefault();
+        setInset(94);
+      }
+    });
+
+    setInset(inset);
+  });
+}
+
 function getModalPanel(modal) {
   return modal?.querySelector(".modal-panel");
 }
@@ -1566,6 +1635,7 @@ function pageEffectTargets() {
     ".aix-resource-section .resource-card",
     ".aix-catalog .course-card",
     ".aix-business-card",
+    ".aix-workproof-compare",
     ".aix-testimonial-card",
     ".aix-single-pricing-card",
     ".aix-faq-item"
@@ -1639,6 +1709,7 @@ initFaqAccordion();
 initPricingCard();
 initRainbowButtons();
 initHeroHighlight();
+initWorkproofCompare();
 initPageEffects();
 initAuthRouteModal();
 initFromHash();

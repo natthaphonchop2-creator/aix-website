@@ -37,7 +37,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="styles.css?v=aix-pricing-compact-cta-v50-20260624">
+  <link rel="stylesheet" href="styles.css?v=aix-footer-responsive-v61-20260624">
   <script src="https://accounts.google.com/gsi/client?hl=th" async defer></script>
 </head>
 <body class="aix-top-nav-active">
@@ -403,30 +403,58 @@
       </div>
     </section>
 
-    <section class="aix-business" id="business-cases" aria-labelledby="businessTitle">
-      <div class="container aix-business-grid">
-        <div>
+    <section class="aix-business aix-workproof" id="business-cases" aria-labelledby="businessTitle">
+      <div class="container aix-business-grid aix-workproof-grid">
+        <div class="aix-workproof-copy">
           <p class="aix-section-note">ใช้กับงานจริง</p>
           <h2 id="businessTitle">เรียนจากงานจริง</h2>
-          <p class="aix-section-copy">ผูกบทเรียนกับงานขาย การตลาด customer service, report และ operation</p>
+          <p class="aix-section-copy">ดูตัวอย่างงานจริงจากแชท รายงาน และโน้ตที่กระจัดกระจาย แล้วเปลี่ยนเป็น FAQ, dashboard และ action checklist ที่ทีมเอาไปใช้ต่อได้</p>
+
+          <div class="aix-workproof-points" aria-label="ตัวอย่างงานจริงใน AiX">
+            <span><i class="fa-solid fa-comments" aria-hidden="true"></i> สรุปแชทลูกค้า</span>
+            <span><i class="fa-solid fa-chart-line" aria-hidden="true"></i> สรุปรายงาน</span>
+            <span><i class="fa-solid fa-list-check" aria-hidden="true"></i> ทำ checklist ใช้งานต่อ</span>
+          </div>
         </div>
 
-        <div class="aix-case-list">
-          <article>
-            <span>E-commerce</span>
-            <h3>สรุปแชทลูกค้าและทำ FAQ</h3>
-            <p>รวมคำถามซ้ำเป็นฐานความรู้และ FAQ</p>
-          </article>
-          <article>
-            <span>Marketing</span>
-            <h3>แตก campaign จาก insight</h3>
-            <p>ใช้รีวิวและ inbox หา insight กับมุมขาย</p>
-          </article>
-          <article>
-            <span>Management</span>
-            <h3>สรุปรายงานให้ตัดสินใจเร็ว</h3>
-            <p>สรุปยอดขาย feedback และ next action</p>
-          </article>
+        <div class="aix-workproof-compare" data-workproof-compare style="--aix-compare-inset: 50%;" aria-label="เปรียบเทียบตัวอย่างงานจริงก่อนและหลังใช้ AI">
+          <div class="aix-workproof-labels" aria-hidden="true">
+            <span>งานจริงเดิม</span>
+            <span>จัดด้วย AI</span>
+          </div>
+
+          <div class="aix-workproof-stage">
+            <img
+              class="aix-workproof-image aix-workproof-before"
+              src="assets/generated/aix-real-work-before-generated.png"
+              width="1672"
+              height="941"
+              loading="lazy"
+              alt="ตัวอย่างงานธุรกิจจริงก่อนจัดระบบด้วย AI มีแชทลูกค้า รายงาน และโน้ตหลายแหล่ง"
+            >
+            <img
+              class="aix-workproof-image aix-workproof-after"
+              src="assets/generated/aix-real-work-after-generated.png"
+              width="1672"
+              height="941"
+              loading="lazy"
+              alt="ตัวอย่างงานธุรกิจจริงหลังจัดด้วย AI เป็น workflow FAQ dashboard และ checklist"
+            >
+
+            <div class="aix-workproof-divider" aria-hidden="true"></div>
+            <button
+              class="aix-workproof-handle"
+              type="button"
+              role="slider"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="50"
+              aria-label="ลากเพื่อเปรียบเทียบตัวอย่างงานจริงก่อนและหลังจัดด้วย AI"
+              data-workproof-handle
+            >
+              <i class="fa-solid fa-grip-lines-vertical" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -538,6 +566,7 @@
 
               <div class="aix-pricing-price">
                 <strong>1,999 บาท</strong>
+                <span class="aix-price-period">ต่อปี</span>
                 <span class="aix-price-original">2,988 บาท</span>
                 <span class="aix-price-discount">ประหยัด 989 บาท</span>
                 <span class="aix-price-a11y">1,999 บาทต่อปี และ 249 บาทต่อเดือน โดยรายปีเฉลี่ยถูกกว่า</span>
@@ -830,7 +859,7 @@
     </div>
   </div>
 
-  <script src="/site-footer.js?v=site-footer-mobile-auth-modal-20260616"></script>
+  <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script type="application/ld+json">
   {
@@ -926,6 +955,6 @@
     ]
   }
   </script>
-  <script src="script.js?v=aix-pricing-compact-cta-v50-20260624"></script>
+  <script src="script.js?v=aix-workproof-raster-v54-20260624"></script>
 </body>
 </html>

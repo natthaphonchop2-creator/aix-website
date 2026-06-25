@@ -179,30 +179,28 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <img class="footer-logo" src="/AiX%20logo/textblack.png" alt="AiX Club" width="232" height="92" loading="lazy" decoding="async">
-        <p>แพลตฟอร์มสมาชิกเรียน AI ต่อเนื่องทั้งปี สำหรับผู้ประกอบการและทีมธุรกิจที่ต้องการใช้ AI กับงานจริง</p>
+        <p>สมาชิกเรียน AI ต่อเนื่องทั้งปี พร้อม Live, replay และ resource ที่กลับมาใช้กับงานจริงได้ทันที</p>
         <div class="footer-brand-note" aria-label="AiX learning system">
           <div>
-            <strong>AiX Learning OS</strong>
-            <span>Update, Path, Practice, Resource</span>
+            <strong>AiX Weekly</strong>
+            <span>Live, replay, template</span>
           </div>
         </div>
       </div>
       <div>
-        <strong>เรียน AI</strong>
+        <strong>Platform</strong>
         <a href="${sectionHref("member-loop")}">สมาชิกได้อะไร</a>
-        <a href="${sectionHref("learning-system")}">วิธีเรียนใน AiX</a>
-        <a href="${sectionHref("catalog")}">คอร์สเรียน AI</a>
-        <a href="${sectionHref("business-cases")}">AI สำหรับธุรกิจ</a>
+        <a href="${sectionHref("learning-system")}">วิธีเรียน</a>
+        <a href="${sectionHref("catalog")}">หัวข้อเรียน</a>
       </div>
       <div>
         <strong>สมาชิก</strong>
-        <a href="/dashboard">Dashboard</a>
+        <a href="${sectionHref("membership")}">สมัครสมาชิก</a>
+        <a href="/dashboard">เข้าสู่ระบบ</a>
         <a href="/payment">ชำระเงิน</a>
-        <a href="/dashboard#schedule">ตารางสอนสด</a>
-        <a href="/dashboard#billing">ใบเสร็จและบัญชี</a>
       </div>
       <div>
-        <strong>ติดต่อ AiX Club</strong>
+        <strong>ติดต่อทีม</strong>
         <a href="tel:0987570796">098-757-0796</a>
         <a href="mailto:natthaphon.chop2@gmail.com">natthaphon.chop2@gmail.com</a>
       </div>
