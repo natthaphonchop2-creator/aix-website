@@ -660,11 +660,7 @@ function initThemeToggle() {
   } catch (error) {
     savedTheme = null;
   }
-  const currentMode = document.documentElement.classList.contains("dark")
-    ? "dark"
-    : savedTheme === "dark"
-      ? "dark"
-      : "light";
+  const currentMode = savedTheme === "light" ? "light" : "dark";
 
   setThemeMode(currentMode, false);
 

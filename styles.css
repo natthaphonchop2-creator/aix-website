@@ -14807,6 +14807,26 @@ html:not(.dark) .aix-faq-item.is-open {
   border-top-color: #27272a;
 }
 
+.aix-shared-theme-toggle {
+  flex: 0 0 auto;
+}
+
+.course-gate-header .aix-shared-theme-toggle {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.learn-topbar .aix-shared-theme-toggle {
+  margin-left: auto;
+}
+
+body > .aix-shared-theme-toggle {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  right: 18px;
+  z-index: 80;
+}
+
 @media (max-width: 760px) {
   .site-footer {
     padding: 32px 0 calc(112px + env(safe-area-inset-bottom));
@@ -14894,7 +14914,7 @@ html:not(.dark) .aix-faq-item.is-open {
   }
 }
 
-@media (min-width: 360px) and (max-width: 760px) {
+@media (min-width: 560px) and (max-width: 760px) {
   .site-footer .footer-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 16px 24px;
@@ -17001,5 +17021,408 @@ html:not(.dark) .aix-pricing-benefits .aix-pricing-benefit-item {
 
   .aix-pricing-benefits .aix-pricing-benefit-item small {
     font-size: 0.68rem;
+  }
+}
+
+/* AiX landing design propagation for non-home pages 2026-06-30 */
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell) {
+  position: relative;
+  z-index: 1;
+  color: var(--foreground);
+  background: transparent;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page)
+  :where(.section, .alt-section, .catalog-section, .member-resource-section, .classroom-resource-section, .member-schedule-section, .member-notification-section, .payment-history-section, .live-workspace-section) {
+  background: transparent;
+}
+
+body.course-gate-body,
+body.learn-body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar) {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--background) 84%, transparent);
+  border-color: color-mix(in srgb, var(--border) 86%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent);
+  backdrop-filter: blur(20px);
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar) {
+  background: rgba(10, 10, 10, 0.78);
+  border-color: rgba(39, 39, 42, 0.88);
+  box-shadow: 0 1px 0 rgba(250, 250, 250, 0.06);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  :where(h1, h2, h3, strong, .eyebrow, .provider, .dashboard-label strong, .classroom-label strong) {
+  color: var(--foreground);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  :where(p, small, .detail-subtitle, .section-copy, .payment-note, .dashboard-label span, .classroom-label span, .course-meta, .course-progress-row, .live-class-meta, .receipt-pending) {
+  color: var(--muted-foreground);
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .classroom-panel,
+    .classroom-replay-card,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .enroll-card,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .resource-card,
+    .course-card,
+    .faq-grid details,
+    .course-gate-content
+  ) {
+  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  background:
+    radial-gradient(circle at 18% 0%, color-mix(in srgb, #38bdf8 12%, transparent), transparent 34%),
+    color-mix(in srgb, var(--card) 86%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 18px 54px color-mix(in srgb, var(--background) 68%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .classroom-panel,
+    .classroom-replay-card,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .enroll-card,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .resource-card,
+    .course-card,
+    .faq-grid details,
+    .course-gate-content
+  ) {
+  background:
+    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.11), transparent 34%),
+    rgba(10, 10, 10, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.07),
+    0 20px 58px rgba(0, 0, 0, 0.28);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  :where(
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .classroom-panel,
+    .classroom-replay-card,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .enroll-card,
+    .detail-project,
+    .instructor-panel,
+    .syllabus-item,
+    .resource-card,
+    .course-card
+  ) {
+  transition:
+    transform 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    background 240ms ease;
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  :where(
+    .dashboard-continue-card,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-panel,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .live-note-card,
+    .live-support-card,
+    .classroom-panel,
+    .classroom-replay-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .enroll-card,
+    .syllabus-item,
+    .resource-card,
+    .course-card
+  ):hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, #38bdf8 34%, var(--border));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+    0 24px 64px color-mix(in srgb, #38bdf8 12%, transparent);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #061438;
+  border: 0;
+  background: linear-gradient(135deg, #dbeafe 0%, #60a5fa 48%, #8b5cf6 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 18px 42px rgba(59, 130, 246, 0.22);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"])::after {
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(110deg, transparent 0 28%, rgba(255, 255, 255, 0.42) 44%, transparent 60% 100%);
+  content: "";
+  opacity: 0;
+  transform: translateX(-70%);
+  transition: opacity 220ms ease, transform 520ms ease;
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]):hover::after,
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]):focus-visible::after {
+  opacity: 1;
+  transform: translateX(70%);
+}
+
+.dark :where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]) {
+  color: #0a0a0a;
+  background: linear-gradient(135deg, #e0f2fe 0%, #93c5fd 46%, #a78bfa 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 18px 46px rgba(96, 165, 250, 0.24);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  :where(.secondary-btn, .link-btn, .text-link, .learn-tabs button, .learn-editor-tabs button) {
+  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--border) 86%, transparent);
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+}
+
+:where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page, .learn-shell)
+  :where(.secondary-btn, .link-btn, .text-link, .learn-tabs button, .learn-editor-tabs button):hover {
+  color: var(--foreground);
+  border-color: color-mix(in srgb, #38bdf8 32%, var(--border));
+  background: color-mix(in srgb, var(--card) 88%, #38bdf8 6%);
+}
+
+.course-gate-content {
+  padding: clamp(24px, 4vw, 44px);
+  border: 1px solid var(--border);
+  border-radius: clamp(18px, 3vw, 28px);
+}
+
+.course-gate-list,
+.course-gate-form {
+  max-width: 820px;
+}
+
+.learn-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 55;
+}
+
+.learn-shell {
+  gap: clamp(14px, 2vw, 22px);
+  padding: clamp(14px, 2vw, 22px);
+}
+
+.learn-sidebar,
+.learn-stage {
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+}
+
+@media (max-width: 900px) {
+  .dashboard-brand-block,
+  .classroom-brand-block {
+    min-width: 0;
+  }
+
+  .dashboard-label,
+  .classroom-label {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  :where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page) {
+    overflow: visible;
+  }
+
+  :where(.dashboard-page, .tools-box-page, .live-class-page, #detailRoot, .course-gate-page)
+    :where(.section, .detail-hero, .tools-box-hero, .live-class-hero, .payment-page) {
+    padding-top: clamp(22px, 7vw, 34px);
+    padding-bottom: clamp(28px, 8vw, 44px);
+  }
+
+  :where(
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .payment-summary,
+    .payment-panel,
+    .tools-topic-panel,
+    .live-class-main,
+    .live-class-side,
+    .classroom-panel,
+    .learn-reading-card,
+    .learn-lab-card,
+    .enroll-card,
+    .course-gate-content
+  ) {
+    padding: clamp(16px, 5vw, 22px);
+  }
+
+  .course-gate-content {
+    width: min(100% - 32px, 920px);
+  }
+
+  .course-gate-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 18px 0 24px;
+  }
+
+  .course-gate-form {
+    gap: 18px;
+  }
+
+  .course-gate-form .primary-btn {
+    width: 100%;
+    min-height: 56px;
+  }
+
+  .learn-topbar {
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    min-height: auto;
+    padding: 10px 14px;
+  }
+
+  .learn-progress {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .learn-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .learn-sidebar {
+    min-height: 0;
+    max-height: 42dvh;
+  }
+
+  .learn-module-list {
+    max-height: calc(42dvh - 100px);
   }
 }

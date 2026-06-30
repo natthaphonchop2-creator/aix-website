@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="color-scheme" content="dark">
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("aix-theme");
+        var isDark = savedTheme !== "light";
+        document.documentElement.classList.toggle("dark", isDark);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
+        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
+      } catch (error) {
+        document.documentElement.classList.add("dark");
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/styles.css?v=aix-footer-responsive-v61-20260624">
 </head>
 <body class="learn-body">

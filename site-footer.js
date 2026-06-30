@@ -168,8 +168,71 @@
     window.requestAnimationFrame(syncVisibility);
   }
 
+  function themeToggleMarkup() {
+    return `
+      <span class="theme-toggle-track" aria-hidden="true">
+        <span class="theme-toggle-idle theme-toggle-idle-moon"><i class="fa-regular fa-moon"></i></span>
+        <span class="theme-toggle-idle theme-toggle-idle-sun"><i class="fa-regular fa-sun"></i></span>
+        <span class="theme-toggle-thumb">
+          <i class="theme-toggle-icon-sun fa-regular fa-sun"></i>
+          <i class="theme-toggle-icon-moon fa-regular fa-moon"></i>
+        </span>
+      </span>
+    `;
+  }
+
+  function syncThemeToggleButtons() {
+    const isDark = document.documentElement.classList.contains("dark");
+    document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
+      button.setAttribute("aria-pressed", String(isDark));
+      button.setAttribute("aria-label", isDark ? "เปิดโหมดสว่าง" : "เปิดโหมดมืด");
+    });
+  }
+
+  function setSharedTheme(mode, persist = true) {
+    const isDark = mode === "dark";
+    document.documentElement.classList.toggle("dark", isDark);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
+    document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
+    syncThemeToggleButtons();
+
+    if (!persist) return;
+    try {
+      localStorage.setItem("aix-theme", isDark ? "dark" : "light");
+    } catch (error) {
+      // Keep the current-page theme usable when storage is unavailable.
+    }
+  }
+
+  function ensureSharedThemeToggle() {
+    const existing = document.querySelector("[data-theme-toggle]");
+    if (existing) {
+      syncThemeToggleButtons();
+      return;
+    }
+
+    const button = document.createElement("button");
+    button.className = "theme-toggle aix-shared-theme-toggle";
+    button.type = "button";
+    button.dataset.themeToggle = "";
+    button.innerHTML = themeToggleMarkup();
+    button.addEventListener("click", () => {
+      setSharedTheme(document.documentElement.classList.contains("dark") ? "light" : "dark");
+    });
+    syncThemeToggleButtons();
+
+    const target = document.querySelector(".site-header:not(.aix-home-header) .nav-actions")
+      || document.querySelector(".learn-topbar")
+      || document.querySelector(".course-gate-header")
+      || document.body;
+
+    target.appendChild(button);
+    syncThemeToggleButtons();
+  }
+
   ensureSiteMeteors();
   ensureMobileLumaNav();
+  ensureSharedThemeToggle();
 
   if (document.querySelector(".site-footer")) return;
 

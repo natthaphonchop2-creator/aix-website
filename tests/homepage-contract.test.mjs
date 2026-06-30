@@ -203,8 +203,12 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
 });
 
 test("homepage applies modern web guidance semantics for forms dialogs theme and offscreen rendering", () => {
-  assert.match(html, /<meta name="color-scheme" content="light">/);
-  assert.match(html, /document\.querySelector\('meta\[name="color-scheme"\]'\)\?\.setAttribute\("content", savedTheme === "dark" \? "dark" : "light"\)/);
+  assert.match(html, /<html lang="th" class="dark">/);
+  assert.match(html, /<meta name="theme-color" content="#0a0a0a">/);
+  assert.match(html, /<meta name="color-scheme" content="dark">/);
+  assert.match(html, /var isDark = savedTheme !== "light";/);
+  assert.match(html, /document\.documentElement\.classList\.toggle\("dark", isDark\)/);
+  assert.match(html, /document\.querySelector\('meta\[name="color-scheme"\]'\)\?\.setAttribute\("content", isDark \? "dark" : "light"\)/);
   assert.match(html, /<span class="visually-hidden">ค้นหาหัวข้อเรียน<\/span>[\s\S]*?<input id="catalogSearch" type="search" placeholder="ค้นหาหัวข้อ">/);
   assert.match(html, /<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><\/div>/);
   assert.match(html, /class="aix-review-stats" role="list" aria-label="สรุปรีวิวผู้เรียน AiX"/);
@@ -235,6 +239,36 @@ test("public pages do not load the removed moving-light motion layer", async () 
     assert.doesNotMatch(content, /site-motion\.js/, `${file} still loads site-motion.js`);
     assert.doesNotMatch(content, /assets\/vendor\/gsap\.min\.js/, `${file} still loads GSAP for site motion`);
   }
+});
+
+test("public pages inherit landing page dark-first theme shell", async () => {
+  for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
+    const content = await readFile(join(root, file), "utf8");
+    assert.match(content, /<html lang="th" class="dark">/, `${file} does not start with dark html shell`);
+    assert.match(content, /<meta name="theme-color" content="#0a0a0a">/, `${file} missing dark theme color`);
+    assert.match(content, /<meta name="color-scheme" content="dark">/, `${file} missing dark color scheme`);
+    assert.match(content, /var savedTheme = localStorage\.getItem\("aix-theme"\);/, `${file} missing shared theme storage read`);
+    assert.match(content, /var isDark = savedTheme !== "light";/, `${file} missing dark-first fallback`);
+    assert.match(content, /document\.documentElement\.classList\.toggle\("dark", isDark\);/, `${file} missing dark class sync`);
+    assert.ok(
+      content.indexOf("localStorage.getItem(\"aix-theme\")") < content.indexOf("styles.css?v=aix-footer-responsive-v61-20260624"),
+      `${file} initializes theme after CSS and may flash light`
+    );
+  }
+});
+
+test("inner pages share the landing page visual language", () => {
+  assert.match(css, /AiX landing design propagation for non-home pages 2026-06-30/);
+  assert.match(css, /:where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\{/);
+  assert.match(css, /:where\(\.site-header:not\(\.aix-home-header\), \.dashboard-header, \.classroom-header, \.tools-header, \.live-header, \.course-gate-header, \.learn-topbar\)\s*\{/);
+  assert.match(css, /\.dark :where\(\.site-header:not\(\.aix-home-header\), \.dashboard-header, \.classroom-header, \.tools-header, \.live-header, \.course-gate-header, \.learn-topbar\)\s*\{/);
+  assert.match(css, /:where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\(\s*\.dashboard-profile,[\s\S]*?\.course-gate-content\s*\)\s*\{[\s\S]*?backdrop-filter:\s*blur\(18px\);/);
+  assert.match(css, /:where\(\.dashboard-page, \.tools-box-page, \.live-class-page, #detailRoot, \.course-gate-page, \.learn-shell\)\s*\n\s*\.primary-btn:not\(\.disabled\):not\(\[aria-disabled="true"\]\)\s*\{[\s\S]*?background:\s*linear-gradient\(135deg, #dbeafe 0%, #60a5fa 48%, #8b5cf6 100%\);/);
+  assert.match(css, /\.dark :where\(\.dashboard-page, \.tools-box-page, \.live-class-page, #detailRoot, \.course-gate-page, \.learn-shell\)\s*\n\s*\.primary-btn:not\(\.disabled\):not\(\[aria-disabled="true"\]\)\s*\{[\s\S]*?background:\s*linear-gradient\(135deg, #e0f2fe 0%, #93c5fd 46%, #a78bfa 100%\);/);
+  assert.match(css, /\.learn-topbar\s*\{[\s\S]*?position:\s*sticky;[\s\S]*?top:\s*0;[\s\S]*?z-index:\s*55;/);
+  assert.match(css, /@media \(max-width:\s*760px\)\s*\{[\s\S]*?\.learn-shell\s*\{[\s\S]*?grid-template-columns:\s*1fr;/);
+  assert.match(footer, /ensureSiteMeteors\(\);/);
+  assert.match(footer, /ensureMobileLumaNav\(\);/);
 });
 
 test("homepage CSS includes responsive and motion safety rules", () => {
@@ -804,6 +838,8 @@ test("site footer uses a minimal background-free design", () => {
   assert.match(css, /\.site-footer \.footer-grid > div\s*\{[\s\S]*?min-width:\s*0;/);
   assert.match(css, /\.site-footer a\s*\{[\s\S]*?max-width:\s*100%;[\s\S]*?overflow-wrap:\s*anywhere;/);
   assert.match(css, /@media \(max-width:\s*760px\)\s*\{[\s\S]*?\.site-footer\s*\{[\s\S]*?padding:\s*32px 0 calc\(112px \+ env\(safe-area-inset-bottom\)\);[\s\S]*?\.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\);/);
+  assert.doesNotMatch(css, /@media \(min-width:\s*360px\) and \(max-width:\s*760px\)[\s\S]*?\.site-footer \.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(0,\s*1fr\);/);
+  assert.match(css, /@media \(min-width:\s*560px\) and \(max-width:\s*760px\)[\s\S]*?\.site-footer \.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(0,\s*1fr\);/);
   assert.match(css, /@media \(min-width:\s*761px\) and \(max-width:\s*1040px\)\s*\{[\s\S]*?\.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1\.15fr\)\s+minmax\(0,\s*0\.85fr\);/);
   assert.match(html, /styles\.css\?v=aix-footer-responsive-v61-20260624/);
 });
@@ -844,7 +880,7 @@ test("shared footer injects the Luma mobile navbar across public pages", async (
   assert.match(footer, /document\.body\.insertBefore\(field,\s*document\.body\.firstChild\)/);
   assert.equal((footer.match(/--meteor-left:/g) || []).length, 1);
   assert.equal((footer.match(/left: "/g) || []).length, 16);
-  assert.match(footer, /ensureSiteMeteors\(\);\s*ensureMobileLumaNav\(\);/);
+  assert.match(footer, /ensureSiteMeteors\(\);\s*ensureMobileLumaNav\(\);\s*ensureSharedThemeToggle\(\);/);
   assert.match(footer, /function ensureMobileLumaNav\(\)/);
   assert.match(footer, /className = "luma-mobile-nav"/);
   assert.match(footer, /class="luma-mobile-shell"/);
@@ -894,7 +930,13 @@ test("shared footer injects the Luma mobile navbar across public pages", async (
 
 test("homepage has a working light and dark mode toggle in the top navigation", () => {
   assert.match(html, /localStorage\.getItem\("aix-theme"\)/);
-  assert.match(html, /document\.documentElement\.classList\.toggle\("dark",\s*savedTheme === "dark"\)/);
+  assert.match(html, /var isDark = savedTheme !== "light";/);
+  assert.match(html, /document\.documentElement\.classList\.toggle\("dark",\s*isDark\)/);
+  assert.match(script, /const currentMode = savedTheme === "light" \? "light" : "dark";/);
+  assert.match(footer, /function ensureSharedThemeToggle\(\)/);
+  assert.match(footer, /button\.className = "theme-toggle aix-shared-theme-toggle"/);
+  assert.match(footer, /localStorage\.setItem\("aix-theme",\s*isDark \? "dark" : "light"\)/);
+  assert.match(css, /\.aix-shared-theme-toggle\s*\{[\s\S]*?flex:\s*0 0 auto;/);
   assert.equal((html.match(/data-theme-toggle/g) || []).length, 2);
   assert.match(html, /class="theme-toggle" type="button" data-theme-toggle/);
   assert.match(html, /class="theme-toggle theme-toggle-mobile" type="button" data-theme-toggle/);
