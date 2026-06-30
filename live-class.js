@@ -137,7 +137,7 @@ function renderLiveRoom(data) {
 async function loadLiveRoom() {
   const scheduleId = scheduleIdFromPath();
   if (!token()) {
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
     return;
   }
   if (!scheduleId) {

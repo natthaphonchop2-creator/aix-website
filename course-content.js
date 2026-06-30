@@ -174,14 +174,14 @@ function setupClassroomNav() {
 async function initContent() {
   const id = getCourseId();
   if (!localStorage.getItem(TOKEN_KEY)) {
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
     return;
   }
   try {
     const data = await apiRequest(`/api/courses/${encodeURIComponent(id)}/content`);
     renderContent(data);
   } catch (error) {
-    window.location.replace(error.status === 402 ? "/payment" : "/login");
+    window.location.replace(error.status === 402 ? "/payment" : "/index.html?auth=login");
   }
 }
 

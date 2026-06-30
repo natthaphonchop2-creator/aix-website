@@ -597,7 +597,7 @@ async function initLearnPage() {
   const courseId = getCourseId();
   const params = new URLSearchParams(window.location.search);
   if (!token()) {
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
     return;
   }
   if (params.get("ready") !== "1") {
@@ -623,7 +623,7 @@ async function initLearnPage() {
     renderActiveModule();
     document.body.classList.add("learn-ready");
   } catch (error) {
-    window.location.replace(error.status === 402 ? "/payment" : "/login");
+    window.location.replace(error.status === 402 ? "/payment" : "/index.html?auth=login");
   }
 }
 

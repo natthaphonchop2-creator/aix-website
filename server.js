@@ -1550,13 +1550,13 @@ function requireValidMemberInput(input) {
   const password = String(input.password || '');
   const passwordConfirm = String(input.passwordConfirm || '');
 
-  if (!firstName || !email) {
+  if (!firstName || !email || !phone) {
     return { error: 'กรุณากรอกข้อมูลสมัครสมาชิกให้ครบ' };
   }
   if (!EMAIL_RE.test(email)) {
     return { error: 'รูปแบบอีเมลไม่ถูกต้อง' };
   }
-  if (phone && !PHONE_RE.test(phone)) {
+  if (!PHONE_RE.test(phone)) {
     return { error: 'รูปแบบเบอร์โทรไม่ถูกต้อง ต้องเป็นเบอร์ 10 หลักที่ขึ้นต้นด้วย 0' };
   }
   if (!input.googleCredential && password.length < 8) {
@@ -3613,7 +3613,7 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
@@ -3627,36 +3627,36 @@ app.get('/live/:id', (req, res) => {
 
 app.get('/login', (req, res) => {
   if (hasValidMemberSession(req)) return res.redirect('/dashboard');
-  res.sendFile(path.join(__dirname, 'auth.html'));
+  res.redirect('/index.html?auth=login');
 });
 
 app.get('/register', (req, res) => {
   if (hasValidMemberSession(req)) return res.redirect('/dashboard');
-  res.sendFile(path.join(__dirname, 'auth.html'));
+  res.redirect('/index.html?auth=signup');
 });
 
 app.get('/payment', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   res.sendFile(path.join(__dirname, 'payment.html'));
 });
 
 app.get('/payment/success', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   res.sendFile(path.join(__dirname, 'payment-success.html'));
 });
 
 app.get('/payment/cancel', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   res.redirect('/payment?cancelled=1');
 });
 
 app.get('/course/:id/start', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   res.sendFile(path.join(__dirname, 'course-start.html'));
 });
 
 app.get('/course/:id/content', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   if (req.query.ready !== '1') {
     return res.redirect(`/course/${encodeURIComponent(req.params.id)}/start`);
   }
@@ -3664,7 +3664,7 @@ app.get('/course/:id/content', (req, res) => {
 });
 
 app.get('/course/:id/learn', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/login');
+  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
   if (req.query.ready !== '1') {
     return res.redirect(`/course/${encodeURIComponent(req.params.id)}/start`);
   }

@@ -47,7 +47,7 @@ async function apiRequest(path) {
 async function initCourseGate() {
   courseId = getCourseId();
   if (!token()) {
-    window.location.replace("/login");
+    window.location.replace("/index.html?auth=login");
     return;
   }
 
@@ -59,7 +59,7 @@ async function initCourseGate() {
     closeGateLink.href = "/dashboard#courses";
     document.body.classList.add("course-gate-ready");
   } catch (error) {
-    window.location.replace(error.status === 402 ? "/payment" : "/login");
+    window.location.replace(error.status === 402 ? "/payment" : "/index.html?auth=login");
   }
 }
 

@@ -1,87 +1,166 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AiX Club แพลตฟอร์มสมาชิกเรียน AI ต่อเนื่องทั้งปีสำหรับเจ้าของธุรกิจ ทีมงาน และคนทำงานที่อยากใช้ AI กับงานจริง ราคา 1,999 บาทต่อปี">
+  <meta name="description" content="AiX Club แพลตฟอร์มสมาชิกเรียน AI สำหรับเจ้าของธุรกิจและทีมงาน มี Live สอนสดทุกอาทิตย์ พร้อม resource ใช้กับงานจริง เลือกรายเดือนหรือรายปีได้">
   <meta name="robots" content="index, follow">
   <meta name="author" content="AiX Club">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="color-scheme" content="dark">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AiX Club">
   <meta property="og:locale" content="th_TH">
   <meta property="og:url" content="https://www.aixclub.co/">
   <meta property="og:title" content="AiX Club | เรียน AI ต่อเนื่องทั้งปี">
-  <meta property="og:description" content="สมาชิกปีละ 1,999 บาท เข้าเรียนหัวข้อ AI ที่อัปเดตต่อเนื่อง พร้อม resource และเส้นทางเรียนรู้สำหรับงานธุรกิจจริง">
+  <meta property="og:description" content="สมาชิก AiX Club มี Live สอนสดทุกอาทิตย์ พร้อม replay, resource และเส้นทางเรียนรู้สำหรับงานธุรกิจจริง เลือกรายเดือนหรือรายปีได้">
   <meta property="og:image" content="https://www.aixclub.co/AiX%20logo/iconblack_white.png">
   <meta name="twitter:title" content="AiX Club | เรียน AI ต่อเนื่องทั้งปี">
-  <meta name="twitter:description" content="สมาชิกปีละ 1,999 บาท เข้าเรียนหัวข้อ AI ที่อัปเดตต่อเนื่อง พร้อม resource และเส้นทางเรียนรู้สำหรับงานธุรกิจจริง">
+  <meta name="twitter:description" content="สมาชิก AiX Club มี Live สอนสดทุกอาทิตย์ พร้อม replay, resource และเส้นทางเรียนรู้สำหรับงานธุรกิจจริง เลือกรายเดือนหรือรายปีได้">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://www.aixclub.co/AiX%20logo/iconblack_white.png">
   <link rel="canonical" href="https://www.aixclub.co/">
   <link rel="icon" href="/AiX%20logo/iconblack.png" type="image/png">
-  <title>AiX Club | เรียน AI ต่อเนื่องทั้งปี ราคา 1,999 บาท</title>
+  <title>AiX Club | สมาชิกเรียน AI รายเดือนและรายปี</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=aix-home-redesign-20260604">
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("aix-theme");
+        var isDark = savedTheme !== "light";
+        document.documentElement.classList.toggle("dark", isDark);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
+        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
+      } catch (error) {
+        document.documentElement.classList.add("dark");
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css?v=aix-footer-responsive-v61-20260624">
   <script src="https://accounts.google.com/gsi/client?hl=th" async defer></script>
 </head>
-<body>
-  <a class="skip-link" href="#main-content">ข้ามไปเนื้อหาหลัก</a>
-
+<body class="aix-top-nav-active">
   <header class="site-header aix-home-header">
     <div class="container nav-bar">
-      <a class="brand" href="#home" aria-label="AiX Club home">
-        <img src="AiX%20logo/textblack.png" alt="AiX Club" width="232" height="92">
+      <a class="brand brand-lockup" href="#home" aria-label="AiX Club home">
+        <span class="brand-icon-card" aria-hidden="true">
+          <img class="brand-icon" src="AiX%20logo/iconwhite_bgblack.png" alt="" width="800" height="800">
+        </span>
+        <span class="brand-copy">
+          <span class="brand-title">AiX Club</span>
+          <span class="brand-tagline">AI for business teams</span>
+        </span>
       </a>
 
-      <nav class="main-nav" aria-label="เมนูหลัก">
-        <button type="button" data-scroll="member-loop">สมาชิกได้อะไร</button>
-        <button type="button" data-scroll="learning-system">วิธีเรียน</button>
-        <button type="button" data-scroll="catalog">หัวข้อเรียน</button>
-        <button type="button" data-scroll="business-cases">งานธุรกิจ</button>
-        <button type="button" data-scroll="membership">ราคา</button>
-      </nav>
-
       <div class="nav-actions">
-        <button class="link-btn" id="loginBtn" type="button">เข้าสู่ระบบ</button>
-        <button class="primary-btn" type="button" data-open-signup>สมัครสมาชิก</button>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="เปิดโหมดมืด" aria-pressed="false">
+          <span class="theme-toggle-track" aria-hidden="true">
+            <span class="theme-toggle-idle theme-toggle-idle-moon"><i class="fa-regular fa-moon"></i></span>
+            <span class="theme-toggle-idle theme-toggle-idle-sun"><i class="fa-regular fa-sun"></i></span>
+            <span class="theme-toggle-thumb">
+              <i class="theme-toggle-icon-sun fa-regular fa-sun"></i>
+              <i class="theme-toggle-icon-moon fa-regular fa-moon"></i>
+            </span>
+          </span>
+        </button>
       </div>
 
-      <button class="mobile-menu" id="mobileMenu" type="button" aria-label="เปิดเมนู" aria-controls="mobilePanel" aria-expanded="false">
-        <i class="fa-solid fa-bars"></i>
+      <button class="theme-toggle theme-toggle-mobile" type="button" data-theme-toggle aria-label="เปิดโหมดมืด" aria-pressed="false">
+        <span class="theme-toggle-track" aria-hidden="true">
+          <span class="theme-toggle-idle theme-toggle-idle-moon"><i class="fa-regular fa-moon"></i></span>
+          <span class="theme-toggle-idle theme-toggle-idle-sun"><i class="fa-regular fa-sun"></i></span>
+          <span class="theme-toggle-thumb">
+            <i class="theme-toggle-icon-sun fa-regular fa-sun"></i>
+            <i class="theme-toggle-icon-moon fa-regular fa-moon"></i>
+          </span>
+        </span>
       </button>
     </div>
 
-    <div class="mobile-panel" id="mobilePanel">
-      <button type="button" data-scroll="member-loop">สมาชิกได้อะไร</button>
-      <button type="button" data-scroll="learning-system">วิธีเรียน</button>
-      <button type="button" data-scroll="catalog">หัวข้อเรียน</button>
-      <button type="button" data-scroll="business-cases">งานธุรกิจ</button>
-      <button type="button" data-scroll="membership">ราคา</button>
-      <button id="mobileLoginBtn" type="button">เข้าสู่ระบบ</button>
-      <button type="button" data-open-signup>สมัครสมาชิก</button>
-    </div>
+    <div class="mobile-panel" id="mobilePanel" hidden></div>
+
+    <nav class="hover-gradient-nav-bar" aria-label="เมนูหลัก AiX">
+      <ul class="hover-gradient-nav-list">
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="home" style="--nav-glow: radial-gradient(circle, rgba(59,130,246,0.18) 0%, rgba(37,99,235,0.08) 50%, rgba(29,78,216,0) 100%); --nav-hover-color: #3b82f6;" aria-label="หน้าแรก">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-house"></i><span>หน้าแรก</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-house"></i><span>หน้าแรก</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="member-loop" style="--nav-glow: radial-gradient(circle, rgba(249,115,22,0.18) 0%, rgba(234,88,12,0.08) 50%, rgba(194,65,12,0) 100%); --nav-hover-color: #f97316;" aria-label="สมาชิก">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-users"></i><span>สมาชิก</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-users"></i><span>สมาชิก</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="learning-system" style="--nav-glow: radial-gradient(circle, rgba(147,51,234,0.18) 0%, rgba(126,34,206,0.08) 50%, rgba(88,28,135,0) 100%); --nav-hover-color: #9333ea;" aria-label="วิธีเรียน">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-route"></i><span>วิธีเรียน</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-route"></i><span>วิธีเรียน</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="catalog" style="--nav-glow: radial-gradient(circle, rgba(34,197,94,0.18) 0%, rgba(22,163,74,0.08) 50%, rgba(21,128,61,0) 100%); --nav-hover-color: #22c55e;" aria-label="หัวข้อเรียน">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i><span>หัวข้อ</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i><span>หัวข้อ</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="business-cases" style="--nav-glow: radial-gradient(circle, rgba(20,184,166,0.18) 0%, rgba(13,148,136,0.08) 50%, rgba(15,118,110,0) 100%); --nav-hover-color: #14b8a6;" aria-label="งานธุรกิจ">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-briefcase"></i><span>ธุรกิจ</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-briefcase"></i><span>ธุรกิจ</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="membership" style="--nav-glow: radial-gradient(circle, rgba(161,98,7,0.18) 0%, rgba(133,77,14,0.08) 50%, rgba(100,62,8,0) 100%); --nav-hover-color: #d97706;" aria-label="ราคา">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-tags"></i><span>ราคา</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-tags"></i><span>ราคา</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" id="loginBtn" type="button" style="--nav-glow: radial-gradient(circle, rgba(239,68,68,0.18) 0%, rgba(220,38,38,0.08) 50%, rgba(185,28,28,0) 100%); --nav-hover-color: #ef4444;" aria-label="เข้าสู่ระบบ">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-user"></i><span>เข้าสู่ระบบ</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-user"></i><span>เข้าสู่ระบบ</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item hover-gradient-nav-primary" type="button" data-open-signup style="--nav-glow: radial-gradient(circle, rgba(24,24,27,0.18) 0%, rgba(24,24,27,0.08) 50%, rgba(24,24,27,0) 100%); --nav-hover-color: #18181b;" aria-label="สมัครสมาชิก">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>สมัคร</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>สมัคร</span></span>
+          </button>
+        </li>
+      </ul>
+    </nav>
   </header>
 
-  <main id="main-content" class="aix-homepage-redesign">
+  <main id="main-content" class="aix-homepage-redesign" tabindex="-1">
     <section class="aix-stack-hero" id="home" aria-labelledby="homeTitle">
       <div class="container aix-stack-hero-frame">
         <div class="aix-stack-hero-copy">
-          <h1 id="homeTitle">เรียน AI ต่อเนื่องทั้งปี ด้วยระบบที่พาคุณใช้กับงานจริง</h1>
-          <p class="aix-stack-hero-lead">สำหรับเจ้าของธุรกิจ ทีมงาน และครีเอเตอร์ที่อยากใช้ AI กับงานจริงโดยไม่ต้องนั่งไล่ตามทุก tool เอง AiX คัดเรื่องที่ควรรู้ จัดเป็นเส้นทาง และเติม resource ให้กลับมาใช้ซ้ำได้</p>
+          <h1 id="homeTitle">Build with Ai Learn with Ai</h1>
+          <p class="aix-stack-hero-lead">AiX คัดเรื่อง AI ที่ควรรู้ จัดเป็นเส้นทางเรียน และให้ resource ที่กลับมาใช้กับงานจริงได้</p>
 
           <div class="aix-stack-hero-actions">
             <button class="primary-btn large" type="button" data-open-signup>สมัครสมาชิก 1 ปี</button>
-            <button class="secondary-btn large" type="button" data-scroll="learning-system">ดูวิธีเรียนใน AiX</button>
+            <button class="secondary-btn large" type="button" data-scroll="learning-system">ดูวิธีเรียน</button>
           </div>
 
         </div>
 
-        <div class="aix-stack-orbit" aria-label="AiX learning stack">
+        <div class="aix-stack-orbit" aria-hidden="true">
           <div class="aix-stack-orbit-stage">
             <div class="aix-stack-center">
               <img src="AiX%20logo/iconblack_white.png" alt="" width="800" height="800" aria-hidden="true" fetchpriority="high" loading="eager" decoding="async">
@@ -112,64 +191,69 @@
       </div>
     </section>
 
-    <section class="aix-loop" id="member-loop" aria-labelledby="memberLoopTitle">
+    <section class="aix-loop aix-hero-highlight" id="member-loop" aria-labelledby="memberLoopTitle" data-hero-highlight>
       <div class="container">
         <div class="aix-loop-head">
-          <h2 id="memberLoopTitle">ไม่ต้องไล่ตาม AI คนเดียว</h2>
-          <p>สมาชิกกลับมาใช้ AiX เป็นพื้นที่ประจำสำหรับเช็กเรื่องใหม่ เลือกเส้นทางเรียน ฝึกกับโจทย์ธุรกิจ และเก็บ resource ที่เอาไปใช้กับทีมได้</p>
+          <h2 id="memberLoopTitle">ไม่ต้องไล่ตาม <span class="aix-highlight-mark">AI คนเดียว</span></h2>
+          <p>ใช้ AiX เป็นพื้นที่ประจำสำหรับเช็กเรื่องใหม่ เรียนตามงาน และเก็บ resource ไว้ใช้ซ้ำ</p>
         </div>
 
         <div class="aix-loop-rail" aria-label="วงจรสมาชิก AiX">
           <article>
             <span>เช็กเรื่องใหม่</span>
             <strong>AI update ที่แปลเป็นงานธุรกิจ</strong>
-            <p>คัดเฉพาะเรื่องที่มีผลกับงานขาย การตลาด content, operation และการตัดสินใจ</p>
+            <p>คัดเฉพาะเรื่องที่กระทบงานขาย การตลาด และ operation</p>
           </article>
           <article>
             <span>เลือกเส้นทาง</span>
             <strong>เรียนตามงาน ไม่ใช่ตามชื่อ tool</strong>
-            <p>รู้ว่าควรเริ่มจาก prompt, agent, automation หรือ content workflow ก่อน</p>
+            <p>เริ่มจากงานที่ต้องทำ แล้วค่อยเลือก prompt, agent หรือ automation</p>
           </article>
           <article>
             <span>ลงมือฝึก</span>
             <strong>มีโจทย์และตัวอย่างให้ทำตาม</strong>
-            <p>เปลี่ยนความรู้ให้เป็น prompt, checklist, SOP หรือ workflow ที่ทีมใช้ซ้ำได้</p>
+            <p>เปลี่ยนบทเรียนเป็น prompt, checklist หรือ workflow</p>
           </article>
           <article>
             <span>กลับมาใช้ต่อ</span>
             <strong>resource อยู่กับสมาชิกทั้งปี</strong>
-            <p>เปิดซ้ำเมื่อมีงานใหม่ ลูกค้าใหม่ หรือเครื่องมือ AI เปลี่ยนวิธีทำงาน</p>
+            <p>เปิดซ้ำเมื่อมีงานใหม่หรือเครื่องมือ AI เปลี่ยน</p>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="aix-system" id="learning-system" aria-labelledby="learningSystemTitle">
-      <div class="container aix-system-grid">
-        <div class="aix-system-copy">
-          <p class="aix-section-note">ระบบเรียนรู้ของ AiX</p>
-          <h2 id="learningSystemTitle">จากเรื่องใหม่ในวงการ AI สู่ขั้นตอนที่ทีมเอาไปใช้ได้</h2>
-          <p>หน้าเรียนของ AiX ถูกออกแบบให้คนที่ไม่ได้เป็นสายเทคนิคยังตามทัน: เริ่มจากภาพรวมที่อ่านง่าย เห็นตัวอย่างงานจริง แล้วค่อยต่อไปยังบทเรียนและ resource ที่เกี่ยวข้อง</p>
-          <div class="aix-system-actions">
-            <button class="primary-btn" type="button" data-scroll="catalog">ดูหัวข้อที่เปิดใน Platform</button>
-            <button class="secondary-btn" type="button" data-open-signup>เริ่มด้วยสมาชิก 1 ปี</button>
-          </div>
-        </div>
+    <section class="aix-system aix-animated-hero" id="learning-system" aria-labelledby="learningSystemTitle">
+      <div class="container aix-animated-hero-wrap">
+        <div class="aix-animated-hero-content">
+          <button class="aix-animated-kicker" type="button" data-scroll="catalog">
+            <span>ดูหัวข้อที่เปิดใน Platform</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
 
-        <div class="aix-learning-panel">
-          <div class="aix-learning-preview">
-            <div>
-              <span>วันนี้ใน AiX</span>
-              <strong>Prompt → Agent → Workflow</strong>
-              <p>เลือกบทเรียนตามผลลัพธ์ที่อยากได้ เช่น สรุปรายงาน, ทำ content brief, วางระบบตอบลูกค้า หรือเชื่อมงานซ้ำกับ automation</p>
-            </div>
+          <h2 id="learningSystemTitle" class="aix-animated-title" aria-label="เรื่องใหม่ใน AI สู่ขั้นตอนที่ทีมใช้ได้">
+            <span>เรื่องใหม่ใน AI</span>
+            <span>สู่ขั้นตอนที่ทีม</span>
+            <span class="aix-animated-word-slot" data-animated-words aria-live="polite">
+              <span class="aix-animated-word is-active">ใช้ได้</span>
+              <span class="aix-animated-word">ทำซ้ำได้</span>
+              <span class="aix-animated-word">สอนต่อได้</span>
+              <span class="aix-animated-word">วัดผลได้</span>
+            </span>
+          </h2>
+
+          <p class="aix-animated-lead">AiX แปลงข่าว เครื่องมือ และ workflow ใหม่ให้เป็นบทเรียนสั้นที่ทีมเข้าใจง่าย พร้อม resource สำหรับกลับมาใช้กับงานจริง</p>
+
+          <div class="aix-animated-actions">
+            <button class="secondary-btn large" type="button" data-scroll="catalog">
+              <span>ดูหัวข้อที่เปิดใน Platform</span>
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+            <button class="primary-btn large" type="button" data-open-signup>
+              <span>เริ่มด้วยสมาชิก 1 ปี</span>
+              <i class="fa-solid fa-phone" aria-hidden="true"></i>
+            </button>
           </div>
-          <ol class="aix-system-steps">
-            <li><strong>Brief</strong><span>อธิบาย AI update เป็นภาษาคนทำธุรกิจ</span></li>
-            <li><strong>Lesson</strong><span>เข้าใจวิธีใช้ผ่านตัวอย่างงานจริง</span></li>
-            <li><strong>Practice</strong><span>ฝึกกับโจทย์ที่เอาไปปรับใช้ได้</span></li>
-            <li><strong>Resource</strong><span>เก็บ template และ checklist ไว้ใช้ซ้ำ</span></li>
-          </ol>
         </div>
       </div>
     </section>
@@ -180,63 +264,121 @@
           <article>
             <span>สรุป</span>
             <strong>Lesson brief</strong>
-            <p>สรุปประเด็นใหม่ให้เข้าใจเร็ว</p>
+            <p>สรุปให้เข้าใจเร็ว</p>
           </article>
           <article>
             <span>แม่แบบ</span>
             <strong>Work template</strong>
-            <p>แปลงเป็น prompt, SOP และ checklist</p>
+            <p>prompt / SOP / checklist</p>
           </article>
           <article>
             <span>วนใช้</span>
             <strong>Review loop</strong>
-            <p>กลับมาปรับ workflow เมื่อ tool เปลี่ยน</p>
+            <p>ปรับเมื่อ tool เปลี่ยน</p>
           </article>
         </div>
 
         <div>
           <p class="aix-section-note">พื้นที่สมาชิก</p>
-          <h2 id="memberSpaceTitle">ไม่ได้จบที่ดูบทเรียน แต่กลับมาใช้เป็นคลังทำงานได้</h2>
-          <p class="aix-section-copy">สมาชิกจะเห็น resource ที่เกี่ยวกับบทเรียน เช่น prompt template, checklist, learning roadmap และ replay สำหรับกลับมาทบทวนเมื่อมีงานใหม่</p>
+          <h2 id="memberSpaceTitle">บทเรียนพร้อมคลัง resource</h2>
+          <p class="aix-section-copy">Prompt, checklist, roadmap และ replay ถูกรวมไว้กับบทเรียน เพื่อกลับมาใช้ซ้ำเมื่อมีงานใหม่</p>
           <div class="resource-grid" id="resourceList"></div>
         </div>
       </div>
     </section>
 
-    <section class="aix-paths" aria-labelledby="pathsTitle">
+    <section class="aix-paths" id="paths" aria-labelledby="pathsTitle">
       <div class="container">
         <div class="aix-section-head">
           <div>
             <p class="aix-section-note">เส้นทางตามงาน</p>
             <h2 id="pathsTitle">เลือกตามงานที่อยากพัฒนา</h2>
-            <p>ทุกเส้นทางเริ่มจากงานที่คนทำธุรกิจเจอจริง แล้วค่อยเลือกเครื่องมือ AI ที่เหมาะกับงานนั้น</p>
+            <p>เลือกจากงานที่อยากพัฒนา แล้วค่อยจับคู่เครื่องมือ AI</p>
           </div>
         </div>
 
-        <div class="aix-path-grid">
-          <article>
-            <i class="fa-solid fa-briefcase"></i>
-            <h3>เจ้าของธุรกิจ</h3>
-            <p>ใช้ AI ช่วยคิด สรุป ติดตามงาน และออกแบบระบบเล็ก ๆ ที่ลดภาระงานประจำ</p>
-            <button type="button" data-filter-shortcut="Agent">ดูหัวข้อ Agent</button>
+        <div class="aix-path-grid aix-bento-grid" aria-label="เลือกหัวข้อตามงานที่อยากพัฒนา">
+          <article class="aix-path-card aix-bento-card aix-path-card-wide aix-path-card-active aix-path-tone-agent">
+            <div class="aix-bento-pattern" aria-hidden="true"></div>
+            <div class="aix-bento-card-content">
+              <div class="aix-bento-top">
+                <span class="aix-bento-icon" aria-hidden="true"><i class="fa-solid fa-briefcase"></i></span>
+                <span class="aix-bento-status">เริ่มตรงนี้</span>
+              </div>
+              <div class="aix-bento-copy">
+                <h3>เจ้าของธุรกิจ <span>Agent</span></h3>
+                <p>ให้ AI ช่วยสรุปงาน ติดตามงาน และเตรียม next action ที่ใช้จริงในทีม</p>
+              </div>
+              <div class="aix-bento-footer">
+                <div class="aix-bento-tags" aria-label="หมวดงานเจ้าของธุรกิจ">
+                  <span>#Report</span>
+                  <span>#Operation</span>
+                  <span>#Agent</span>
+                </div>
+                <button type="button" data-filter-shortcut="Agent">ดู Agent <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+              </div>
+            </div>
           </article>
-          <article>
-            <i class="fa-solid fa-bullhorn"></i>
-            <h3>การตลาดและคอนเทนต์</h3>
-            <p>แตก idea, ทำ content brief, วิเคราะห์ลูกค้า และวางระบบผลิตงานซ้ำให้เร็วขึ้น</p>
-            <button type="button" data-filter-shortcut="Creative">ดูหัวข้อ Creative</button>
+          <article class="aix-path-card aix-bento-card aix-path-tone-creative">
+            <div class="aix-bento-pattern" aria-hidden="true"></div>
+            <div class="aix-bento-card-content">
+              <div class="aix-bento-top">
+                <span class="aix-bento-icon" aria-hidden="true"><i class="fa-solid fa-bullhorn"></i></span>
+                <span class="aix-bento-status">Creative</span>
+              </div>
+              <div class="aix-bento-copy">
+                <h3>การตลาดและคอนเทนต์ <span>Brief</span></h3>
+                <p>แตกมุมขาย ทำ brief และจัด batch content จาก insight จริง</p>
+              </div>
+              <div class="aix-bento-footer">
+                <div class="aix-bento-tags" aria-label="หมวดงานการตลาด">
+                  <span>#Campaign</span>
+                  <span>#Content</span>
+                </div>
+                <button type="button" data-filter-shortcut="Creative">ดู Creative <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+              </div>
+            </div>
           </article>
-          <article>
-            <i class="fa-solid fa-gears"></i>
-            <h3>ระบบหลังบ้าน</h3>
-            <p>เชื่อม AI กับข้อมูล เอกสาร sheet, CRM และงานอนุมัติที่ต้องมีคนคุมคุณภาพ</p>
-            <button type="button" data-filter-shortcut="Automation">ดูหัวข้อ Automation</button>
+          <article class="aix-path-card aix-bento-card aix-path-tone-automation">
+            <div class="aix-bento-pattern" aria-hidden="true"></div>
+            <div class="aix-bento-card-content">
+              <div class="aix-bento-top">
+                <span class="aix-bento-icon" aria-hidden="true"><i class="fa-solid fa-gears"></i></span>
+                <span class="aix-bento-status">Automation</span>
+              </div>
+              <div class="aix-bento-copy">
+                <h3>ระบบหลังบ้าน <span>Workflow</span></h3>
+                <p>เชื่อมเอกสาร sheet, CRM และงานอนุมัติให้ลดงานซ้ำ</p>
+              </div>
+              <div class="aix-bento-footer">
+                <div class="aix-bento-tags" aria-label="หมวดงานระบบหลังบ้าน">
+                  <span>#SOP</span>
+                  <span>#CRM</span>
+                </div>
+                <button type="button" data-filter-shortcut="Automation">ดู Automation <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+              </div>
+            </div>
           </article>
-          <article>
-            <i class="fa-solid fa-users-gear"></i>
-            <h3>ทีมและองค์กร</h3>
-            <p>ทำ playbook กลาง กำหนดวิธีใช้ AI ที่ตรวจสอบได้ และสร้างมาตรฐานสำหรับทีม</p>
-            <button type="button" data-filter-shortcut="Prompt">ดูหัวข้อทีม</button>
+          <article class="aix-path-card aix-bento-card aix-path-card-wide aix-path-tone-prompt">
+            <div class="aix-bento-pattern" aria-hidden="true"></div>
+            <div class="aix-bento-card-content">
+              <div class="aix-bento-top">
+                <span class="aix-bento-icon" aria-hidden="true"><i class="fa-solid fa-users-gear"></i></span>
+                <span class="aix-bento-status">Prompt</span>
+              </div>
+              <div class="aix-bento-copy">
+                <h3>ทีมและองค์กร <span>Playbook</span></h3>
+                <p>ทำ playbook กลาง SOP และ prompt มาตรฐานให้ทีมใช้ซ้ำ</p>
+              </div>
+              <div class="aix-bento-footer">
+                <div class="aix-bento-tags" aria-label="หมวดงานทีมและองค์กร">
+                  <span>#Prompt</span>
+                  <span>#Template</span>
+                  <span>#Team</span>
+                </div>
+                <button type="button" data-filter-shortcut="Prompt">ดู Prompt <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+              </div>
+            </div>
           </article>
         </div>
       </div>
@@ -247,16 +389,17 @@
         <div class="aix-section-head">
           <div>
             <p class="aix-section-note">ในแพลตฟอร์ม</p>
-            <h2 id="catalogTitle">หัวข้อที่สมาชิกเรียนต่อได้ในราคาเดียว</h2>
-            <p>เริ่มจากหัวข้อที่ใช้วันนี้ แล้วกลับมาเรียนเรื่องถัดไปเมื่อธุรกิจหรือเครื่องมือ AI เปลี่ยน</p>
+            <h2 id="catalogTitle">หัวข้อในแพลตฟอร์ม</h2>
+            <p>เลือกหัวข้อที่ใช้วันนี้ แล้วกลับมาเรียนเรื่องถัดไปเมื่อ AI เปลี่ยน</p>
           </div>
         </div>
 
         <div class="catalog-toolbar">
           <div class="filter-tabs" id="classFilters"></div>
           <label class="catalog-search">
+            <span class="visually-hidden">ค้นหาหัวข้อเรียน</span>
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input id="catalogSearch" type="search" placeholder="ค้นหาหัวข้อที่อยากเรียนต่อ">
+            <input id="catalogSearch" type="search" placeholder="ค้นหาหัวข้อ">
           </label>
         </div>
 
@@ -264,113 +407,389 @@
       </div>
     </section>
 
-    <section class="aix-business" id="business-cases" aria-labelledby="businessTitle">
-      <div class="container aix-business-grid">
-        <div>
+    <section class="aix-business aix-workproof" id="business-cases" aria-labelledby="businessTitle">
+      <div class="container aix-business-grid aix-workproof-grid">
+        <div class="aix-workproof-copy">
           <p class="aix-section-note">ใช้กับงานจริง</p>
-          <h2 id="businessTitle">เรียนเพื่อเปลี่ยนวิธีทำงาน ไม่ใช่จำชื่อเครื่องมือ</h2>
-          <p class="aix-section-copy">AiX ผูกบทเรียนกับงานที่ทีมไทยใช้ทุกวัน เช่น งานขาย การตลาด customer service, report, content และ operation</p>
-        </div>
+          <h2 id="businessTitle">เรียนจากงานจริง</h2>
+          <p class="aix-section-copy">ดูตัวอย่างงานจริงจากแชท รายงาน และโน้ตที่กระจัดกระจาย แล้วเปลี่ยนเป็น FAQ, dashboard และ action checklist ที่ทีมเอาไปใช้ต่อได้</p>
 
-        <div class="aix-case-list">
-          <article>
-            <span>E-commerce</span>
-            <h3>สรุปแชทลูกค้าและทำ FAQ</h3>
-            <p>เปลี่ยนคำถามซ้ำให้เป็นฐานความรู้และ content ที่ทีมใช้ตอบได้สม่ำเสมอ</p>
-          </article>
-          <article>
-            <span>Marketing</span>
-            <h3>แตก campaign จาก insight</h3>
-            <p>ใช้รีวิว inbox และ survey ให้ AI ช่วยหามุมขาย headline และ content batch</p>
-          </article>
-          <article>
-            <span>Management</span>
-            <h3>สรุปรายงานให้ตัดสินใจเร็ว</h3>
-            <p>ดึงประเด็นจากยอดขาย ค่าใช้จ่าย feedback และ next action แบบอ่านง่าย</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="aix-membership" id="membership" aria-labelledby="membershipTitle">
-      <div class="container aix-membership-grid">
-        <div class="aix-membership-copy">
-          <p class="aix-status-pill">สมาชิก AiX</p>
-          <h2 id="membershipTitle">สมาชิกปีละ 1,999 บาท เข้าเรียน AI ต่อเนื่องทั้งปี</h2>
-          <p>ราคาเดียวสำหรับ platform learning, resource และหัวข้อที่อัปเดตตามการเปลี่ยนแปลงของ AI เหมาะกับคนที่อยากเรียนต่อแบบมีระบบและกลับมาใช้ซ้ำกับงานจริง</p>
-          <ul>
-            <li><i class="fa-solid fa-check"></i> เรียนต่อหลายหัวข้อในช่วงสมาชิก 1 ปี</li>
-            <li><i class="fa-solid fa-check"></i> มี resource, template และ checklist ให้กลับมาใช้ซ้ำ</li>
-            <li><i class="fa-solid fa-check"></i> ออกแบบสำหรับเจ้าของธุรกิจและทีมที่ไม่ใช่สายเทคนิค</li>
-          </ul>
-        </div>
-
-        <div class="aix-price-panel">
-          <div>
-            <strong>1,999 บาท</strong>
-            <span>สมาชิก 1 ปี</span>
+          <div class="aix-workproof-points" aria-label="ตัวอย่างงานจริงใน AiX">
+            <span><i class="fa-solid fa-comments" aria-hidden="true"></i> สรุปแชทลูกค้า</span>
+            <span><i class="fa-solid fa-chart-line" aria-hidden="true"></i> สรุปรายงาน</span>
+            <span><i class="fa-solid fa-list-check" aria-hidden="true"></i> ทำ checklist ใช้งานต่อ</span>
           </div>
-          <button class="primary-btn full" type="button" data-open-signup>สมัครสมาชิก</button>
-          <button class="secondary-btn full" type="button" data-open-login>เข้าสู่ระบบสมาชิก</button>
+        </div>
+
+        <div class="aix-workproof-compare" data-workproof-compare style="--aix-compare-inset: 50%;" aria-label="เปรียบเทียบตัวอย่างงานจริงก่อนและหลังใช้ AI">
+          <div class="aix-workproof-labels" aria-hidden="true">
+            <span>งานจริงเดิม</span>
+            <span>จัดด้วย AI</span>
+          </div>
+
+          <div class="aix-workproof-stage">
+            <img
+              class="aix-workproof-image aix-workproof-before"
+              src="assets/generated/aix-real-work-before-generated.png"
+              width="1672"
+              height="941"
+              loading="lazy"
+              alt="ตัวอย่างงานธุรกิจจริงก่อนจัดระบบด้วย AI มีแชทลูกค้า รายงาน และโน้ตหลายแหล่ง"
+            >
+            <img
+              class="aix-workproof-image aix-workproof-after"
+              src="assets/generated/aix-real-work-after-generated.png"
+              width="1672"
+              height="941"
+              loading="lazy"
+              alt="ตัวอย่างงานธุรกิจจริงหลังจัดด้วย AI เป็น workflow FAQ dashboard และ checklist"
+            >
+
+            <div class="aix-workproof-divider" aria-hidden="true"></div>
+            <button
+              class="aix-workproof-handle"
+              type="button"
+              role="slider"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="50"
+              aria-label="ลากเพื่อเปรียบเทียบตัวอย่างงานจริงก่อนและหลังจัดด้วย AI"
+              data-workproof-handle
+            >
+              <i class="fa-solid fa-grip-lines-vertical" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="aix-faq" id="faq" aria-labelledby="faqTitle">
+    <section class="aix-reviews" id="reviews" aria-labelledby="reviewsTitle">
       <div class="container">
-        <div class="aix-section-head">
-          <div>
-            <p class="aix-section-note">คำถามที่พบบ่อย</p>
-            <h2 id="faqTitle">คำถามที่พบบ่อย</h2>
+        <div class="aix-reviews-hero">
+          <div class="aix-reviews-copy">
+            <p class="aix-section-note">เสียงจากผู้เรียน</p>
+            <h2 id="reviewsTitle">40+ คนเริ่มใช้ AI กับงานจริง</h2>
+            <p class="aix-section-copy">ข้อความบางส่วนจากผู้เรียน AiX เรื่อง automation, Manus AI, โปรเจคจริง และ replay</p>
+          </div>
+
+          <div class="aix-review-stats" role="list" aria-label="สรุปรีวิวผู้เรียน AiX">
+            <div role="listitem">
+              <strong>40+</strong>
+              <span>ผู้เรียน AiX</span>
+            </div>
+            <div role="listitem">
+              <strong>6 ชม.</strong>
+              <span>คลาสลงมือทำ</span>
+            </div>
+            <div role="listitem">
+              <strong>Replay</strong>
+              <span>ดูย้อนหลัง</span>
+            </div>
           </div>
         </div>
 
-        <div class="faq-grid">
-          <details open>
-            <summary>AiX Club เหมาะกับใคร?</summary>
-            <p>เหมาะกับผู้ประกอบการ เจ้าของธุรกิจ ทีมการตลาด creator, consultant และทีมงานที่ต้องการเรียน AI เพื่อใช้กับงานขาย การตลาด content, report, customer service และระบบหลังบ้าน</p>
-          </details>
-          <details>
-            <summary>ไม่มีพื้นฐาน AI เริ่มเรียนได้ไหม?</summary>
-            <p>เริ่มได้ เพราะเนื้อหาเริ่มจากตัวอย่างงานจริงและภาษาที่อ่านง่าย ก่อนต่อไปยัง prompt, agent, automation และเครื่องมือที่จำเป็น</p>
-          </details>
-          <details>
-            <summary>สมาชิก 1 ปีได้อะไรบ้าง?</summary>
-            <p>สมาชิกเข้าเรียนหัวข้อที่เปิดใน platform, ใช้ resource ที่เกี่ยวข้อง, ดู replay หรือบทเรียนที่มีให้ และกลับมาเรียนหัวข้อใหม่ได้ในช่วงสมาชิก 1 ปี</p>
-          </details>
-          <details>
-            <summary>ต่างจากเว็บขายคอร์สอย่างไร?</summary>
-            <p>AiX วางเป็นพื้นที่เรียนรู้ต่อเนื่อง ไม่ใช่การซื้อคอร์สแยกทีละเรื่อง สมาชิกจึงเห็นเส้นทางเรียนและ resource ที่เชื่อมกันมากกว่า catalog ของคลาสเดี่ยว</p>
-          </details>
-          <details>
-            <summary>ชำระเงินอย่างไร?</summary>
-            <p>สมัครสมาชิกผ่าน Google หรือ Email/Password จากนั้นเข้าสู่ Dashboard เพื่อชำระเงินและปลดล็อกสิทธิ์สมาชิก</p>
-          </details>
+        <div class="aix-testimonial-columns" aria-label="ข้อความรีวิวจากผู้เรียน">
+          <div class="aix-testimonial-column aix-testimonial-column-one">
+            <div class="aix-testimonial-track">
+              <article class="aix-testimonial-card">
+                <p>นำไปประยุกต์ใช้งานได้จริง และเห็นภาพจากตัวอย่างชัดเจน</p>
+                <div><strong>ผู้เรียน AiX</strong></div>
+              </article>
+              <article class="aix-testimonial-card">
+                <p>ได้เรียนรู้ให้ AI กลายเป็นผู้ช่วยทำงาน ไม่ใช่แค่ถามตอบ</p>
+                <div><strong>ผู้เรียน AiX</strong><span>ตั้งงานให้ AI ช่วยทำ</span></div>
+              </article>
+              <article class="aix-testimonial-card">
+                <p>เริ่มได้แม้ไม่มีพื้นฐาน และยังมีหัวข้อให้เรียนต่ออีก</p>
+                <div><strong>ผู้เรียน AiX</strong><span>เริ่มจากพื้นฐาน</span></div>
+              </article>
+              <article class="aix-testimonial-card" aria-hidden="true">
+                <p>นำไปประยุกต์ใช้งานได้จริง และเห็นภาพจากตัวอย่างชัดเจน</p>
+                <div><strong>ผู้เรียน AiX</strong></div>
+              </article>
+              <article class="aix-testimonial-card" aria-hidden="true">
+                <p>ได้เรียนรู้ให้ AI กลายเป็นผู้ช่วยทำงาน ไม่ใช่แค่ถามตอบ</p>
+                <div><strong>ผู้เรียน AiX</strong><span>ตั้งงานให้ AI ช่วยทำ</span></div>
+              </article>
+              <article class="aix-testimonial-card" aria-hidden="true">
+                <p>เริ่มได้แม้ไม่มีพื้นฐาน และยังมีหัวข้อให้เรียนต่ออีก</p>
+                <div><strong>ผู้เรียน AiX</strong><span>เริ่มจากพื้นฐาน</span></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="aix-testimonial-column aix-testimonial-column-two">
+            <div class="aix-testimonial-track">
+              <article class="aix-testimonial-card">
+                <p>เห็นวิธีตั้ง skill ให้ AI ช่วยงานแทนทีมบางส่วนได้ชัดขึ้น</p>
+                <div><strong>ผู้เรียน AiX</strong><span>Manus AI for business</span></div>
+              </article>
+              <article class="aix-testimonial-card">
+                <p>ผู้สอนตอบคำถามได้ดี และใช้เวลาเรียนกระชับ</p>
+                <div><strong>ผู้เรียน AiX</strong><span>Live class support</span></div>
+              </article>
+              <article class="aix-testimonial-card">
+                <p>มีวิดีโอย้อนหลังให้กลับไปทบทวนได้</p>
+                <div><strong>ผู้เรียน AiX</strong><span>Replay & review</span></div>
+              </article>
+              <article class="aix-testimonial-card" aria-hidden="true">
+                <p>เห็นวิธีตั้ง skill ให้ AI ช่วยงานแทนทีมบางส่วนได้ชัดขึ้น</p>
+                <div><strong>ผู้เรียน AiX</strong><span>Manus AI for business</span></div>
+              </article>
+              <article class="aix-testimonial-card" aria-hidden="true">
+                <p>ผู้สอนตอบคำถามได้ดี และใช้เวลาเรียนกระชับ</p>
+                <div><strong>ผู้เรียน AiX</strong><span>Live class support</span></div>
+              </article>
+              <article class="aix-testimonial-card" aria-hidden="true">
+                <p>มีวิดีโอย้อนหลังให้กลับไปทบทวนได้</p>
+                <div><strong>ผู้เรียน AiX</strong><span>Replay & review</span></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="aix-membership aix-pricing-section" id="membership" aria-labelledby="membershipTitle">
+      <div class="container aix-pricing-wrap">
+        <div class="aix-pricing-head">
+          <p class="aix-status-pill aix-pricing-header-badge"><i class="fa-regular fa-credit-card" aria-hidden="true"></i><span>Simple Pricing</span></p>
+          <h2 id="membershipTitle">เลือกสมาชิก AiX Club</h2>
+          <p>เรียน AI ต่อเนื่อง มี Live สอนสดทุกอาทิตย์ พร้อม replay, template และ resource สำหรับเอาไปใช้กับงานจริง</p>
+        </div>
+
+        <article class="aix-single-pricing-card" data-pricing-card aria-label="ราคา AiX Club รายเดือนและรายปี">
+          <div class="aix-pricing-hover-wash" aria-hidden="true"></div>
+          <div class="aix-single-pricing-card-inner">
+            <div class="aix-pricing-main-col">
+              <div class="aix-pricing-badge-row">
+                <span class="aix-pricing-badge"><i class="fa-solid fa-crown" aria-hidden="true"></i><span>Premium Membership</span></span>
+              </div>
+              <h3>AiX Club Membership</h3>
+              <p>เส้นทางเรียนและ resource สำหรับเอา AI ไปใช้กับงานจริง โดยไม่ต้องไล่ตามทุกเครื่องมือเอง</p>
+
+              <div class="aix-pricing-price">
+                <strong>1,999 บาท</strong>
+                <span class="aix-price-period">ต่อปี</span>
+                <span class="aix-price-original">2,988 บาท</span>
+                <span class="aix-price-discount">ประหยัด 989 บาท</span>
+                <span class="aix-price-a11y">1,999 บาทต่อปี และ 249 บาทต่อเดือน โดยรายปีเฉลี่ยถูกกว่า</span>
+              </div>
+              <p class="aix-pricing-monthly-note">หรือเริ่มรายเดือน 249 บาท / เดือน</p>
+
+              <div class="aix-pricing-actions">
+                <button class="primary-btn full aix-pricing-button" type="button" data-open-signup>
+                  <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+                  <span>สมัครรายปี</span>
+                  <i class="fa-solid fa-chevron-right aix-pricing-button-tail" aria-hidden="true"></i>
+                </button>
+                <button class="secondary-btn full aix-pricing-button" type="button" data-open-signup data-monthly-plan>
+                  <span>เริ่มรายเดือน</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square aix-pricing-button-tail" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <div class="aix-pricing-live-note" aria-label="Live สอนสดทุกอาทิตย์">
+                <i class="fa-solid fa-video" aria-hidden="true"></i>
+                <div>
+                  <strong>Live สอนสดทุกอาทิตย์</strong>
+                  <span>มีรอบสด ถามตอบ และ replay ย้อนหลังให้ตามเรื่องใหม่</span>
+                </div>
+              </div>
+
+              <div class="aix-pricing-benefits" role="list" aria-label="สิ่งที่รวมในสมาชิก">
+                <span class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i><strong>หัวข้อใหม่ + replay</strong><small>ดูซ้ำตอนต้องใช้จริง</small></span>
+                <span class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-shield-heart" aria-hidden="true"></i><strong>Template + checklist</strong><small>เอาไปปรับใช้กับทีม</small></span>
+                <span class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-heart" aria-hidden="true"></i><strong>สำหรับธุรกิจและทีม</strong><small>ขาย การตลาด operation</small></span>
+              </div>
+            </div>
+
+            <div class="aix-pricing-feature-col">
+              <div class="aix-pricing-feature-head">
+                <h4>Included Features</h4>
+              </div>
+
+              <div class="aix-pricing-features" role="list" aria-label="ฟีเจอร์สมาชิก AiX Club">
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> AI update brief อ่านเร็ว</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Job-based roadmap</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Replay กลับมาทวนได้</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Prompt และ SOP library</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Template สำหรับงานธุรกิจ</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Practice room ตามโจทย์จริง</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Use case สำหรับทีม</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> อัปเดต resource ต่อเนื่อง</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> สมาชิกใหม่เริ่มจากพื้นฐานได้</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> หัวข้อสำหรับ automation</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> ตัวอย่าง workflow ใช้งานจริง</span>
+                <span role="listitem"><i class="fa-solid fa-check" aria-hidden="true"></i> Live สอนสดทุกอาทิตย์</span>
+              </div>
+
+              <div class="aix-pricing-separator" role="presentation"></div>
+
+              <div class="aix-pricing-testimonials" data-pricing-testimonials aria-label="สรุปเสียงจากผู้เรียน">
+                <article class="aix-pricing-quote is-active" data-pricing-quote="0">
+                  <p>“ได้เรียนรู้แบบนำไปใช้กับงานจริง เห็นตัวอย่างชัด และเข้าใจภาพรวม automation มากขึ้น”</p>
+                  <div class="aix-pricing-quote-meta">
+                    <strong>สรุปจากรีวิวผู้เรียน</strong>
+                    <small>คลาส Automation</small>
+                  </div>
+                </article>
+                <article class="aix-pricing-quote" data-pricing-quote="1" aria-hidden="true">
+                  <p>“จากเดิมใช้ AI แค่ถามตอบ ตอนนี้เริ่มเห็นวิธีตั้งงานให้ AI ช่วยงานแทนเราได้จริง”</p>
+                  <div class="aix-pricing-quote-meta">
+                    <strong>สรุปจากรีวิวผู้เรียน</strong>
+                    <small>คลาส Manus AI</small>
+                  </div>
+                </article>
+                <article class="aix-pricing-quote" data-pricing-quote="2" aria-hidden="true">
+                  <p>“เหมาะกับคนไม่มีพื้นฐาน เพราะเริ่มจากภาพรวมก่อน แล้วค่อยต่อยอดด้วย replay กลับมาทวนได้”</p>
+                  <div class="aix-pricing-quote-meta">
+                    <strong>สรุปจากรีวิวผู้เรียน</strong>
+                    <small>เริ่มต้นใช้งานจริง</small>
+                  </div>
+                </article>
+
+                <div class="aix-pricing-quote-dots" aria-label="เลือกรีวิว">
+                  <button class="is-active" type="button" data-pricing-testimonial="0" aria-label="รีวิวที่ 1" aria-pressed="true"></button>
+                  <button type="button" data-pricing-testimonial="1" aria-label="รีวิวที่ 2" aria-pressed="false"></button>
+                  <button type="button" data-pricing-testimonial="2" aria-label="รีวิวที่ 3" aria-pressed="false"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="aix-faq aix-faq-section" id="faq" aria-labelledby="faqTitle">
+      <div class="container">
+        <div class="aix-faq-head">
+          <h2 id="faqTitle">คำถามที่พบบ่อย</h2>
+          <p>เรื่องที่ควรรู้ก่อนสมัคร AiX Club</p>
+        </div>
+
+        <div class="faq-grid aix-faq-list" data-faq-accordion>
+          <article class="aix-faq-item is-open">
+            <button class="aix-faq-trigger" type="button" aria-expanded="true" aria-controls="faqAnswer1" id="faqQuestion1">
+              <span>AiX Club เหมาะกับใคร?</span>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="aix-faq-answer" id="faqAnswer1" role="region" aria-labelledby="faqQuestion1">
+              <p>เหมาะกับเจ้าของธุรกิจ ทีมงาน และครีเอเตอร์ที่อยากใช้ AI กับงานจริง โดยไม่ต้องไล่ตามทุกเครื่องมือเอง</p>
+            </div>
+          </article>
+
+          <article class="aix-faq-item">
+            <button class="aix-faq-trigger" type="button" aria-expanded="false" aria-controls="faqAnswer2" id="faqQuestion2">
+              <span>ไม่มีพื้นฐาน AI เริ่มเรียนได้ไหม?</span>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="aix-faq-answer" id="faqAnswer2" role="region" aria-labelledby="faqQuestion2" aria-hidden="true">
+              <p>เริ่มได้ บทเรียนเริ่มจากภาพรวม ตัวอย่างงานจริง และค่อยพาไปลงมือทำเป็นขั้นตอน</p>
+            </div>
+          </article>
+
+          <article class="aix-faq-item">
+            <button class="aix-faq-trigger" type="button" aria-expanded="false" aria-controls="faqAnswer3" id="faqQuestion3">
+              <span>สมาชิก 1 ปีได้อะไรบ้าง?</span>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="aix-faq-answer" id="faqAnswer3" role="region" aria-labelledby="faqQuestion3" aria-hidden="true">
+              <p>เข้าเรียนหัวข้อที่เปิดให้สมาชิก พร้อม replay, template, checklist และ resource ที่เกี่ยวข้อง</p>
+            </div>
+          </article>
+
+          <article class="aix-faq-item">
+            <button class="aix-faq-trigger" type="button" aria-expanded="false" aria-controls="faqAnswer4" id="faqQuestion4">
+              <span>ต่างจากเว็บขายคอร์สอย่างไร?</span>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="aix-faq-answer" id="faqAnswer4" role="region" aria-labelledby="faqQuestion4" aria-hidden="true">
+              <p>AiX เป็นระบบเรียนต่อเนื่อง มี Live สอนสดทุกอาทิตย์ จัดเส้นทางและ resource ให้กลับมาใช้ซ้ำกับงานทีม ไม่ใช่ซื้อคอร์สแยกทีละเรื่องแล้วจบ</p>
+            </div>
+          </article>
+
+          <article class="aix-faq-item">
+            <button class="aix-faq-trigger" type="button" aria-expanded="false" aria-controls="faqAnswer5" id="faqQuestion5">
+              <span>ชำระเงินอย่างไร?</span>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="aix-faq-answer" id="faqAnswer5" role="region" aria-labelledby="faqQuestion5" aria-hidden="true">
+              <p>กดสมัครสมาชิก สร้างบัญชี แล้วเข้าสู่ Dashboard เพื่อชำระเงินและปลดล็อกสิทธิ์สมาชิก</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="aix-faq-contact">
+          <span aria-hidden="true"><i class="fa-regular fa-envelope"></i></span>
+          <strong>ยังมีคำถามอยู่ไหม?</strong>
+          <p>ทักทีม AiX เพื่อถามเรื่องสมาชิกและหัวข้อเรียนที่เหมาะกับงานของคุณ</p>
+          <button class="secondary-btn" type="button" data-open-login>เข้าสู่ระบบเพื่อติดต่อทีม</button>
         </div>
       </div>
     </section>
   </main>
 
   <div class="modal-backdrop" id="classModal" aria-hidden="true">
-    <div class="modal-panel">
-      <button class="modal-close" data-close-modal aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="classModalTitle" tabindex="-1">
+      <button class="modal-close" type="button" data-close-modal aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
       <div id="classModalContent"></div>
     </div>
   </div>
 
   <div class="modal-backdrop" id="authModal" aria-hidden="true">
-    <div class="modal-panel auth-panel">
-      <button class="modal-close" data-close-auth aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-panel auth-panel auth-card-shell" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" tabindex="-1">
+      <button class="modal-close" type="button" data-close-auth aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-content">
-        <span class="provider">AiX Member</span>
-        <h2>ระบบสมาชิก AiX</h2>
-
-        <div class="auth-tabs" role="tablist" aria-label="Member actions">
-          <button class="active" type="button" data-auth-tab="signup">สมัครสมาชิก</button>
-          <button type="button" data-auth-tab="login">เข้าสู่ระบบ</button>
+        <div class="auth-register-back-row" data-auth-head="signup" hidden>
+          <button class="auth-back-btn" type="button" data-auth-tab="login" aria-label="ย้อนกลับไปหน้าเข้าสู่ระบบ">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>ย้อนกลับ</span>
+          </button>
         </div>
 
-        <section class="auth-pane active" id="signupPane">
+        <section class="auth-pane active" id="loginPane">
+          <div class="auth-mascot-head auth-mascot-head-login">
+            <img src="assets/mascot/aix-auth-mascot.png" width="647" height="1173" alt="" aria-hidden="true" decoding="async">
+            <p class="auth-mascot-speech">ยินดีต้อนรับ<br>กลับมาครับ!</p>
+          </div>
+          <div class="auth-copy auth-copy-login">
+            <h2 id="loginModalTitle">AiX Club</h2>
+            <p>เข้าสู่ระบบเพื่อเรียน AI และจัดการ resource ของคุณ</p>
+          </div>
+          <div class="google-box">
+            <div id="googleLoginButton"></div>
+          </div>
+          <div class="auth-divider"><span>หรือเข้าสู่ระบบด้วย Email/Password</span></div>
+
+          <form id="loginForm" class="member-form auth-form" novalidate>
+            <label class="auth-field" for="loginEmail">
+              <span>อีเมล</span>
+              <span class="auth-input-wrap">
+                <i class="fa-regular fa-envelope"></i>
+                <input id="loginEmail" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com">
+              </span>
+            </label>
+            <label class="auth-field" for="loginPassword">
+              <span>รหัสผ่าน</span>
+              <span class="auth-input-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="รหัสผ่าน">
+              </span>
+            </label>
+            <button class="primary-btn full" type="submit">เข้าสู่ระบบ</button>
+          </form>
+          <p class="auth-switch-copy">ยังไม่มีบัญชี? <button type="button" data-auth-tab="signup">สมัครสมาชิก</button></p>
+        </section>
+
+        <section class="auth-pane" id="signupPane">
+          <div class="auth-mascot-head auth-mascot-head-register">
+            <img src="assets/mascot/aix-auth-mascot-register-peek-no-panel.png" width="1024" height="1536" alt="" aria-hidden="true" decoding="async">
+          </div>
+          <div class="auth-copy auth-copy-register">
+            <h2 id="signupModalTitle">สมัครสมาชิก AiX Club</h2>
+            <p>สร้างบัญชีเพื่อเริ่มเรียนรู้ AI และเข้าถึง resource มากมาย</p>
+          </div>
           <div class="google-box">
             <div id="googleSignupButton"></div>
             <p id="googleSignupStatus">สมัครด้วย Google แล้วเข้าหน้าสมาชิกได้ทันที</p>
@@ -378,30 +797,56 @@
           <div class="auth-divider"><span>หรือสมัครด้วย Email/Password</span></div>
 
           <form id="memberForm" class="member-form auth-form" novalidate>
-            <div class="form-row">
-              <label>ชื่อ<input name="firstName" autocomplete="given-name" required placeholder="ชื่อจริง"></label>
-              <label>นามสกุล<input name="lastName" autocomplete="family-name" required placeholder="นามสกุล"></label>
-            </div>
-            <label>อีเมล<input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com"></label>
-            <label>รหัสผ่าน<input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="อย่างน้อย 8 ตัวอักษร"></label>
-            <label>ยืนยันรหัสผ่าน<input name="passwordConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="กรอกรหัสผ่านอีกครั้ง"></label>
-            <div class="form-row">
-              <label>เบอร์โทร <span class="optional-label">ไม่จำเป็นต้องกรอก</span><input name="phone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx"></label>
-              <label>Line ID<input name="lineId" autocomplete="username" placeholder="Line ID"></label>
-            </div>
+            <label class="auth-field" for="signupFirstName">
+              <span>ให้เรียกคุณว่าอะไรดี</span>
+              <span class="auth-input-wrap">
+                <i class="fa-regular fa-user"></i>
+                <input id="signupFirstName" name="firstName" autocomplete="given-name" required placeholder="เช่น คุณภูมิ">
+              </span>
+            </label>
+            <label class="auth-field" for="signupEmail">
+              <span>อีเมล</span>
+              <span class="auth-input-wrap">
+                <i class="fa-regular fa-envelope"></i>
+                <input id="signupEmail" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com">
+              </span>
+            </label>
+            <label class="auth-field" for="signupPhone">
+              <span>เบอร์โทร</span>
+              <span class="auth-input-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input id="signupPhone" name="phone" inputmode="tel" autocomplete="tel" required placeholder="08x-xxx-xxxx">
+              </span>
+            </label>
             <div class="otp-box hidden" id="signupOtpBox">
               <div class="otp-head">
                 <strong>ยืนยันเบอร์โทรด้วย SMS</strong>
                 <span id="otpStatus">กรอกเบอร์โทรแล้วกดส่งรหัส</span>
               </div>
               <div class="otp-actions">
-                <input id="otpCode" name="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="รหัส 6 หลัก">
+                <span class="auth-input-wrap">
+                  <i class="fa-solid fa-key"></i>
+                  <input id="otpCode" name="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="รหัส 6 หลัก">
+                </span>
                 <button class="secondary-btn" id="sendOtpBtn" type="button">ส่งรหัส SMS</button>
                 <button class="secondary-btn" id="verifyOtpBtn" type="button">ยืนยันรหัส</button>
               </div>
               <input name="phoneVerificationToken" type="hidden">
             </div>
-            <label>ธุรกิจ / งานที่ทำ <span class="optional-label">ไม่จำเป็นต้องกรอก</span><input name="business" placeholder="เช่น E-commerce, Marketing, Consultant"></label>
+            <label class="auth-field" for="signupPassword">
+              <span>รหัสผ่าน</span>
+              <span class="auth-input-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input id="signupPassword" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="อย่างน้อย 8 ตัวอักษร">
+              </span>
+            </label>
+            <label class="auth-field" for="signupPasswordConfirm">
+              <span>ยืนยันรหัสผ่าน</span>
+              <span class="auth-input-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input id="signupPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="กรอกรหัสผ่านอีกครั้ง">
+              </span>
+            </label>
             <input type="hidden" name="payment" value="online">
             <label class="consent-row">
               <input name="consentAccepted" type="checkbox" required>
@@ -414,26 +859,12 @@
             <button class="primary-btn full" type="submit">สมัครสมาชิก</button>
           </form>
         </section>
-
-        <section class="auth-pane" id="loginPane">
-          <div class="google-box">
-            <div id="googleLoginButton"></div>
-            <p id="googleLoginStatus">เข้าสู่ระบบด้วย Google เป็นช่องทางหลัก</p>
-          </div>
-          <div class="auth-divider"><span>หรือเข้าสู่ระบบด้วย Email/Password</span></div>
-
-          <form id="loginForm" class="member-form auth-form" novalidate>
-            <label>อีเมล<input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="your@email.com"></label>
-            <label>รหัสผ่าน<input name="password" type="password" autocomplete="current-password" required placeholder="รหัสผ่าน"></label>
-            <button class="primary-btn full" type="submit">เข้าสู่ระบบ</button>
-          </form>
-        </section>
       </div>
     </div>
   </div>
 
-  <script src="/site-footer.js?v=site-footer-20260604"></script>
-  <div class="toast" id="toast"></div>
+  <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -472,17 +903,28 @@
         "@type": "Product",
         "@id": "https://www.aixclub.co/#aix-member",
         "name": "AiX Member",
-        "description": "สมาชิก 1 ปีสำหรับเข้า Platform เรียน AI ต่อเนื่อง ใช้ resource, template, workflow blueprint และบทเรียนที่อัปเดตตามเทรนด์ AI",
+        "description": "สมาชิกสำหรับเข้า Platform เรียน AI ต่อเนื่อง มี Live สอนสดทุกอาทิตย์ ใช้ resource, template, workflow blueprint และบทเรียนที่อัปเดตตามเทรนด์ AI",
         "brand": {
           "@id": "https://www.aixclub.co/#organization"
         },
-        "offers": {
-          "@type": "Offer",
-          "price": "1999",
-          "priceCurrency": "THB",
-          "availability": "https://schema.org/InStock",
-          "url": "https://www.aixclub.co/#membership"
-        }
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "AiX Member รายปี",
+            "price": "1999",
+            "priceCurrency": "THB",
+            "availability": "https://schema.org/InStock",
+            "url": "https://www.aixclub.co/#membership"
+          },
+          {
+            "@type": "Offer",
+            "name": "AiX Member รายเดือน",
+            "price": "249",
+            "priceCurrency": "THB",
+            "availability": "https://schema.org/InStock",
+            "url": "https://www.aixclub.co/#membership"
+          }
+        ]
       },
       {
         "@type": "FAQPage",
@@ -509,7 +951,7 @@
             "name": "สมาชิก AiX ราคาเท่าไหร่?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "AiX Member ราคา 1,999 บาท สำหรับสมาชิก 1 ปี เพื่อเข้า Platform เรียนหัวข้อ AI ที่เปิดให้สมาชิกและใช้ resource ที่เกี่ยวข้อง"
+              "text": "AiX Member มีรายปี 1,999 บาท และรายเดือน 249 บาท โดยรายปีเฉลี่ยถูกกว่า เหมาะกับคนที่ต้องการเรียนต่อเนื่องและใช้ resource ที่เกี่ยวข้อง"
             }
           }
         ]
@@ -517,6 +959,6 @@
     ]
   }
   </script>
-  <script src="script.js?v=aix-home-redesign-20260604"></script>
+  <script src="script.js?v=aix-workproof-raster-v54-20260624"></script>
 </body>
 </html>

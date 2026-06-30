@@ -141,7 +141,7 @@ function renderAccess(data, anonymous = false) {
   document.body.classList.toggle("tools-locked", !active);
   toolsLockedState.hidden = active;
   if (toolsLockedAction) {
-    toolsLockedAction.href = anonymous ? "/login" : "/payment";
+    toolsLockedAction.href = anonymous ? "/index.html?auth=login" : "/payment";
     toolsLockedAction.textContent = anonymous ? "เข้าสู่ระบบ" : "ไปหน้าชำระเงิน";
   }
   renderResources(active ? data.resources || [] : []);
