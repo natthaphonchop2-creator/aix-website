@@ -32,6 +32,60 @@
   min-height: 52px !important;
 }
 
+.auth-panel #googleSignupButton,
+.auth-panel #googleLoginButton,
+.auth-panel #googleAuthButton {
+  position: relative !important;
+  display: block !important;
+  height: 52px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(180deg, #ffffff, #f7f8fb) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 24px rgba(15, 23, 42, 0.14) !important;
+}
+
+.auth-panel #googleSignupButton::before,
+.auth-panel #googleLoginButton::before,
+.auth-panel #googleAuthButton::before {
+  position: absolute;
+  top: 50%;
+  left: 22px;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  color: #4285f4;
+  content: "G";
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.auth-panel #googleSignupButton::after,
+.auth-panel #googleLoginButton::after,
+.auth-panel #googleAuthButton::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: #1f2937;
+  content: "ลงชื่อเข้าใช้ด้วย Google";
+  font-family: var(--font, "IBM Plex Sans Thai", system-ui, sans-serif);
+  font-size: clamp(0.98rem, 2.5vw, 1.08rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+.auth-panel #googleSignupButton::after {
+  content: "ลงชื่อสมัครด้วย Google";
+}
+
 #googleSignupButton > div,
 #googleLoginButton > div,
 #googleAuthButton > div,
@@ -45,6 +99,20 @@
   min-height: 52px !important;
   margin-inline: auto !important;
   border-radius: 12px !important;
+}
+
+.auth-panel #googleSignupButton > div,
+.auth-panel #googleLoginButton > div,
+.auth-panel #googleAuthButton > div,
+.auth-panel #googleSignupButton iframe,
+.auth-panel #googleLoginButton iframe,
+.auth-panel #googleAuthButton iframe {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 3 !important;
+  height: 52px !important;
+  opacity: 0.01 !important;
+  cursor: pointer !important;
 }
 
 #googleSignupButton [role="button"],
