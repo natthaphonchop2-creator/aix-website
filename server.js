@@ -230,7 +230,9 @@ class PostgresCompatDatabase {
       }
     });
     this.worker.unref();
-    this.ensureSchema();
+    if (process.env.SUPABASE_AUTO_MIGRATE === 'true' || process.env.NODE_ENV !== 'production') {
+      this.ensureSchema();
+    }
   }
 
   ensureSchema() {
@@ -262,7 +264,6 @@ class PostgresCompatDatabase {
     if (!payload.ok) {
       const error = new Error(`Supabase query failed: ${payload.error}`);
       error.code = payload.code;
-      error.sql = payload.sql;
       throw error;
     }
     return payload;

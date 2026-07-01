@@ -18,6 +18,7 @@ SUPABASE_DATABASE_URL=postgresql://...
 SUPABASE_DB_SSL=true
 SUPABASE_DB_POOL_MAX=4
 SUPABASE_QUERY_TIMEOUT_MS=30000
+SUPABASE_AUTO_MIGRATE=false
 ```
 
 Server อ่าน connection string ตามลำดับนี้:
@@ -27,6 +28,16 @@ Server อ่าน connection string ตามลำดับนี้:
 3. `SUPABASE_DB_URL`
 
 ถ้าไม่มีค่าเหล่านี้ server จะ fallback ไปใช้ `data.db` แบบเดิม เพื่อให้ local dev ยังรันได้
+
+สำหรับ Render ให้ใช้ connection string จาก Supabase Dashboard > Connect > Session pooler หรือ Transaction pooler เท่านั้น เพราะ Direct connection ของ Supabase อาจ resolve เป็น IPv6 และทำให้ Render เจอ `ENETUNREACH ... :5432`
+
+รูปแบบที่ควรเป็นบน Render:
+
+```text
+postgresql://postgres.<project-ref>:<database-password>@<region>.pooler.supabase.com:5432/postgres?sslmode=require
+```
+
+หรือใช้ Transaction pooler port `6543` ถ้าต้องการ connection แบบ transaction pooling
 
 ## Schema
 
@@ -51,5 +62,7 @@ Database: Supabase Postgres
 ```
 
 ข้อมูล catalog เริ่มต้น เช่น courses, packages, resources จะถูก seed ตอน server start ถ้าตารางยังว่าง
+
+Production ไม่ auto-run migration จากไฟล์ SQL เว้นแต่ตั้ง `SUPABASE_AUTO_MIGRATE=true` เพราะ schema ควรถูก apply ผ่าน Supabase migration/SQL editor ก่อน deploy
 
 ยังไม่ได้ copy ข้อมูลสมาชิก/payment จาก local `data.db` ขึ้น Supabase อัตโนมัติ เพราะอาจมีข้อมูล test หรือข้อมูลส่วนบุคคล ถ้าต้องย้ายข้อมูลจริง ให้ export/migrate แบบตรวจรายการก่อน

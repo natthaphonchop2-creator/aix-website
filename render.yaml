@@ -35,6 +35,8 @@ services:
         value: "true"
       - key: SUPABASE_DB_POOL_MAX
         value: "4"
+      - key: SUPABASE_AUTO_MIGRATE
+        value: "false"
       - key: SMS_OTP_SECRET
         sync: false
       - key: GOOGLE_CLIENT_ID
