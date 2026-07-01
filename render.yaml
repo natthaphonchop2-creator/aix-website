@@ -29,6 +29,12 @@ services:
         sync: false
       - key: AUTH_SECRET
         sync: false
+      - key: SUPABASE_DATABASE_URL
+        sync: false
+      - key: SUPABASE_DB_SSL
+        value: "true"
+      - key: SUPABASE_DB_POOL_MAX
+        value: "4"
       - key: SMS_OTP_SECRET
         sync: false
       - key: GOOGLE_CLIENT_ID

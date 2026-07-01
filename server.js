@@ -8,9 +8,11 @@ const path = require('path');
 const crypto = require('crypto');
 const cors = require('cors');
 const fs = require('fs');
+const os = require('os');
 const vm = require('vm');
 const Stripe = require('stripe');
 const multer = require('multer');
+const { Worker } = require('worker_threads');
 
 let BetterSqliteDatabase;
 try {
@@ -55,17 +57,266 @@ function createBuiltInSqliteDatabase(filename) {
   }();
 }
 
+const POSTGRES_COLUMN_ALIASES = {
+  activeindex: 'activeIndex',
+  amountdiscount: 'amountDiscount',
+  amountsubtotal: 'amountSubtotal',
+  amounttax: 'amountTax',
+  authprovider: 'authProvider',
+  avatarurl: 'avatarUrl',
+  brandfocus: 'brandFocus',
+  codehash: 'codeHash',
+  completedcount: 'completedCount',
+  consentaccepted: 'consentAccepted',
+  couponname: 'couponName',
+  courseid: 'courseId',
+  createdat: 'createdAt',
+  displayname: 'displayName',
+  durationtext: 'durationText',
+  emailverified: 'emailVerified',
+  enrolledcourses: 'enrolledCourses',
+  expiresat: 'expiresAt',
+  filename: 'fileName',
+  filepath: 'filePath',
+  firstname: 'firstName',
+  googlesub: 'googleSub',
+  invoiceurl: 'invoiceUrl',
+  joineddate: 'joinedDate',
+  lastloginat: 'lastLoginAt',
+  lastsentat: 'lastSentAt',
+  lastname: 'lastName',
+  lessonstext: 'lessonsText',
+  lineid: 'lineId',
+  marketingconsent: 'marketingConsent',
+  meetingurl: 'meetingUrl',
+  memberid: 'memberId',
+  moduletitle: 'moduleTitle',
+  notifybeforeminutes: 'notifyBeforeMinutes',
+  notifystatus: 'notifyStatus',
+  originalprice: 'originalPrice',
+  paidat: 'paidAt',
+  passwordhash: 'passwordHash',
+  paymentamount: 'paymentAmount',
+  paymentcurrency: 'paymentCurrency',
+  paymentmethod: 'paymentMethod',
+  paymentprovider: 'paymentProvider',
+  paymentstatus: 'paymentStatus',
+  phoneverified: 'phoneVerified',
+  productname: 'productName',
+  promotioncode: 'promotionCode',
+  ratingcount: 'ratingCount',
+  readat: 'readAt',
+  receipturl: 'receiptUrl',
+  scheduleid: 'scheduleId',
+  sortorder: 'sortOrder',
+  startsat: 'startsAt',
+  endsat: 'endsAt',
+  stripechargeid: 'stripeChargeId',
+  stripecustomerid: 'stripeCustomerId',
+  stripepaymentintentid: 'stripePaymentIntentId',
+  stripesessionid: 'stripeSessionId',
+  totalmodules: 'totalModules',
+  updatedat: 'updatedAt',
+  verifiedat: 'verifiedAt',
+  videourl: 'videoUrl'
+};
+
+function mapPostgresColumnName(name) {
+  return POSTGRES_COLUMN_ALIASES[name] || name;
+}
+
+function mapPostgresRow(row) {
+  if (!row || typeof row !== 'object') return row;
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [mapPostgresColumnName(key), value])
+  );
+}
+
+function sqlitePlaceholdersToPostgres(sql) {
+  let index = 0;
+  let output = '';
+  let quote = '';
+
+  for (let i = 0; i < sql.length; i += 1) {
+    const char = sql[i];
+    const next = sql[i + 1];
+
+    if (quote) {
+      output += char;
+      if (char === quote) {
+        if (next === quote) {
+          output += next;
+          i += 1;
+        } else {
+          quote = '';
+        }
+      }
+      continue;
+    }
+
+    if (char === "'" || char === '"') {
+      quote = char;
+      output += char;
+      continue;
+    }
+
+    if (char === '?') {
+      index += 1;
+      output += `$${index}`;
+      continue;
+    }
+
+    output += char;
+  }
+
+  return output;
+}
+
+function normalizePostgresSql(sql) {
+  const source = String(sql || '').trim();
+  const insertOrIgnore = /^INSERT\s+OR\s+IGNORE\s+INTO/i.test(source);
+  let normalized = source.replace(/^INSERT\s+OR\s+IGNORE\s+INTO/i, 'INSERT INTO');
+  normalized = sqlitePlaceholdersToPostgres(normalized);
+
+  if (insertOrIgnore && !/\bON\s+CONFLICT\b/i.test(normalized)) {
+    normalized = normalized.replace(/;+\s*$/, '');
+    normalized += ' ON CONFLICT DO NOTHING';
+  }
+
+  if (/^INSERT\s+INTO\s+users\b/i.test(normalized) && !/\bRETURNING\b/i.test(normalized)) {
+    normalized = normalized.replace(/;+\s*$/, '');
+    normalized += ' RETURNING id';
+  }
+
+  return normalized;
+}
+
+class PostgresCompatStatement {
+  constructor(database, sql) {
+    this.database = database;
+    this.sql = sql;
+    this.tableInfoMatch = String(sql || '').trim().match(/^PRAGMA\s+table_info\(([^)]+)\)/i);
+  }
+
+  all(...params) {
+    if (this.tableInfoMatch) return this.database.tableInfo(this.tableInfoMatch[1]);
+    const result = this.database.query(normalizePostgresSql(this.sql), params);
+    return result.rows.map(mapPostgresRow);
+  }
+
+  get(...params) {
+    return this.all(...params)[0];
+  }
+
+  run(...params) {
+    const result = this.database.query(normalizePostgresSql(this.sql), params);
+    const row = result.rows[0] ? mapPostgresRow(result.rows[0]) : {};
+    return {
+      changes: result.rowCount || 0,
+      lastInsertRowid: row.id
+    };
+  }
+}
+
+class PostgresCompatDatabase {
+  constructor(connectionString) {
+    this.kind = 'supabase-postgres';
+    this.connectionString = connectionString;
+    this.worker = new Worker(path.join(__dirname, 'postgres-worker.js'), {
+      workerData: {
+        connectionString,
+        ssl: process.env.SUPABASE_DB_SSL === 'false' ? false : true,
+        max: Number(process.env.SUPABASE_DB_POOL_MAX || 4)
+      }
+    });
+    this.worker.unref();
+    this.ensureSchema();
+  }
+
+  ensureSchema() {
+    const migrationsDir = path.join(__dirname, 'supabase', 'migrations');
+    if (!fs.existsSync(migrationsDir)) return;
+    fs.readdirSync(migrationsDir)
+      .filter((filename) => filename.endsWith('.sql'))
+      .sort()
+      .forEach((filename) => {
+        const migrationPath = path.join(migrationsDir, filename);
+        this.query(fs.readFileSync(migrationPath, 'utf8'), []);
+      });
+  }
+
+  query(sql, params = []) {
+    const sharedBuffer = new SharedArrayBuffer(4);
+    const view = new Int32Array(sharedBuffer);
+    const outFile = path.join(os.tmpdir(), `aix-pg-${process.pid}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.json`);
+    this.worker.postMessage({ sql, params, outFile, sharedBuffer });
+
+    const timeoutMs = Number(process.env.SUPABASE_QUERY_TIMEOUT_MS || 30_000);
+    const status = Atomics.wait(view, 0, 0, timeoutMs);
+    if (status === 'timed-out') {
+      throw new Error(`Supabase query timed out after ${timeoutMs}ms`);
+    }
+
+    const payload = JSON.parse(fs.readFileSync(outFile, 'utf8'));
+    fs.rmSync(outFile, { force: true });
+    if (!payload.ok) {
+      const error = new Error(`Supabase query failed: ${payload.error}`);
+      error.code = payload.code;
+      error.sql = payload.sql;
+      throw error;
+    }
+    return payload;
+  }
+
+  pragma() {
+    return undefined;
+  }
+
+  exec(sql) {
+    const source = String(sql || '').trim();
+    if (/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+courses/i.test(source)) return undefined;
+    return this.query(source, []);
+  }
+
+  prepare(sql) {
+    return new PostgresCompatStatement(this, sql);
+  }
+
+  transaction(fn) {
+    return (...args) => fn(...args);
+  }
+
+  tableInfo(table) {
+    const cleanTable = String(table || '').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+    const result = this.query(
+      `select column_name as name
+       from information_schema.columns
+       where table_schema = 'public' and table_name = $1
+       order by ordinal_position`,
+      [cleanTable]
+    );
+    return result.rows.map((row) => ({ name: mapPostgresColumnName(row.name) }));
+  }
+}
+
 function createDatabase(filename) {
+  const postgresUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || process.env.SUPABASE_DB_URL || '';
+  if (postgresUrl) return new PostgresCompatDatabase(postgresUrl);
+
   if (BetterSqliteDatabase) {
     try {
-      return new BetterSqliteDatabase(filename);
+      const sqlite = new BetterSqliteDatabase(filename);
+      sqlite.kind = 'sqlite';
+      return sqlite;
     } catch (error) {
       console.warn('better-sqlite3 could not be loaded; using Node built-in SQLite fallback.');
     }
   }
 
   try {
-    return createBuiltInSqliteDatabase(filename);
+    const sqlite = createBuiltInSqliteDatabase(filename);
+    sqlite.kind = 'sqlite';
+    return sqlite;
   } catch (fallbackError) {
     throw new Error(`Could not open SQLite database: ${fallbackError.message}`);
   }
@@ -179,6 +430,7 @@ app.use((req, res, next) => {
     'package.json',
     'package-lock.json',
     'render.yaml',
+    'postgres-worker.js',
     'wrangler.jsonc',
     'rewrite_admin.js',
     'data.db',
@@ -186,7 +438,13 @@ app.use((req, res, next) => {
     'data.db-wal'
   ]);
   const requestedFile = path.basename(req.path);
-  if (blockedStaticFiles.has(requestedFile) || requestedFile.startsWith('.env') || req.path.split('/').includes('.git')) {
+  const pathParts = req.path.split('/').filter(Boolean);
+  if (
+    blockedStaticFiles.has(requestedFile)
+    || requestedFile.startsWith('.env')
+    || pathParts.includes('.git')
+    || pathParts.includes('supabase')
+  ) {
     return res.sendStatus(404);
   }
   next();
@@ -3677,6 +3935,6 @@ app.get('/course/:id/learn', (req, res) => {
 app.listen(PORT, () => {
   console.log(`\n🚀 AiX Club Server running at http://localhost:${PORT}`);
   console.log(`📊 Admin Panel: http://localhost:${PORT}/admin.html`);
-  console.log(`🗄️  Database: ${path.join(DATA_DIR, 'data.db')}`);
+  console.log(`🗄️  Database: ${db.kind === 'supabase-postgres' ? 'Supabase Postgres' : path.join(DATA_DIR, 'data.db')}`);
   console.log(`📁 Uploads: ${UPLOAD_ROOT}\n`);
 });
