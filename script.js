@@ -1099,9 +1099,9 @@ function setGoogleFallback(message) {
 function googleButtonWidth(target) {
   const boxWidth = target?.closest(".google-box")?.getBoundingClientRect().width || 0;
   const targetWidth = target?.getBoundingClientRect().width || 0;
-  const availableWidth = Math.max(boxWidth, targetWidth);
-  if (!availableWidth) return 420;
-  return Math.min(420, Math.max(280, Math.floor(availableWidth - 24)));
+  const availableWidth = targetWidth || Math.max(0, boxWidth - 24);
+  if (!availableWidth) return 320;
+  return Math.min(400, Math.max(220, Math.floor(availableWidth)));
 }
 
 function renderGoogleButton(target, options) {

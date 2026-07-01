@@ -1,0 +1,56 @@
+/* Google Identity iframe sizing fix for production custom domains. */
+.google-box {
+  overflow: visible !important;
+}
+
+.google-box > div,
+#googleSignupButton,
+#googleLoginButton,
+#googleAuthButton {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+#googleSignupButton > div,
+#googleLoginButton > div,
+#googleAuthButton > div,
+#googleSignupButton iframe,
+#googleLoginButton iframe,
+#googleAuthButton iframe {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 48px !important;
+  margin-inline: auto !important;
+  border-radius: 10px !important;
+}
+
+#googleSignupButton [role="button"],
+#googleLoginButton [role="button"],
+#googleAuthButton [role="button"],
+#googleSignupButton .nsm7Bb-HzV7m-LgbsSe,
+#googleLoginButton .nsm7Bb-HzV7m-LgbsSe,
+#googleAuthButton .nsm7Bb-HzV7m-LgbsSe {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  overflow: hidden !important;
+}
+
+@media (max-width: 520px) {
+  .google-box {
+    padding-inline: 10px !important;
+  }
+
+  #googleSignupButton,
+  #googleLoginButton,
+  #googleAuthButton {
+    max-width: calc(100vw - 72px) !important;
+  }
+}
