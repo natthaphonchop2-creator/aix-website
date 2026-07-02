@@ -127,6 +127,9 @@ const state = {
   googleProfile: null,
   googleMode: "signup",
   googleInitialized: false,
+  googleIdentityInitialized: false,
+  googleClientId: "",
+  googleTokenClient: null,
   otpPhone: "",
   otpVerifiedPhone: "",
   phoneVerificationToken: "",
@@ -1074,6 +1077,43 @@ async function handleGoogleCredential(response) {
   }
 }
 
+async function handleGoogleAccessToken(response) {
+  if (response?.error) {
+    showToast(response.error_description || response.error || "ไม่สามารถเข้าสู่ระบบด้วย Google ได้");
+    return;
+  }
+
+  const accessToken = response?.access_token;
+  if (!accessToken) {
+    showToast("ไม่พบข้อมูลยืนยันจาก Google");
+    return;
+  }
+
+  const mode = state.googleMode || state.activeAuthTab;
+
+  try {
+    const result = await apiRequest("/api/auth/google-access-token", {
+      method: "POST",
+      body: JSON.stringify({ accessToken, mode })
+    });
+
+    if (result.member) {
+      setMember(result.member, result.token);
+      closeAuthModal();
+      window.location.href = "dashboard.html";
+      return;
+    }
+
+    if (result.profile) {
+      openAuthModal("signup");
+      prefillSignupFromGoogle(result.profile);
+      showToast("กรุณากรอกเบอร์โทรเพื่อสมัครสมาชิกให้ครบ");
+    }
+  } catch (error) {
+    showToast(error.message || "ไม่สามารถเข้าสู่ระบบด้วย Google ได้");
+  }
+}
+
 function setGoogleFallback(message) {
   document.querySelectorAll(".google-box").forEach((box) => {
     box.hidden = false;
@@ -1104,31 +1144,84 @@ function googleButtonWidth(target) {
   return Math.min(400, Math.max(220, Math.floor(availableWidth)));
 }
 
-function renderGoogleButton(target, options) {
-  if (!target || !window.google?.accounts?.id || !state.googleInitialized) return;
-  target.innerHTML = "";
-  window.google.accounts.id.renderButton(target, {
-    theme: "outline",
-    size: "large",
-    width: googleButtonWidth(target),
-    locale: "th",
-    logo_alignment: "left",
-    ...options
+function waitForGoogleClient(timeoutMs = 8000) {
+  if (window.google?.accounts?.oauth2) return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      if (window.google?.accounts?.oauth2) {
+        window.clearInterval(timer);
+        resolve(true);
+        return;
+      }
+
+      if (Date.now() - startedAt >= timeoutMs) {
+        window.clearInterval(timer);
+        resolve(false);
+      }
+    }, 150);
   });
+}
+
+async function ensureGoogleAuthClient() {
+  if (!state.googleClientId) return false;
+  if (state.googleTokenClient) return true;
+
+  const ready = await waitForGoogleClient();
+  if (!ready || !window.google?.accounts?.oauth2) return false;
+
+  if (!state.googleIdentityInitialized && window.google?.accounts?.id) {
+    window.google.accounts.id.initialize({
+      client_id: state.googleClientId,
+      callback: handleGoogleCredential,
+      auto_select: false
+    });
+    state.googleIdentityInitialized = true;
+  }
+
+  state.googleTokenClient = window.google.accounts.oauth2.initTokenClient({
+    client_id: state.googleClientId,
+    scope: "openid email profile",
+    callback: handleGoogleAccessToken
+  });
+
+  return true;
+}
+
+function renderGoogleButton(target, options) {
+  if (!target || !state.googleInitialized) return;
+  target.innerHTML = "";
+  target.classList.add("aix-google-auth-mounted");
+  const mode = options.mode || "login";
+  const button = document.createElement("button");
+  button.className = "aix-google-auth-button";
+  button.type = "button";
+  button.setAttribute("aria-label", mode === "signup" ? "สมัครสมาชิกด้วย Google" : "เข้าสู่ระบบด้วย Google");
+  button.innerHTML = `
+    <span class="aix-google-auth-icon" aria-hidden="true"></span>
+    <span>Continue with Google</span>
+  `;
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    state.googleMode = mode;
+    const ready = await ensureGoogleAuthClient();
+    button.disabled = false;
+    if (!ready || !state.googleTokenClient) {
+      showToast("Google Login ยังโหลดไม่เสร็จ กรุณาลองใหม่อีกครั้ง");
+      return;
+    }
+    state.googleTokenClient.requestAccessToken({ prompt: "select_account" });
+  });
+  target.append(button);
 }
 
 function renderGoogleAuthButtons() {
   renderGoogleButton(document.getElementById("googleSignupButton"), {
-    text: "signup_with",
-    click_listener: () => {
-      state.googleMode = "signup";
-    }
+    mode: "signup"
   });
   renderGoogleButton(document.getElementById("googleLoginButton"), {
-    text: "signin_with",
-    click_listener: () => {
-      state.googleMode = "login";
-    }
+    mode: "login"
   });
 }
 
@@ -1152,26 +1245,10 @@ async function initGoogleLogin() {
     return;
   }
 
-  let attempts = 0;
-  const timer = window.setInterval(() => {
-    attempts += 1;
-    if (!window.google?.accounts?.id) {
-      if (attempts > 40) {
-        window.clearInterval(timer);
-        setGoogleFallback("โหลด Google login ไม่สำเร็จ");
-      }
-      return;
-    }
-
-    window.clearInterval(timer);
-    window.google.accounts.id.initialize({
-      client_id: config.googleClientId,
-      callback: handleGoogleCredential,
-      auto_select: false
-    });
-    state.googleInitialized = true;
-    renderGoogleAuthButtons();
-  }, 150);
+  state.googleClientId = config.googleClientId;
+  state.googleInitialized = true;
+  renderGoogleAuthButtons();
+  ensureGoogleAuthClient();
 }
 
 document.querySelectorAll("[data-scroll]").forEach((button) => {

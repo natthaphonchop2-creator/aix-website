@@ -1952,6 +1952,87 @@ async function verifyGoogleCredential(credential) {
   };
 }
 
+async function verifyGoogleAccessToken(accessToken) {
+  if (!isValidGoogleClientId(GOOGLE_CLIENT_ID)) {
+    throw new Error('ยังไม่ได้ตั้งค่า GOOGLE_CLIENT_ID');
+  }
+
+  const token = String(accessToken || '').trim();
+  if (!token) throw new Error('Google access token ไม่ถูกต้อง');
+
+  const tokenInfoResponse = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(token)}`);
+  if (!tokenInfoResponse.ok) throw new Error('ไม่สามารถตรวจสอบ Google access token ได้');
+  const tokenInfo = await tokenInfoResponse.json();
+  const audience = tokenInfo.aud || tokenInfo.audience || tokenInfo.azp;
+  if (audience !== GOOGLE_CLIENT_ID) throw new Error('Google token audience ไม่ตรงกับ Client ID');
+
+  const scope = String(tokenInfo.scope || '');
+  if (!scope.split(/\s+/).includes('email')) throw new Error('Google token ไม่มีสิทธิ์อ่านอีเมล');
+
+  const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!profileResponse.ok) throw new Error('ไม่สามารถโหลดข้อมูล Google account ได้');
+  const payload = await profileResponse.json();
+  if (!payload.email || payload.email_verified !== true) throw new Error('Google account ยังไม่ยืนยันอีเมล');
+
+  return {
+    sub: payload.sub,
+    email: normalizeEmail(payload.email),
+    name: payload.name || '',
+    given_name: payload.given_name || '',
+    family_name: payload.family_name || '',
+    picture: payload.picture || '',
+    email_verified: Boolean(payload.email_verified)
+  };
+}
+
+function upsertGoogleMember(profile) {
+  const member = db.prepare('SELECT * FROM members WHERE googleSub = ? OR email = ?').get(profile.sub, profile.email);
+  const now = new Date().toISOString();
+
+  if (member) {
+    db.prepare(`
+      UPDATE members
+      SET lastLoginAt = ?, updatedAt = ?, status = 'active', emailVerified = 1,
+          googleSub = COALESCE(NULLIF(googleSub, ''), ?),
+          authProvider = CASE WHEN authProvider IN ('', 'email') THEN 'google' ELSE authProvider END,
+          displayName = COALESCE(NULLIF(displayName, ''), ?),
+          picture = COALESCE(NULLIF(picture, ''), ?),
+          avatarUrl = COALESCE(NULLIF(avatarUrl, ''), ?)
+      WHERE id = ?
+    `).run(now, now, profile.sub, profile.name, profile.picture, profile.picture, member.id);
+    return { member: db.prepare('SELECT * FROM members WHERE id = ?').get(member.id), created: false };
+  }
+
+  const id = createMemberId();
+  const names = splitDisplayName(profile.name);
+  db.prepare(`
+    INSERT INTO members (
+      id, firstName, lastName, displayName, email, phone, lineId, business, courseId, membership, payment,
+      status, paymentStatus, authProvider, googleSub, picture, avatarUrl, emailVerified, phoneVerified,
+      consentAccepted, marketingConsent, createdAt, updatedAt, lastLoginAt
+    )
+    VALUES (?, ?, ?, ?, ?, ?, '', '', 'aix-membership-gen-zero', 'aix-member', 'online',
+      'active', 'unpaid', 'google', ?, ?, ?, 1, 0, 1, 0, ?, ?, ?)
+  `).run(
+    id,
+    profile.given_name || names.firstName,
+    profile.family_name || names.lastName,
+    profile.name || profile.email,
+    profile.email,
+    `auth_google_${profile.sub}`,
+    profile.sub,
+    profile.picture,
+    profile.picture,
+    now,
+    now,
+    now
+  );
+
+  return { member: db.prepare('SELECT * FROM members WHERE id = ?').get(id), created: true };
+}
+
 app.get('/api/config', (req, res) => {
   const sms = getSmsConfig();
   const googleReady = isValidGoogleClientId(GOOGLE_CLIENT_ID);
@@ -1976,51 +2057,18 @@ app.get('/api/config', (req, res) => {
 app.post('/api/auth/google', async (req, res) => {
   try {
     const profile = await verifyGoogleCredential(req.body.credential);
-    const member = db.prepare('SELECT * FROM members WHERE googleSub = ? OR email = ?').get(profile.sub, profile.email);
-    const now = new Date().toISOString();
+    const result = upsertGoogleMember(profile);
+    res.json({ ...issueMemberSession(res, result.member), profile, created: result.created });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
+  }
+});
 
-    if (member) {
-      db.prepare(`
-        UPDATE members
-        SET lastLoginAt = ?, updatedAt = ?, status = 'active', emailVerified = 1,
-            googleSub = COALESCE(NULLIF(googleSub, ''), ?),
-            authProvider = CASE WHEN authProvider IN ('', 'email') THEN 'google' ELSE authProvider END,
-            displayName = COALESCE(NULLIF(displayName, ''), ?),
-            picture = COALESCE(NULLIF(picture, ''), ?),
-            avatarUrl = COALESCE(NULLIF(avatarUrl, ''), ?)
-        WHERE id = ?
-      `).run(now, now, profile.sub, profile.name, profile.picture, profile.picture, member.id);
-      const updated = db.prepare('SELECT * FROM members WHERE id = ?').get(member.id);
-      return res.json({ ...issueMemberSession(res, updated), profile });
-    }
-
-    const id = createMemberId();
-    const names = splitDisplayName(profile.name);
-    db.prepare(`
-      INSERT INTO members (
-        id, firstName, lastName, displayName, email, phone, lineId, business, courseId, membership, payment,
-        status, paymentStatus, authProvider, googleSub, picture, avatarUrl, emailVerified, phoneVerified,
-        consentAccepted, marketingConsent, createdAt, updatedAt, lastLoginAt
-      )
-      VALUES (?, ?, ?, ?, ?, ?, '', '', 'aix-membership-gen-zero', 'aix-member', 'online',
-        'active', 'unpaid', 'google', ?, ?, ?, 1, 0, 1, 0, ?, ?, ?)
-    `).run(
-      id,
-      profile.given_name || names.firstName,
-      profile.family_name || names.lastName,
-      profile.name || profile.email,
-      profile.email,
-      `auth_google_${profile.sub}`,
-      profile.sub,
-      profile.picture,
-      profile.picture,
-      now,
-      now,
-      now
-    );
-
-    const created = db.prepare('SELECT * FROM members WHERE id = ?').get(id);
-    res.json({ ...issueMemberSession(res, created), profile, created: true });
+app.post('/api/auth/google-access-token', async (req, res) => {
+  try {
+    const profile = await verifyGoogleAccessToken(req.body.accessToken);
+    const result = upsertGoogleMember(profile);
+    res.json({ ...issueMemberSession(res, result.member), profile, created: result.created });
   } catch (error) {
     res.status(400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
   }
