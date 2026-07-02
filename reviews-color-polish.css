@@ -1,0 +1,206 @@
+.aix-reviews {
+  background:
+    linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(24, 24, 27, 0.58) 48%, rgba(10, 10, 10, 0) 100%);
+}
+
+.aix-reviews::before {
+  opacity: 0.46;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(96, 165, 250, 0.13), transparent 28%),
+    radial-gradient(circle at 84% 20%, rgba(52, 211, 153, 0.1), transparent 24%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 56%);
+}
+
+.aix-reviews::after {
+  opacity: 0.54;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.08), transparent 68%);
+}
+
+.aix-reviews.aix-section-ambient::before,
+.dark .aix-reviews.aix-section-ambient::before {
+  opacity: 0.34;
+  background:
+    radial-gradient(closest-side at 18% 42%, rgba(96, 165, 250, 0.13), transparent 74%),
+    radial-gradient(closest-side at 82% 58%, rgba(52, 211, 153, 0.1), transparent 72%);
+}
+
+.aix-reviews .aix-section-note {
+  color: color-mix(in srgb, #93c5fd 82%, var(--foreground));
+}
+
+.aix-reviews-copy h2::after {
+  width: min(168px, 42vw);
+  height: 3px;
+  background: linear-gradient(90deg, #f8fafc 0%, #93c5fd 48%, #34d399 100%);
+  box-shadow: 0 0 20px rgba(147, 197, 253, 0.18);
+}
+
+.aix-review-stats div,
+.aix-testimonial-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(145deg, rgba(24, 24, 27, 0.84), rgba(10, 10, 10, 0.76)),
+    rgba(10, 10, 10, 0.82);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.dark .aix-reviews {
+  background:
+    linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(24, 24, 27, 0.58) 48%, rgba(10, 10, 10, 0) 100%);
+}
+
+.dark .aix-reviews .aix-review-stats div,
+.dark .aix-reviews .aix-testimonial-card,
+.dark .aix-reviews .aix-review-stats div:nth-child(1),
+.dark .aix-reviews .aix-review-stats div:nth-child(2),
+.dark .aix-reviews .aix-review-stats div:nth-child(3),
+.dark .aix-reviews .aix-testimonial-card:nth-child(3n + 1),
+.dark .aix-reviews .aix-testimonial-card:nth-child(3n + 2),
+.dark .aix-reviews .aix-testimonial-card:nth-child(3n) {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(145deg, rgba(24, 24, 27, 0.84), rgba(10, 10, 10, 0.76)),
+    rgba(10, 10, 10, 0.82);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.aix-review-stats div::before {
+  width: 3px;
+  background: linear-gradient(180deg, #93c5fd, #60a5fa);
+}
+
+.aix-review-stats div::after {
+  opacity: 0.42;
+  background: radial-gradient(circle at 16% 4%, rgba(147, 197, 253, 0.15), transparent 38%);
+}
+
+.aix-review-stats div:nth-child(2)::before {
+  background: linear-gradient(180deg, #5eead4, #14b8a6);
+}
+
+.aix-review-stats div:nth-child(2)::after {
+  background: radial-gradient(circle at 16% 4%, rgba(94, 234, 212, 0.13), transparent 38%);
+}
+
+.aix-review-stats div:nth-child(3)::before {
+  background: linear-gradient(180deg, #fcd34d, #fb7185);
+}
+
+.aix-review-stats div:nth-child(3)::after {
+  background: radial-gradient(circle at 16% 4%, rgba(252, 211, 77, 0.13), transparent 38%);
+}
+
+.aix-review-stats strong,
+.aix-testimonial-card p,
+.aix-testimonial-card strong {
+  color: #f8fafc;
+}
+
+.aix-review-stats span,
+.aix-testimonial-card span {
+  color: rgba(226, 232, 240, 0.66);
+}
+
+.aix-testimonial-card::before {
+  height: 2px;
+  background: linear-gradient(90deg, #93c5fd, rgba(96, 165, 250, 0.28));
+}
+
+.aix-testimonial-card::after {
+  opacity: 0.36;
+  background: radial-gradient(circle at 10% 0%, rgba(147, 197, 253, 0.12), transparent 38%);
+}
+
+.aix-testimonial-card:nth-child(3n + 2)::before {
+  background: linear-gradient(90deg, #5eead4, rgba(20, 184, 166, 0.26));
+}
+
+.aix-testimonial-card:nth-child(3n + 2)::after {
+  background: radial-gradient(circle at 10% 0%, rgba(94, 234, 212, 0.1), transparent 38%);
+}
+
+.aix-testimonial-card:nth-child(3n)::before {
+  background: linear-gradient(90deg, #fcd34d, rgba(251, 113, 133, 0.3));
+}
+
+.aix-testimonial-card:nth-child(3n)::after {
+  background: radial-gradient(circle at 10% 0%, rgba(252, 211, 77, 0.11), transparent 38%);
+}
+
+html:not(.dark) .aix-reviews {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(244, 244, 245, 0.78) 48%, rgba(255, 255, 255, 0) 100%);
+}
+
+html:not(.dark) .aix-reviews::before {
+  opacity: 0.42;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(96, 165, 250, 0.16), transparent 28%),
+    radial-gradient(circle at 84% 20%, rgba(20, 184, 166, 0.11), transparent 24%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.03), transparent 56%);
+}
+
+html:not(.dark) .aix-reviews.aix-section-ambient::before {
+  opacity: 0.3;
+  background:
+    radial-gradient(closest-side at 18% 42%, rgba(96, 165, 250, 0.15), transparent 74%),
+    radial-gradient(closest-side at 82% 58%, rgba(20, 184, 166, 0.11), transparent 72%);
+}
+
+html:not(.dark) .aix-reviews .aix-section-note {
+  color: #2563eb;
+}
+
+html:not(.dark) .aix-review-stats div,
+html:not(.dark) .aix-testimonial-card {
+  border-color: rgba(15, 23, 42, 0.1);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.82)),
+    rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+html:not(.dark) .aix-reviews .aix-review-stats div,
+html:not(.dark) .aix-reviews .aix-testimonial-card,
+html:not(.dark) .aix-reviews .aix-review-stats div:nth-child(1),
+html:not(.dark) .aix-reviews .aix-review-stats div:nth-child(2),
+html:not(.dark) .aix-reviews .aix-review-stats div:nth-child(3),
+html:not(.dark) .aix-reviews .aix-testimonial-card:nth-child(3n + 1),
+html:not(.dark) .aix-reviews .aix-testimonial-card:nth-child(3n + 2),
+html:not(.dark) .aix-reviews .aix-testimonial-card:nth-child(3n) {
+  border-color: rgba(15, 23, 42, 0.1);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.82)),
+    rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+html:not(.dark) .aix-review-stats strong,
+html:not(.dark) .aix-testimonial-card p,
+html:not(.dark) .aix-testimonial-card strong {
+  color: #0f172a;
+}
+
+html:not(.dark) .aix-review-stats span,
+html:not(.dark) .aix-testimonial-card span {
+  color: #64748b;
+}
+
+@media (max-width: 760px) {
+  .aix-reviews {
+    background:
+      linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(24, 24, 27, 0.42) 46%, rgba(10, 10, 10, 0) 100%);
+  }
+
+  .aix-review-stats div,
+  .aix-testimonial-card {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  html:not(.dark) .aix-reviews {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(244, 244, 245, 0.68) 46%, rgba(255, 255, 255, 0) 100%);
+  }
+}
