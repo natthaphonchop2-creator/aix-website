@@ -593,6 +593,67 @@ function setMember(member, token = null) {
   updateMemberUi();
 }
 
+function setAuthActionHidden(element, isHidden) {
+  if (!element) return;
+  const target = element.closest(".aix-rainbow-shell") || element;
+  target.hidden = isHidden;
+  target.setAttribute("aria-hidden", isHidden ? "true" : "false");
+  target.classList.toggle("is-auth-hidden", isHidden);
+  element.tabIndex = isHidden ? -1 : 0;
+}
+
+function setHoverGradientNavContent(button, label, iconClass) {
+  if (!button) return;
+  button.querySelectorAll(".hover-gradient-nav-face span").forEach((span) => {
+    span.textContent = label;
+  });
+  button.querySelectorAll(".hover-gradient-nav-face i").forEach((icon) => {
+    icon.className = `fa-solid ${iconClass}`;
+  });
+  button.setAttribute("aria-label", label);
+}
+
+function syncMobileAccountAction(isMember) {
+  const mobileAccountLink = document.querySelector(".luma-mobile-item[data-luma-section='account']");
+  if (!mobileAccountLink) return;
+
+  const label = isMember ? "ออก" : "เข้าสู่ระบบ";
+  const ariaLabel = isMember ? "ลงชื่อออกจากระบบ" : "เข้าสู่ระบบ";
+  const icon = mobileAccountLink.querySelector("i");
+  const labelNode = mobileAccountLink.querySelector(".luma-mobile-label");
+
+  mobileAccountLink.setAttribute("aria-label", ariaLabel);
+  mobileAccountLink.setAttribute("href", isMember ? "#logout" : "/dashboard");
+  mobileAccountLink.classList.toggle("is-auth-logout", isMember);
+  if (labelNode) labelNode.textContent = label;
+  if (icon) icon.className = `fa-solid ${isMember ? "fa-right-from-bracket" : "fa-user"}`;
+}
+
+function syncHomepageAuthActions() {
+  const isMember = Boolean(state.member);
+  const navSignupButton = document.querySelector(".hover-gradient-nav-primary[data-open-signup]");
+  const guestSignupButtons = [...document.querySelectorAll("[data-open-signup]")]
+    .filter((button) => button !== navSignupButton);
+  const guestLoginButtons = [...document.querySelectorAll("[data-open-login]")];
+
+  document.body.classList.toggle("is-member-logged-in", isMember);
+  guestSignupButtons.forEach((button) => setAuthActionHidden(button, isMember));
+  guestLoginButtons.forEach((button) => setAuthActionHidden(button, isMember));
+
+  if (navSignupButton) {
+    navSignupButton.dataset.authLogout = isMember ? "true" : "false";
+    navSignupButton.classList.toggle("is-member-logout", isMember);
+    setAuthActionHidden(navSignupButton, false);
+    setHoverGradientNavContent(
+      navSignupButton,
+      isMember ? "ลงชื่อออก" : "สมัคร",
+      isMember ? "fa-right-from-bracket" : "fa-arrow-right-to-bracket"
+    );
+  }
+
+  syncMobileAccountAction(isMember);
+}
+
 function updateMemberUi() {
   const loginBtn = document.getElementById("loginBtn");
   const mobileLoginBtn = document.getElementById("mobileLoginBtn");
@@ -603,6 +664,9 @@ function updateMemberUi() {
       loginBtn.querySelectorAll(".hover-gradient-nav-face span").forEach((span) => {
         span.textContent = label;
       });
+      loginBtn.querySelectorAll(".hover-gradient-nav-face i").forEach((icon) => {
+        icon.className = `fa-solid ${state.member ? "fa-gauge-high" : "fa-user"}`;
+      });
       loginBtn.setAttribute("aria-label", label);
     } else {
       loginBtn.textContent = label;
@@ -611,6 +675,16 @@ function updateMemberUi() {
   }
   if (mobileLoginBtn) mobileLoginBtn.textContent = label;
   renderCourses();
+  syncHomepageAuthActions();
+}
+
+async function logoutMember() {
+  await apiRequest("/api/auth/logout", { method: "POST" }).catch(() => {});
+  state.googleCredential = "";
+  state.googleProfile = null;
+  setMember(null);
+  closeAuthModal();
+  showToast("ลงชื่อออกจากระบบแล้ว");
 }
 
 async function restoreSession() {
@@ -1256,7 +1330,14 @@ document.querySelectorAll("[data-scroll]").forEach((button) => {
 });
 
 document.querySelectorAll("[data-open-signup]").forEach((button) => {
-  button.addEventListener("click", () => openAuthModal("signup"));
+  button.addEventListener("click", (event) => {
+    if (button.dataset.authLogout === "true") {
+      event.preventDefault();
+      logoutMember();
+      return;
+    }
+    openAuthModal("signup");
+  });
 });
 
 document.querySelectorAll("[data-open-login]").forEach((button) => {
@@ -1617,6 +1698,15 @@ document.getElementById("mobileLoginBtn")?.addEventListener("click", () => {
   openAuthModal("login");
 });
 
+document.addEventListener("click", (event) => {
+  const mobileAccountLink = event.target.closest(".luma-mobile-item[data-luma-section='account']");
+  if (!mobileAccountLink || !state.member) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  logoutMember();
+}, true);
+
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!validateLoginForm()) {
@@ -1786,3 +1876,4 @@ initWorkproofCompare();
 initPageEffects();
 initAuthRouteModal();
 initFromHash();
+syncHomepageAuthActions();
