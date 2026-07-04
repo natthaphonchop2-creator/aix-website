@@ -13,20 +13,16 @@
   <meta name="color-scheme" content="dark">
   <script>
     (function () {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+      document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
       try {
-        var savedTheme = localStorage.getItem("aix-theme");
-        var isDark = savedTheme !== "light";
-        document.documentElement.classList.toggle("dark", isDark);
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
-      } catch (error) {
-        document.documentElement.classList.add("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
-      }
+        localStorage.setItem("aix-theme", "dark");
+      } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="/styles.css?v=aix-footer-responsive-v61-20260624">
+  <link rel="stylesheet" href="/styles.css?v=aix-hero-empty-state-polish-v68-20260703">
 </head>
 <body>
   <header class="site-header dashboard-header tools-header">
@@ -79,9 +75,9 @@
       <div class="container tools-box-hero-grid">
         <div class="tools-hero-copy">
           <h1>Tools Box สำหรับสมาชิก</h1>
-          <p>คลังเครื่องมือที่รวม Skill Set, Ebook, Prompt Pack, Template และ Workflow Blueprint สำหรับนำ AI ไปใช้ทำงานจริงแบบเป็นระบบ</p>
+          <p>คลังเครื่องมือที่รวม Skill Set และ Prompt Pack พร้อมปุ่มคัดลอก/โหลดไฟล์ .md สำหรับนำ AI ไปใช้ทำงานจริงแบบเป็นระบบ</p>
           <div class="tools-hero-actions">
-            <a class="primary-btn large" href="#skill-set">เริ่มจาก Skill Set</a>
+            <a class="primary-btn large" href="#skill-set">เปิด Skill Set</a>
             <a class="secondary-btn large" href="/dashboard">กลับ Dashboard</a>
           </div>
           <div class="tools-hero-note" id="toolsAccessBadge">
@@ -125,7 +121,7 @@
               <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
             </div>
             <strong>Skill Set</strong>
-            <small>เส้นทางฝึกทักษะ AI Agent, Prompt, Automation และ Research</small>
+            <small>Skill แจกแบบ .md พร้อมคัดลอก/โหลดไปใช้กับ agent หรือ workspace ของคุณ</small>
             <div class="tools-card-tags"><span>Agent</span><span>Workflow</span></div>
           </a>
           <a class="tools-category-card" href="#ebook">
@@ -143,7 +139,7 @@
               <i class="fa-solid fa-arrow-right tools-card-arrow"></i>
             </div>
             <strong>Prompt Pack</strong>
-            <small>ชุด prompt พร้อมใช้สำหรับวิเคราะห์ วางแผน เขียนคอนเทนต์ และทำงานกับทีม</small>
+            <small>Prompt พร้อมใช้สำหรับวิเคราะห์ วางแผน เขียนคอนเทนต์ และทำงานกับทีม</small>
             <div class="tools-card-tags"><span>Prompt</span><span>QA</span></div>
           </a>
           <a class="tools-category-card" href="#workflow">
@@ -192,6 +188,11 @@
             <li><strong>AI Agent Thinking</strong><span>แตกงานเป็น goal, task, memory, tool และ checkpoint</span></li>
             <li><strong>Automation Mapping</strong><span>วาง process ก่อนเชื่อมเครื่องมือจริง</span></li>
           </ul>
+          <div class="tools-action-library-head">
+            <h3>Skill Set ที่แจกให้ใช้</h3>
+            <p>กดคัดลอกไปวางใน agent หรือโหลดเป็นไฟล์ Markdown ได้ทันที</p>
+          </div>
+          <div class="tools-action-grid" id="toolsSkillLibrary" aria-live="polite"></div>
         </article>
         <article class="tools-topic-panel" id="ebook">
           <header>
@@ -220,6 +221,11 @@
             <li><strong>Business Analysis</strong><span>วิเคราะห์ลูกค้า ข้อเสนอ และคู่แข่ง</span></li>
             <li><strong>Prompt QA</strong><span>ตรวจ prompt ก่อนส่งให้ AI ทำงานจริง</span></li>
           </ul>
+          <div class="tools-action-library-head">
+            <h3>Prompt พร้อมใช้</h3>
+            <p>เริ่มจาก prompt ที่ใช้บ่อยก่อน แล้วค่อยปรับให้เข้ากับงานของทีม</p>
+          </div>
+          <div class="tools-action-grid" id="toolsPromptLibrary" aria-live="polite"></div>
         </article>
         <article class="tools-topic-panel" id="workflow">
           <header>
@@ -290,6 +296,6 @@
 
   <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast"></div>
-  <script src="/tools-box.js?v=live-class-1"></script>
+  <script src="/tools-box.js?v=tools-box-action-library-v1"></script>
 </body>
 </html>

@@ -27,70 +27,86 @@
   <meta name="color-scheme" content="dark">
   <script>
     (function () {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+      document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
       try {
-        var savedTheme = localStorage.getItem("aix-theme");
-        var isDark = savedTheme !== "light";
-        document.documentElement.classList.toggle("dark", isDark);
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
-      } catch (error) {
-        document.documentElement.classList.add("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
-      }
+        localStorage.setItem("aix-theme", "dark");
+      } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="styles.css?v=aix-footer-responsive-v61-20260624">
+  <link rel="stylesheet" href="styles.css?v=aix-hero-empty-state-polish-v68-20260703">
 </head>
-<body>
-  <header class="site-header">
-    <div class="top-strip">
-      <div class="container strip-inner">
-        <a href="index.html#home">สำหรับผู้เรียน</a>
-        <a href="index.html#business">สำหรับธุรกิจ</a>
-        <a href="index.html#answers">คำถามยอดนิยม</a>
-        <a href="index.html#membership">AiX Member</a>
-      </div>
-    </div>
-
+<body class="aix-top-nav-active">
+  <header class="site-header aix-home-header detail-site-header">
     <div class="container nav-bar">
-      <a class="brand" href="index.html#home" aria-label="AiX Club home">
-        <img src="AiX%20logo/textblack.png" alt="AiX Club">
+      <a class="brand brand-lockup" href="index.html#home" aria-label="AiX Club home">
+        <span class="brand-icon-card" aria-hidden="true">
+          <img class="brand-icon" src="AiX%20logo/iconwhite_bgblack.png" alt="" width="800" height="800">
+        </span>
+        <span class="brand-copy">
+          <span class="brand-title">AiX Club</span>
+          <span class="brand-tagline">AI for business teams</span>
+        </span>
       </a>
-
-      <a class="explore-btn" href="index.html#catalog">
-        <i class="fa-solid fa-grip"></i>
-        คอร์สทั้งหมด
-      </a>
-
-      <label class="global-search" aria-label="Search courses">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="detailSearch" type="search" placeholder="ค้นหาในหน้านี้ เช่น syllabus, skill, FAQ">
-      </label>
-
-      <nav class="main-nav" aria-label="Course navigation">
-        <button data-scroll="about">ภาพรวม</button>
-        <button data-scroll="outcomes">ผลลัพธ์</button>
-        <button data-scroll="syllabus">แผนการเรียน</button>
-        <button data-scroll="faq">FAQ</button>
-      </nav>
-
-      <div class="nav-actions">
-        <a class="link-btn" href="index.html#catalog">กลับไปคอร์ส</a>
-        <a class="primary-btn" id="detailNavCta" href="index.html#membership">สมัคร AiX Member</a>
-      </div>
-
-      <button class="mobile-menu" id="detailMobileMenu" aria-label="Open menu">
-        <i class="fa-solid fa-bars"></i>
-      </button>
     </div>
 
-    <div class="mobile-panel" id="detailMobilePanel">
-      <button data-scroll="about">ภาพรวม</button>
-      <button data-scroll="outcomes">ผลลัพธ์</button>
-      <button data-scroll="syllabus">แผนการเรียน</button>
-      <a href="index.html#membership">สมัคร AiX Member</a>
-    </div>
+    <div class="mobile-panel" id="detailMobilePanel" hidden></div>
+
+    <nav class="hover-gradient-nav-bar detail-hover-nav" aria-label="เมนูคอร์ส AiX">
+      <ul class="hover-gradient-nav-list">
+        <li>
+          <a class="hover-gradient-nav-item" href="index.html#catalog" style="--nav-glow: radial-gradient(circle, rgba(59,130,246,0.18) 0%, rgba(37,99,235,0.08) 50%, rgba(29,78,216,0) 100%); --nav-hover-color: #3b82f6;" aria-label="คอร์สทั้งหมด">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-grip"></i><span>คอร์ส</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-grip"></i><span>คอร์ส</span></span>
+          </a>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="about" style="--nav-glow: radial-gradient(circle, rgba(249,115,22,0.18) 0%, rgba(234,88,12,0.08) 50%, rgba(194,65,12,0) 100%); --nav-hover-color: #f97316;" aria-label="ภาพรวม">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-house"></i><span>ภาพรวม</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-house"></i><span>ภาพรวม</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="outcomes" style="--nav-glow: radial-gradient(circle, rgba(147,51,234,0.18) 0%, rgba(126,34,206,0.08) 50%, rgba(88,28,135,0) 100%); --nav-hover-color: #9333ea;" aria-label="ผลลัพธ์">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-chart-line"></i><span>ผลลัพธ์</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-chart-line"></i><span>ผลลัพธ์</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="skills" style="--nav-glow: radial-gradient(circle, rgba(34,197,94,0.18) 0%, rgba(22,163,74,0.08) 50%, rgba(21,128,61,0) 100%); --nav-hover-color: #22c55e;" aria-label="ทักษะ">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i><span>ทักษะ</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i><span>ทักษะ</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="syllabus" style="--nav-glow: radial-gradient(circle, rgba(20,184,166,0.18) 0%, rgba(13,148,136,0.08) 50%, rgba(15,118,110,0) 100%); --nav-hover-color: #14b8a6;" aria-label="แผนเรียน">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-route"></i><span>แผนเรียน</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-route"></i><span>แผนเรียน</span></span>
+          </button>
+        </li>
+        <li>
+          <button class="hover-gradient-nav-item" type="button" data-scroll="faq" style="--nav-glow: radial-gradient(circle, rgba(161,98,7,0.18) 0%, rgba(133,77,14,0.08) 50%, rgba(100,62,8,0) 100%); --nav-hover-color: #d97706;" aria-label="FAQ">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-circle-question"></i><span>FAQ</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-circle-question"></i><span>FAQ</span></span>
+          </button>
+        </li>
+        <li>
+          <a class="hover-gradient-nav-item hover-gradient-nav-primary" href="index.html#membership" style="--nav-glow: radial-gradient(circle, rgba(96,165,250,0.2) 0%, rgba(168,85,247,0.1) 50%, rgba(88,28,135,0) 100%); --nav-hover-color: #93c5fd;" aria-label="สมัคร AiX Member">
+            <span class="hover-gradient-nav-glow" aria-hidden="true"></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-front" aria-hidden="true"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>สมัคร</span></span>
+            <span class="hover-gradient-nav-face hover-gradient-nav-back" aria-hidden="true"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>สมัคร</span></span>
+          </a>
+        </li>
+      </ul>
+    </nav>
   </header>
 
   <main id="detailRoot">
@@ -129,17 +145,6 @@
         </aside>
       </div>
     </section>
-
-    <nav class="detail-tabs" aria-label="Course sections">
-      <div class="container">
-        <a href="#about">ภาพรวม</a>
-        <a href="#outcomes">สิ่งที่จะได้เรียน</a>
-        <a href="#skills">ทักษะ</a>
-        <a href="#syllabus">แผนการเรียน</a>
-        <a href="#instructor">ผู้สอน</a>
-        <a href="#faq">FAQ</a>
-      </div>
-    </nav>
 
     <section class="section" id="outcomes">
       <div class="container detail-two-col">
@@ -229,6 +234,6 @@
 
   <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast"></div>
-  <script src="class-detail.js?v=classroom-uniform-1"></script>
+  <script src="class-detail.js?v=aix-brand-logos-v2-20260703"></script>
 </body>
 </html>

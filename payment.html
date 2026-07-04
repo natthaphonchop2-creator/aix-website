@@ -13,20 +13,40 @@
   <meta name="color-scheme" content="dark">
   <script>
     (function () {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+      document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
       try {
-        var savedTheme = localStorage.getItem("aix-theme");
-        var isDark = savedTheme !== "light";
-        document.documentElement.classList.toggle("dark", isDark);
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
-      } catch (error) {
-        document.documentElement.classList.add("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
-      }
+        localStorage.setItem("aix-theme", "dark");
+      } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="/styles.css?v=aix-footer-responsive-v61-20260624">
+  <link rel="stylesheet" href="/styles.css?v=aix-hero-empty-state-polish-v68-20260703">
+  <style>
+    .payment-phone-verify[hidden] { display: none !important; }
+    .payment-phone-verify { margin: 14px 0; }
+    .payment-phone-verify .auth-field { display: grid; gap: 7px; }
+    .payment-phone-verify .auth-field > span:first-child {
+      color: var(--foreground);
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+    .payment-phone-verify .auth-input-wrap input {
+      width: 100%;
+      min-width: 0;
+      min-height: 38px;
+      padding: 0;
+      border: 0;
+      color: var(--foreground);
+      background: transparent;
+      outline: 0;
+      font: inherit;
+      font-weight: 800;
+    }
+    .payment-phone-verify .otp-actions { grid-template-columns: minmax(0, 1fr); }
+    .payment-phone-verify .otp-actions .secondary-btn { width: 100%; min-height: 40px; }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -68,6 +88,27 @@
           <span class="badge">Payment</span>
           <h2>เลือกวิธีชำระเงิน</h2>
           <p class="payment-note" id="paymentNotice">ระบบจะพาไปหน้า Stripe Checkout เพื่อชำระเงินอย่างปลอดภัย</p>
+          <div class="otp-box payment-phone-verify" id="paymentPhoneVerify" hidden>
+            <div class="otp-head">
+              <strong>ยืนยันเบอร์ก่อนชำระเงิน</strong>
+              <span id="paymentOtpStatus">สมัครเรียบร้อยแล้ว ยืนยันเบอร์เพื่อไปขั้นตอนชำระเงิน</span>
+            </div>
+            <label class="auth-field" for="paymentPhone">
+              <span>เบอร์โทรศัพท์</span>
+              <span class="auth-input-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input id="paymentPhone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx">
+              </span>
+            </label>
+            <div class="otp-actions">
+              <span class="auth-input-wrap">
+                <i class="fa-solid fa-key"></i>
+                <input id="paymentOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="รหัส 6 หลัก">
+              </span>
+              <button class="secondary-btn" id="paymentSendOtpBtn" type="button">ส่งรหัส SMS</button>
+              <button class="secondary-btn" id="paymentVerifyOtpBtn" type="button">ยืนยันรหัส</button>
+            </div>
+          </div>
           <div class="payment-method-list" role="radiogroup" aria-label="Payment method">
             <label class="payment-method active">
               <input type="radio" name="paymentMethod" value="card" checked>
@@ -91,6 +132,6 @@
 
   <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast"></div>
-  <script src="/payment.js?v=payment-page-1"></script>
+  <script src="/payment.js?v=phone-verify-before-payment-20260702"></script>
 </body>
 </html>

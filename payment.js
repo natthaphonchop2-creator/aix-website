@@ -6,9 +6,19 @@ const paymentMember = document.getElementById("paymentMember");
 const paymentAmount = document.getElementById("paymentAmount");
 const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
 const paymentNotice = document.getElementById("paymentNotice");
+const paymentPhoneVerify = document.getElementById("paymentPhoneVerify");
+const paymentPhoneInput = document.getElementById("paymentPhone");
+const paymentOtpCodeInput = document.getElementById("paymentOtpCode");
+const paymentOtpStatus = document.getElementById("paymentOtpStatus");
+const paymentSendOtpBtn = document.getElementById("paymentSendOtpBtn");
+const paymentVerifyOtpBtn = document.getElementById("paymentVerifyOtpBtn");
 const toast = document.getElementById("toast");
 let toastTimer = null;
 let stripeReady = false;
+let phoneVerified = false;
+let currentMember = null;
+
+const PHONE_RE = /^0\d{9}$/;
 
 function showToast(message) {
   window.clearTimeout(toastTimer);
@@ -41,6 +51,40 @@ function selectedPaymentMethod() {
   return document.querySelector("input[name='paymentMethod']:checked")?.value || "card";
 }
 
+function normalizePhone(phone) {
+  return String(phone || "").replace(/[^\d]/g, "");
+}
+
+function setPaymentOtpStatus(message, type = "neutral") {
+  if (!paymentOtpStatus || !paymentPhoneVerify) return;
+  paymentOtpStatus.textContent = message;
+  paymentPhoneVerify.classList.toggle("verified", type === "verified");
+  paymentPhoneVerify.classList.toggle("error", type === "error");
+}
+
+function updatePaymentActionState() {
+  if (!confirmPaymentBtn) return;
+  if (!phoneVerified) {
+    confirmPaymentBtn.disabled = true;
+    confirmPaymentBtn.textContent = "ยืนยันเบอร์ก่อนชำระเงิน";
+    paymentNotice.textContent = "ยืนยันเบอร์โทรด้วย SMS ก่อน ระบบจึงจะเปิดขั้นตอน Stripe Checkout";
+    return;
+  }
+  confirmPaymentBtn.disabled = !stripeReady;
+  confirmPaymentBtn.textContent = "ไปยัง Stripe Checkout";
+}
+
+function setPhoneVerificationVisible(visible) {
+  if (!paymentPhoneVerify) return;
+  paymentPhoneVerify.hidden = !visible;
+  document.querySelector(".payment-method-list")?.classList.toggle("disabled", visible);
+}
+
+function setOtpBusy(sending = false, verifying = false) {
+  if (paymentSendOtpBtn) paymentSendOtpBtn.disabled = sending || verifying;
+  if (paymentVerifyOtpBtn) paymentVerifyOtpBtn.disabled = sending || verifying;
+}
+
 async function loadPayment() {
   if (!token()) {
     window.location.replace("/index.html?auth=login");
@@ -53,17 +97,25 @@ async function loadPayment() {
       window.location.replace("/dashboard");
       return;
     }
+    currentMember = data.member;
+    phoneVerified = Boolean(data.member.phoneVerified);
     paymentMember.textContent = `${data.member.displayName || data.member.email} • ${data.member.email}`;
     paymentAmount.textContent = `${data.payment.amount.toLocaleString("th-TH")} บาท`;
+    if (paymentPhoneInput) paymentPhoneInput.value = data.member.phone || "";
+    setPhoneVerificationVisible(!phoneVerified);
 
     const config = await apiRequest("/api/payments/config");
     stripeReady = Boolean(config.stripeReady);
-    confirmPaymentBtn.disabled = !stripeReady;
+    phoneVerified = Boolean(config.phoneVerified);
+    setPhoneVerificationVisible(!phoneVerified);
+    updatePaymentActionState();
     if (!stripeReady) {
       paymentNotice.textContent = "ยังไม่ได้ตั้งค่า STRIPE_SECRET_KEY จึงยังเปิดรับชำระเงินจริงไม่ได้";
       showToast("ต้องตั้งค่า Stripe API ก่อนใช้งานระบบชำระเงิน");
     } else if (config.expired) {
       paymentNotice.textContent = "สมาชิกหมดอายุแล้ว ต่ออายุเพื่อเข้าเรียนต่อได้ทันที";
+    } else if (phoneVerified) {
+      paymentNotice.textContent = "ระบบจะพาไปหน้า Stripe Checkout เพื่อชำระเงินอย่างปลอดภัย";
     }
 
     const availableMethods = new Set(config.paymentMethods || []);
@@ -101,6 +153,12 @@ confirmPaymentBtn?.addEventListener("click", async () => {
     showToast("ยังไม่ได้ตั้งค่า Stripe API");
     return;
   }
+  if (!phoneVerified) {
+    setPhoneVerificationVisible(true);
+    setPaymentOtpStatus("ยืนยันเบอร์โทรก่อนชำระเงิน", "error");
+    showToast("กรุณายืนยันเบอร์โทรก่อนชำระเงิน");
+    return;
+  }
   confirmPaymentBtn.disabled = true;
   confirmPaymentBtn.textContent = "กำลังเปิด Stripe...";
   try {
@@ -112,8 +170,75 @@ confirmPaymentBtn?.addEventListener("click", async () => {
     window.location.href = result.checkoutUrl;
   } catch (error) {
     showToast(error.message || "เปิด Stripe Checkout ไม่สำเร็จ");
-    confirmPaymentBtn.disabled = false;
-    confirmPaymentBtn.textContent = "ไปยัง Stripe Checkout";
+    updatePaymentActionState();
+  }
+});
+
+paymentPhoneInput?.addEventListener("input", () => {
+  paymentPhoneInput.value = normalizePhone(paymentPhoneInput.value);
+  setPaymentOtpStatus("กรอกเบอร์โทรแล้วกดส่งรหัส");
+});
+
+paymentOtpCodeInput?.addEventListener("input", () => {
+  paymentOtpCodeInput.value = normalizePhone(paymentOtpCodeInput.value).slice(0, 6);
+});
+
+paymentSendOtpBtn?.addEventListener("click", async () => {
+  const phone = normalizePhone(paymentPhoneInput?.value);
+  if (!PHONE_RE.test(phone)) {
+    setPaymentOtpStatus("กรุณากรอกเบอร์ 10 หลักที่ขึ้นต้นด้วย 0", "error");
+    paymentPhoneInput?.focus();
+    return;
+  }
+  try {
+    setOtpBusy(true, false);
+    const result = await apiRequest("/api/member/phone/otp/send", {
+      method: "POST",
+      body: JSON.stringify({ phone })
+    });
+    setPaymentOtpStatus(result.devCode
+      ? `โหมดทดสอบ: ใช้รหัส ${result.devCode}`
+      : "ส่ง SMS แล้ว กรุณาตรวจข้อความในมือถือ");
+    if (paymentOtpCodeInput) paymentOtpCodeInput.value = "";
+    paymentOtpCodeInput?.focus();
+  } catch (error) {
+    setPaymentOtpStatus(error.message || "ส่งรหัสไม่สำเร็จ", "error");
+  } finally {
+    setOtpBusy(false, false);
+  }
+});
+
+paymentVerifyOtpBtn?.addEventListener("click", async () => {
+  const phone = normalizePhone(paymentPhoneInput?.value);
+  const code = normalizePhone(paymentOtpCodeInput?.value).slice(0, 6);
+  if (!PHONE_RE.test(phone)) {
+    setPaymentOtpStatus("กรุณากรอกเบอร์ 10 หลักที่ขึ้นต้นด้วย 0", "error");
+    return;
+  }
+  if (!/^\d{6}$/.test(code)) {
+    setPaymentOtpStatus("กรอกรหัส SMS 6 หลัก", "error");
+    return;
+  }
+  try {
+    setOtpBusy(false, true);
+    const result = await apiRequest("/api/member/phone/otp/verify", {
+      method: "POST",
+      body: JSON.stringify({ phone, code })
+    });
+    if (result.member) {
+      currentMember = result.member;
+      localStorage.setItem(SESSION_KEY, JSON.stringify(result.member));
+    }
+    phoneVerified = true;
+    setPaymentOtpStatus("ยืนยันเบอร์โทรเรียบร้อย", "verified");
+    setPhoneVerificationVisible(false);
+    paymentNotice.textContent = "ยืนยันเบอร์แล้ว เลือกวิธีชำระเงินเพื่อไป Stripe Checkout";
+    updatePaymentActionState();
+    showToast("ยืนยันเบอร์โทรเรียบร้อย");
+  } catch (error) {
+    setPaymentOtpStatus(error.message || "ยืนยันรหัสไม่สำเร็จ", "error");
+  } finally {
+    setOtpBusy(false, false);
   }
 });
 

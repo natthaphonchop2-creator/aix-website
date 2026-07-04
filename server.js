@@ -1237,9 +1237,10 @@ function issueMemberSession(res, member) {
   };
 }
 
-function createPhoneVerificationToken(phone) {
+function createPhoneVerificationToken(phone, purpose = 'register') {
   const payload = Buffer.from(JSON.stringify({
     phone: normalizePhone(phone),
+    purpose,
     exp: Date.now() + SMS_TOKEN_TTL_MS,
     nonce: crypto.randomBytes(8).toString('hex')
   })).toString('base64url');
@@ -1247,7 +1248,7 @@ function createPhoneVerificationToken(phone) {
   return `${payload}.${signature}`;
 }
 
-function verifyPhoneVerificationToken(token, phone) {
+function verifyPhoneVerificationToken(token, phone, purpose = 'register') {
   try {
     const [payload, signature] = String(token || '').split('.');
     if (!payload || !signature) return false;
@@ -1258,18 +1259,98 @@ function verifyPhoneVerificationToken(token, phone) {
 
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
     if (data.phone !== normalizePhone(phone)) return false;
+    if ((data.purpose || 'register') !== purpose) return false;
     if (Number(data.exp || 0) < Date.now()) return false;
 
     const verified = db.prepare(`
       SELECT verifiedAt FROM sms_verifications
-      WHERE phone = ? AND purpose = 'register' AND verifiedAt != ''
+      WHERE phone = ? AND purpose = ? AND verifiedAt != ''
       ORDER BY verifiedAt DESC
       LIMIT 1
-    `).get(normalizePhone(phone));
+    `).get(normalizePhone(phone), purpose);
     return Boolean(verified && Date.parse(verified.verifiedAt) > Date.now() - SMS_TOKEN_TTL_MS);
   } catch (error) {
     return false;
   }
+}
+
+async function sendPhoneOtp(phone, purpose = 'register') {
+  const latest = db.prepare(`
+    SELECT lastSentAt FROM sms_verifications
+    WHERE phone = ? AND purpose = ?
+    ORDER BY createdAt DESC
+    LIMIT 1
+  `).get(phone, purpose);
+  const lastSent = latest?.lastSentAt ? Date.parse(latest.lastSentAt) : 0;
+  const retryAfterMs = SMS_OTP_RESEND_MS - (Date.now() - lastSent);
+  if (retryAfterMs > 0) {
+    const retryAfter = Math.ceil(retryAfterMs / 1000);
+    const error = new Error(`ขอรหัสใหม่ได้อีกครั้งใน ${retryAfter} วินาที`);
+    error.status = 429;
+    error.retryAfter = retryAfter;
+    throw error;
+  }
+
+  const code = createOtpCode();
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SMS_OTP_TTL_MS).toISOString();
+  const id = `sms_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+  const message = `รหัสยืนยัน AiX Club คือ ${code} ใช้ได้ภายใน ${Math.ceil(SMS_OTP_TTL_MS / 60000)} นาที`;
+  const smsResult = await sendSmsMessage(phone, message);
+
+  db.prepare(`
+    INSERT INTO sms_verifications (id, phone, purpose, codeHash, attempts, expiresAt, verifiedAt, createdAt, lastSentAt)
+    VALUES (?, ?, ?, ?, 0, ?, '', ?, ?)
+  `).run(id, phone, purpose, hashOtp(phone, code), expiresAt, now.toISOString(), now.toISOString());
+
+  return {
+    ok: true,
+    provider: smsResult.provider,
+    sentRealSms: smsResult.provider !== 'dev',
+    expiresIn: Math.floor(SMS_OTP_TTL_MS / 1000),
+    resendIn: Math.floor(SMS_OTP_RESEND_MS / 1000),
+    devCode: smsResult.provider === 'dev' ? code : undefined
+  };
+}
+
+function verifyPhoneOtp(phone, code, purpose = 'register') {
+  const row = db.prepare(`
+    SELECT * FROM sms_verifications
+    WHERE phone = ? AND purpose = ? AND verifiedAt = ''
+    ORDER BY createdAt DESC
+    LIMIT 1
+  `).get(phone, purpose);
+
+  if (!row) {
+    const error = new Error('ไม่พบรหัสยืนยัน กรุณาขอรหัสใหม่');
+    error.status = 400;
+    throw error;
+  }
+  if (Date.parse(row.expiresAt) < Date.now()) {
+    const error = new Error('รหัสหมดอายุแล้ว กรุณาขอรหัสใหม่');
+    error.status = 400;
+    throw error;
+  }
+  if (row.attempts >= SMS_OTP_MAX_ATTEMPTS) {
+    const error = new Error('กรอกรหัสผิดเกินจำนวนที่กำหนด กรุณาขอรหัสใหม่');
+    error.status = 429;
+    throw error;
+  }
+
+  if (!safeCompare(row.codeHash, hashOtp(phone, code))) {
+    db.prepare('UPDATE sms_verifications SET attempts = attempts + 1 WHERE id = ?').run(row.id);
+    const error = new Error('รหัส SMS ไม่ถูกต้อง');
+    error.status = 400;
+    throw error;
+  }
+
+  const verifiedAt = new Date().toISOString();
+  db.prepare('UPDATE sms_verifications SET verifiedAt = ? WHERE id = ?').run(verifiedAt, row.id);
+  return {
+    verified: true,
+    phoneVerificationToken: createPhoneVerificationToken(phone, purpose),
+    expiresIn: Math.floor(SMS_TOKEN_TTL_MS / 1000)
+  };
 }
 
 function getStripeClient() {
@@ -2168,43 +2249,12 @@ app.post('/api/members/otp/send', async (req, res) => {
       return res.status(409).json({ error: 'อีเมลหรือเบอร์โทรนี้มีบัญชีสมาชิกอยู่แล้ว' });
     }
 
-    const latest = db.prepare(`
-      SELECT lastSentAt FROM sms_verifications
-      WHERE phone = ? AND purpose = 'register'
-      ORDER BY createdAt DESC
-      LIMIT 1
-    `).get(phone);
-    const lastSent = latest?.lastSentAt ? Date.parse(latest.lastSentAt) : 0;
-    const retryAfterMs = SMS_OTP_RESEND_MS - (Date.now() - lastSent);
-    if (retryAfterMs > 0) {
-      return res.status(429).json({
-        error: `ขอรหัสใหม่ได้อีกครั้งใน ${Math.ceil(retryAfterMs / 1000)} วินาที`,
-        retryAfter: Math.ceil(retryAfterMs / 1000)
-      });
-    }
-
-    const code = createOtpCode();
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + SMS_OTP_TTL_MS).toISOString();
-    const id = `sms_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-    const message = `รหัสยืนยัน AiX Club คือ ${code} ใช้ได้ภายใน ${Math.ceil(SMS_OTP_TTL_MS / 60000)} นาที`;
-    const smsResult = await sendSmsMessage(phone, message);
-
-    db.prepare(`
-      INSERT INTO sms_verifications (id, phone, purpose, codeHash, attempts, expiresAt, verifiedAt, createdAt, lastSentAt)
-      VALUES (?, ?, 'register', ?, 0, ?, '', ?, ?)
-    `).run(id, phone, hashOtp(phone, code), expiresAt, now.toISOString(), now.toISOString());
-
-    res.json({
-      ok: true,
-      provider: smsResult.provider,
-      sentRealSms: smsResult.provider !== 'dev',
-      expiresIn: Math.floor(SMS_OTP_TTL_MS / 1000),
-      resendIn: Math.floor(SMS_OTP_RESEND_MS / 1000),
-      devCode: smsResult.provider === 'dev' ? code : undefined
-    });
+    res.json(await sendPhoneOtp(phone, 'register'));
   } catch (error) {
-    res.status(400).json({ error: error.message || 'ไม่สามารถส่งรหัส SMS ได้' });
+    res.status(error.status || 400).json({
+      error: error.message || 'ไม่สามารถส่งรหัส SMS ได้',
+      retryAfter: error.retryAfter
+    });
   }
 });
 
@@ -2219,29 +2269,67 @@ app.post('/api/members/otp/verify', (req, res) => {
     return res.status(400).json({ error: 'รหัส SMS ต้องเป็นตัวเลข 6 หลัก' });
   }
 
-  const row = db.prepare(`
-    SELECT * FROM sms_verifications
-    WHERE phone = ? AND purpose = 'register' AND verifiedAt = ''
-    ORDER BY createdAt DESC
-    LIMIT 1
-  `).get(phone);
+  try {
+    res.json(verifyPhoneOtp(phone, code, 'register'));
+  } catch (error) {
+    res.status(error.status || 400).json({ error: error.message || 'ยืนยันรหัสไม่สำเร็จ' });
+  }
+});
 
-  if (!row) return res.status(400).json({ error: 'ไม่พบรหัสยืนยัน กรุณาขอรหัสใหม่' });
-  if (Date.parse(row.expiresAt) < Date.now()) return res.status(400).json({ error: 'รหัสหมดอายุแล้ว กรุณาขอรหัสใหม่' });
-  if (row.attempts >= SMS_OTP_MAX_ATTEMPTS) return res.status(429).json({ error: 'กรอกรหัสผิดเกินจำนวนที่กำหนด กรุณาขอรหัสใหม่' });
+app.post('/api/member/phone/otp/send', requireMemberSession, async (req, res) => {
+  try {
+    const phone = normalizePhone(req.body.phone || req.member.phone);
+    if (!PHONE_RE.test(phone)) {
+      return res.status(400).json({ error: 'กรุณากรอกเบอร์โทร 10 หลักที่ขึ้นต้นด้วย 0' });
+    }
 
-  if (!safeCompare(row.codeHash, hashOtp(phone, code))) {
-    db.prepare('UPDATE sms_verifications SET attempts = attempts + 1 WHERE id = ?').run(row.id);
-    return res.status(400).json({ error: 'รหัส SMS ไม่ถูกต้อง' });
+    const duplicate = db.prepare('SELECT id FROM members WHERE phone = ? AND id != ?').get(phone, req.member.id);
+    if (duplicate) {
+      return res.status(409).json({ error: 'เบอร์โทรนี้มีบัญชีสมาชิกอยู่แล้ว' });
+    }
+
+    if (phone !== req.member.phone || req.member.phoneVerified) {
+      db.prepare('UPDATE members SET phone = ?, phoneVerified = 0, updatedAt = ? WHERE id = ?')
+        .run(phone, new Date().toISOString(), req.member.id);
+    }
+
+    res.json(await sendPhoneOtp(phone, `payment:${req.member.id}`));
+  } catch (error) {
+    res.status(error.status || 400).json({
+      error: error.message || 'ไม่สามารถส่งรหัส SMS ได้',
+      retryAfter: error.retryAfter
+    });
+  }
+});
+
+app.post('/api/member/phone/otp/verify', requireMemberSession, (req, res) => {
+  const phone = normalizePhone(req.body.phone || req.member.phone);
+  const code = String(req.body.code || '').trim();
+
+  if (!PHONE_RE.test(phone)) {
+    return res.status(400).json({ error: 'กรุณากรอกเบอร์โทร 10 หลักที่ขึ้นต้นด้วย 0' });
+  }
+  if (!/^\d{6}$/.test(code)) {
+    return res.status(400).json({ error: 'รหัส SMS ต้องเป็นตัวเลข 6 หลัก' });
   }
 
-  const verifiedAt = new Date().toISOString();
-  db.prepare('UPDATE sms_verifications SET verifiedAt = ? WHERE id = ?').run(verifiedAt, row.id);
-  res.json({
-    verified: true,
-    phoneVerificationToken: createPhoneVerificationToken(phone),
-    expiresIn: Math.floor(SMS_TOKEN_TTL_MS / 1000)
-  });
+  try {
+    const duplicate = db.prepare('SELECT id FROM members WHERE phone = ? AND id != ?').get(phone, req.member.id);
+    if (duplicate) {
+      return res.status(409).json({ error: 'เบอร์โทรนี้มีบัญชีสมาชิกอยู่แล้ว' });
+    }
+
+    const result = verifyPhoneOtp(phone, code, `payment:${req.member.id}`);
+    db.prepare('UPDATE members SET phone = ?, phoneVerified = 1, updatedAt = ? WHERE id = ?')
+      .run(phone, new Date().toISOString(), req.member.id);
+    const member = db.prepare('SELECT * FROM members WHERE id = ?').get(req.member.id);
+    res.json({
+      ...result,
+      member: publicMember(member)
+    });
+  } catch (error) {
+    res.status(error.status || 400).json({ error: error.message || 'ยืนยันรหัสไม่สำเร็จ' });
+  }
 });
 
 app.post('/api/members/register', async (req, res) => {
@@ -2271,6 +2359,7 @@ app.post('/api/members/register', async (req, res) => {
     const displayName = String(input.displayName || `${valid.firstName} ${valid.lastName}`.trim()).trim();
     const passwordHash = googleProfile ? '' : createPasswordHash(valid.password);
     const phoneForDb = valid.phone || `auth_email_${crypto.createHash('sha1').update(valid.email).digest('hex').slice(0, 16)}`;
+    const phoneVerified = valid.phone && verifyPhoneVerificationToken(input.phoneVerificationToken, valid.phone, 'register') ? 1 : 0;
     db.prepare(`
       INSERT INTO members (
         id, firstName, lastName, displayName, email, phone, lineId, business, courseId, membership, payment,
@@ -2297,7 +2386,7 @@ app.post('/api/members/register', async (req, res) => {
       googleProfile?.picture || '',
       googleProfile?.picture || '',
       googleProfile ? 1 : 0,
-      valid.phone ? 1 : 0,
+      phoneVerified,
       passwordHash,
       input.consentAccepted ? 1 : 0,
       input.marketingConsent ? 1 : 0,
@@ -2532,6 +2621,9 @@ app.get('/api/payments/config', requireMemberSession, (req, res) => {
     stripeReady: stripeReady(),
     paymentMethods: STRIPE_PAYMENT_METHOD_TYPES,
     paymentStatus: req.member.paymentStatus || 'unpaid',
+    phone: publicMember(req.member).phone,
+    phoneVerified: Boolean(req.member.phoneVerified),
+    phoneVerificationRequired: !req.member.phoneVerified,
     active: access.active,
     expired: access.expired,
     expiresAt: access.expiresAt
@@ -2540,11 +2632,17 @@ app.get('/api/payments/config', requireMemberSession, (req, res) => {
 
 app.post('/api/payments/stripe/checkout', requireMemberSession, async (req, res) => {
   try {
-    if (!stripeReady()) {
-      return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า Stripe API Key' });
-    }
     if (memberHasActiveAccess(req.member)) {
       return res.status(400).json({ error: 'บัญชีนี้ชำระเงินแล้ว' });
+    }
+    if (!req.member.phoneVerified) {
+      return res.status(403).json({
+        error: 'กรุณายืนยันเบอร์โทรก่อนชำระเงิน',
+        phoneVerificationRequired: true
+      });
+    }
+    if (!stripeReady()) {
+      return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า Stripe API Key' });
     }
 
     const stripe = getStripeClient();
@@ -2646,6 +2744,12 @@ app.get('/api/payments/stripe/session/:sessionId', requireMemberSession, async (
 app.post('/api/payments/confirm', requireMemberSession, (req, res) => {
   if (process.env.ALLOW_DEV_PAYMENT_CONFIRM !== 'true') {
     return res.status(403).json({ error: 'ปิด mock payment แล้ว กรุณาชำระผ่าน Stripe หรือ PromptPay' });
+  }
+  if (!req.member.phoneVerified) {
+    return res.status(403).json({
+      error: 'กรุณายืนยันเบอร์โทรก่อนชำระเงิน',
+      phoneVerificationRequired: true
+    });
   }
 
   const now = new Date();
@@ -3151,11 +3255,13 @@ function removeLocalUpload(filePath = '') {
 // COURSES API
 // ============================================================
 app.get('/api/platform/courses', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const courses = db.prepare('SELECT * FROM courses WHERE featured = 1 ORDER BY sortOrder ASC, name ASC').all();
   res.json(courses.map(publicCourse));
 });
 
 app.get('/api/platform/courses/:id', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const course = db.prepare('SELECT * FROM courses WHERE id = ? AND featured = 1').get(req.params.id);
   if (!course) return res.status(404).json({ error: 'Course not found' });
   res.json(publicCourse(course));

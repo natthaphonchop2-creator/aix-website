@@ -2515,6 +2515,231 @@ details p {
   font-size: 0.9rem;
 }
 
+.tools-action-library-head {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.tools-action-library-head h3,
+.tools-action-library-head p {
+  margin: 0;
+}
+
+.tools-action-library-head p {
+  color: var(--muted-foreground);
+  font-size: 0.94rem;
+}
+
+.tools-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 14px;
+  min-width: 0;
+}
+
+.tools-action-card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  overflow: hidden;
+  color: var(--foreground);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, #38bdf8 14%, transparent), transparent 32%),
+    color-mix(in srgb, var(--card) 90%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
+    0 14px 36px color-mix(in srgb, var(--background) 54%, transparent);
+}
+
+.tools-action-card::after {
+  position: absolute;
+  inset: auto -24px -28px auto;
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, #8b5cf6 16%, transparent), transparent 68%);
+  content: "";
+  pointer-events: none;
+}
+
+.tools-action-card-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tools-action-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #082f49;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dbeafe, #93c5fd 54%, #a78bfa);
+  box-shadow: 0 10px 26px color-mix(in srgb, #60a5fa 24%, transparent);
+}
+
+.tools-action-type {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--muted-foreground);
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 78%, transparent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tools-action-body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tools-action-body h3,
+.tools-action-body p {
+  margin: 0;
+}
+
+.tools-action-body h3 {
+  font-size: clamp(1.08rem, 2vw, 1.28rem);
+  line-height: 1.22;
+  text-wrap: balance;
+}
+
+.tools-action-body p {
+  color: var(--muted-foreground);
+  font-size: 0.92rem;
+}
+
+.tools-action-tags {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.tools-action-tags span {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  color: color-mix(in srgb, var(--foreground) 84%, #38bdf8);
+  border: 1px solid color-mix(in srgb, #38bdf8 20%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, #38bdf8 9%, transparent);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tools-action-preview {
+  position: relative;
+  z-index: 1;
+  display: -webkit-box;
+  min-height: 58px;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.tools-action-buttons {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tools-action-buttons button {
+  min-width: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--foreground);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    opacity 180ms ease;
+}
+
+.tools-action-buttons button:hover:not(:disabled),
+.tools-action-buttons button:focus-visible:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, #38bdf8 42%, var(--border));
+  background: color-mix(in srgb, var(--card) 72%, #38bdf8 10%);
+}
+
+.tools-download-btn:not(:disabled) {
+  color: #061438;
+  border: 0;
+  background: linear-gradient(135deg, #e0f2fe, #93c5fd 50%, #a78bfa);
+}
+
+.tools-action-buttons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tools-action-lock {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted-foreground);
+  font-weight: 800;
+}
+
+.dark .tools-action-card {
+  background:
+    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.13), transparent 34%),
+    rgba(10, 10, 10, 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.07),
+    0 20px 52px rgba(0, 0, 0, 0.26);
+}
+
+.dark .tools-action-type,
+.dark .tools-action-buttons button {
+  background: rgba(24, 24, 27, 0.76);
+}
+
+.dark .tools-download-btn:not(:disabled) {
+  color: #0a0a0a;
+  background: linear-gradient(135deg, #e0f2fe, #93c5fd 48%, #a78bfa);
+}
+
 .tools-resource-section {
   padding-top: 0;
 }
@@ -3686,10 +3911,26 @@ details p {
   letter-spacing: 0;
 }
 
+.brand-logo-img {
+  width: 30px;
+  height: 30px;
+  display: block;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  object-fit: contain;
+  filter: none;
+}
+
 .ai-brand-chip.compact .brand-mark {
   width: 24px;
   height: 24px;
   font-size: 0.66rem;
+}
+
+.ai-brand-chip.compact .brand-logo-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
 }
 
 .brand-name {
@@ -3706,9 +3947,24 @@ details p {
   --brand-bg: #e7faf5;
 }
 
+.brand-perplexity {
+  --brand-accent: #21b8cd;
+  --brand-bg: #e6fbff;
+}
+
 .brand-manus {
   --brand-accent: #1f66d1;
   --brand-bg: #eaf2ff;
+}
+
+.brand-codex {
+  --brand-accent: #0ea5e9;
+  --brand-bg: #e8f7ff;
+}
+
+.brand-copilot {
+  --brand-accent: #2563eb;
+  --brand-bg: #eaf1ff;
 }
 
 .brand-make {
@@ -3738,6 +3994,11 @@ details p {
 .brand-midjourney {
   --brand-accent: #b044c2;
   --brand-bg: #f9edff;
+}
+
+.brand-higgsfield {
+  --brand-accent: #bfff00;
+  --brand-bg: #efffb9;
 }
 
 .brand-runway {
@@ -4216,10 +4477,29 @@ details {
   --brand-bg: #fff0e9;
 }
 
-.brand-manus,
-.brand-chatgpt {
+.brand-manus {
   --brand-accent: #1649f5;
   --brand-bg: #edf3ff;
+}
+
+.brand-chatgpt {
+  --brand-accent: #10a37f;
+  --brand-bg: #e7faf5;
+}
+
+.brand-perplexity {
+  --brand-accent: #21b8cd;
+  --brand-bg: #e6fbff;
+}
+
+.brand-codex {
+  --brand-accent: #0ea5e9;
+  --brand-bg: #e8f7ff;
+}
+
+.brand-copilot {
+  --brand-accent: #2563eb;
+  --brand-bg: #eaf1ff;
 }
 
 .brand-make,
@@ -6965,6 +7245,18 @@ details {
     width: 100%;
   }
 
+  .tools-action-grid {
+    gap: 12px;
+  }
+
+  .tools-action-card {
+    padding: 14px;
+  }
+
+  .tools-action-buttons {
+    grid-template-columns: 1fr;
+  }
+
   .tools-locked-state,
   .tools-resource-row {
     grid-template-columns: 1fr;
@@ -9062,7 +9354,8 @@ html {
 #googleLoginButton,
 #googleAuthButton {
   width: 100%;
-  overflow: hidden;
+  min-width: 0;
+  overflow: visible;
   border-radius: 10px;
 }
 
@@ -9078,8 +9371,10 @@ html {
 #googleSignupButton iframe,
 #googleLoginButton iframe,
 #googleAuthButton iframe {
+  display: block !important;
   width: 100% !important;
   max-width: 100% !important;
+  min-height: 48px !important;
   margin-inline: auto !important;
   border-radius: 10px !important;
 }
@@ -11569,6 +11864,11 @@ html:not(.dark) .aix-stack-hero-actions .aix-rainbow-shell {
 .aix-topic-logo-codex {
   background: #0f172a;
   border-color: #334155;
+}
+
+.aix-topic-logo-chatgpt {
+  background: #ecfdf5;
+  border-color: #99f6e4;
 }
 
 .aix-topic-icon-left {
@@ -14422,6 +14722,11 @@ details::before,
   border-color: #334155;
 }
 
+.dark .aix-topic-logo-chatgpt {
+  background: #ecfdf5;
+  border-color: #99f6e4;
+}
+
 .dark .aix-topic-card:hover .aix-topic-icon,
 .dark .aix-topic-card:focus-within .aix-topic-icon {
   color: #fafafa;
@@ -15827,7 +16132,7 @@ html[lang="th"] :where(
   gap: 8px;
   margin: 0;
   padding: 10px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(244, 244, 245, 0.16);
   border-radius: 12px;
   background: rgba(9, 9, 11, 0.72);
@@ -15840,7 +16145,9 @@ html[lang="th"] :where(
 }
 
 .auth-card-shell .google-box > div {
-  min-height: 44px;
+  min-width: 0;
+  min-height: 50px;
+  overflow: visible;
 }
 
 .auth-card-shell .google-box p {
@@ -17313,6 +17620,191 @@ body.learn-body {
   background: color-mix(in srgb, var(--card) 88%, #38bdf8 6%);
 }
 
+/* Inner pages contrast guard for light and dark themes 2026-06-30 */
+html:not(.dark) :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell) {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 14% 8%, rgba(59, 130, 246, 0.1), transparent 28rem),
+    radial-gradient(circle at 86% 18%, rgba(139, 92, 246, 0.08), transparent 24rem),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 42%, #f8fafc 100%);
+}
+
+html:not(.dark) :where(.dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar) {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(203, 213, 225, 0.86);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08);
+}
+
+html:not(.dark) :where(.dashboard-label strong, .classroom-label strong) {
+  color: #0f172a;
+}
+
+html:not(.dark) :where(.dashboard-label span, .classroom-label span) {
+  color: #64748b;
+}
+
+html:not(.dark) :where(.dashboard-nav-link, .classroom-nav-link) {
+  color: #475569;
+  background: transparent;
+}
+
+html:not(.dark) :where(.dashboard-nav-link:hover, .dashboard-nav-link.active, .classroom-nav-link:hover, .classroom-nav-link.active) {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: rgba(96, 165, 250, 0.36);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.1);
+}
+
+html:not(.dark) :where(.dashboard-home-link, .classroom-home-link, .dashboard-header .link-btn, .tools-header .link-btn, .live-header .link-btn) {
+  color: #334155;
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(203, 213, 225, 0.86);
+}
+
+html:not(.dark) .dashboard-logout {
+  color: #b42318;
+  background: #fff1f2;
+  border-color: rgba(251, 113, 133, 0.28);
+}
+
+html:not(.dark) :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .tools-action-card,
+    .tools-locked-state,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .classroom-panel,
+    .classroom-replay-card,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .enroll-card,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .resource-card,
+    .course-card,
+    .faq-grid details,
+    .course-gate-content
+  ) {
+  color: #0f172a;
+  border-color: rgba(203, 213, 225, 0.82);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(219, 234, 254, 0.76), transparent 34%),
+    rgba(255, 255, 255, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 18px 48px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+html:not(.dark) :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(h1, h2, h3, h4, strong, .eyebrow, .provider, .dashboard-label strong, .classroom-label strong, .course-body h3, .tools-action-body h3) {
+  color: #0f172a;
+}
+
+html:not(.dark) :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(p, small, em, .detail-subtitle, .section-copy, .payment-note, .course-meta, .course-progress-row, .live-class-meta, .receipt-pending, .tools-action-preview, .tools-action-body p) {
+  color: #475569;
+}
+
+html:not(.dark) :where(.member-overview-card span, .member-resource-card span, .payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-schedule-card > span i, .dashboard-quick-actions i, .tools-card-icon, .tools-resource-icon, .tools-action-icon, .live-class-icon) {
+  color: #0f172a;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 54%, #ddd6fe 100%);
+  border-color: rgba(147, 197, 253, 0.42);
+}
+
+html:not(.dark) :where(.dashboard-learning-progress div, .course-progress-row div) {
+  background: #dbeafe;
+}
+
+html:not(.dark) :where(.dashboard-learning-progress strong, .course-progress-row strong) {
+  color: #1d4ed8;
+}
+
+html:not(.dark) :where(.badge, .course-badge, .live-class-badge, .tools-action-type) {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.92);
+}
+
+html:not(.dark) :where(.catalog-search, .global-search, .member-form input, .course-gate-form input, .learn-lab-form textarea, .auth-input-wrap) {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+html:not(.dark) :where(input, textarea)::placeholder {
+  color: #94a3b8;
+}
+
+.dark :where(.dashboard-nav-link, .classroom-nav-link) {
+  color: #d4d4d8;
+}
+
+.dark :where(.dashboard-nav-link:hover, .dashboard-nav-link.active, .classroom-nav-link:hover, .classroom-nav-link.active) {
+  color: #0a0a0a;
+  background: #fafafa;
+  border-color: rgba(250, 250, 250, 0.9);
+  box-shadow: 0 14px 30px rgba(250, 250, 250, 0.08);
+}
+
+.dark :where(.dashboard-home-link, .classroom-home-link, .dashboard-header .link-btn, .tools-header .link-btn, .live-header .link-btn) {
+  color: #e4e4e7;
+  background: rgba(24, 24, 27, 0.78);
+  border-color: rgba(63, 63, 70, 0.92);
+}
+
+.dark .dashboard-logout {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.24);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.dark :where(.dashboard-label strong, .classroom-label strong) {
+  color: #fafafa;
+}
+
+.dark :where(.dashboard-label span, .classroom-label span) {
+  color: #a1a1aa;
+}
+
+.dark :where(.dashboard-header .mobile-panel a.active, .classroom-mobile-panel a.active, .tools-header .mobile-panel a.active) {
+  color: #0a0a0a;
+  background: #fafafa;
+}
+
 .course-gate-content {
   padding: clamp(24px, 4vw, 44px);
   border: 1px solid var(--border);
@@ -17424,5 +17916,2135 @@ body.learn-body {
 
   .learn-module-list {
     max-height: calc(42dvh - 100px);
+  }
+}
+
+/* Dashboard readability refresh 2026-06-30 */
+.dashboard-page {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 82% 2%, rgba(96, 165, 250, 0.16), transparent 28rem),
+    radial-gradient(circle at 12% 18%, rgba(20, 184, 166, 0.08), transparent 24rem),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 48%, #f8fafc 100%);
+}
+
+.dark .dashboard-page {
+  color: #fafafa;
+  background:
+    radial-gradient(circle at 76% 0%, rgba(56, 189, 248, 0.12), transparent 28rem),
+    radial-gradient(circle at 10% 18%, rgba(99, 102, 241, 0.08), transparent 24rem),
+    linear-gradient(180deg, #050505 0%, #09090b 48%, #050505 100%);
+}
+
+.dashboard-header {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(203, 213, 225, 0.88);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08);
+}
+
+.dark .dashboard-header {
+  color: #fafafa;
+  background: rgba(5, 5, 5, 0.9);
+  border-color: rgba(39, 39, 42, 0.9);
+  box-shadow: 0 1px 0 rgba(250, 250, 250, 0.08);
+}
+
+.dashboard-header .brand img {
+  opacity: 1;
+  filter: none;
+}
+
+.dark .dashboard-header .brand img {
+  filter: invert(1) grayscale(1) contrast(1.08);
+}
+
+.dashboard-header .dashboard-label strong {
+  color: #0f172a;
+}
+
+.dark .dashboard-header .dashboard-label strong {
+  color: #fafafa;
+}
+
+.dashboard-header .dashboard-label span {
+  color: #64748b;
+}
+
+.dark .dashboard-header .dashboard-label span {
+  color: #a1a1aa;
+}
+
+.dashboard-header .dashboard-nav-link {
+  color: #475569;
+  background: transparent;
+  border-color: transparent;
+}
+
+.dark .dashboard-header .dashboard-nav-link {
+  color: #d4d4d8;
+  background: transparent;
+  border-color: transparent;
+}
+
+.dashboard-header .dashboard-nav-link:hover,
+.dashboard-header .dashboard-nav-link.active {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.1) !important;
+}
+
+.dark .dashboard-header .dashboard-nav-link:hover,
+.dark .dashboard-header .dashboard-nav-link.active {
+  color: #0a0a0a !important;
+  background: #fafafa !important;
+  border-color: rgba(250, 250, 250, 0.92) !important;
+  box-shadow: 0 14px 30px rgba(250, 250, 250, 0.1) !important;
+}
+
+.dashboard-header .dashboard-home-link {
+  color: #334155;
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+.dark .dashboard-header .dashboard-home-link {
+  color: #e4e4e7;
+  background: rgba(24, 24, 27, 0.9);
+  border-color: rgba(63, 63, 70, 0.9);
+}
+
+.dashboard-header .dashboard-logout {
+  color: #b42318;
+  background: #fff1f2;
+  border-color: rgba(251, 113, 133, 0.28);
+}
+
+.dark .dashboard-header .dashboard-logout {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.28);
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+.dashboard-hero {
+  padding-top: clamp(28px, 4vw, 52px);
+}
+
+.dashboard-hero::after {
+  opacity: 0.55;
+}
+
+.dark .dashboard-hero::after {
+  opacity: 0.32;
+}
+
+.dashboard-hero-art {
+  opacity: 0.1;
+  mix-blend-mode: normal;
+  filter: grayscale(0.45) saturate(0.95) contrast(1.02);
+}
+
+.dark .dashboard-hero-art {
+  opacity: 0.08;
+  mix-blend-mode: screen;
+  filter: grayscale(0.7) saturate(0.8) contrast(1.08);
+}
+
+.dashboard-profile,
+.dashboard-continue-card,
+.dashboard-status,
+.member-overview-card,
+.dashboard-quick-actions a {
+  color: #0f172a !important;
+  border-color: rgba(203, 213, 225, 0.92) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 18px 44px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: none !important;
+}
+
+.dark .dashboard-profile,
+.dark .dashboard-continue-card,
+.dark .dashboard-status,
+.dark .member-overview-card,
+.dark .dashboard-quick-actions a {
+  color: #fafafa !important;
+  border-color: rgba(63, 63, 70, 0.98) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.1), transparent 38%),
+    linear-gradient(180deg, rgba(24, 24, 27, 0.98), rgba(10, 10, 10, 0.96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.08),
+    0 22px 54px rgba(0, 0, 0, 0.32) !important;
+  backdrop-filter: none !important;
+}
+
+.dashboard-profile h1,
+.dashboard-status h2,
+.dashboard-continue-card h2,
+.dashboard-continue-card h3,
+.member-overview-card strong,
+.dashboard-quick-actions span {
+  color: #0f172a !important;
+}
+
+.dark .dashboard-profile h1,
+.dark .dashboard-status h2,
+.dark .dashboard-continue-card h2,
+.dark .dashboard-continue-card h3,
+.dark .member-overview-card strong,
+.dark .dashboard-quick-actions span {
+  color: #fafafa !important;
+}
+
+.dashboard-profile p,
+.dashboard-status p,
+.dashboard-continue-card p,
+.member-overview-card small {
+  color: #475569 !important;
+}
+
+.dark .dashboard-profile p,
+.dark .dashboard-status p,
+.dark .dashboard-continue-card p,
+.dark .member-overview-card small {
+  color: #d4d4d8 !important;
+}
+
+.dashboard-profile .eyebrow,
+.dashboard-continue-card .eyebrow {
+  color: #64748b !important;
+}
+
+.dark .dashboard-profile .eyebrow,
+.dark .dashboard-continue-card .eyebrow {
+  color: #a1a1aa !important;
+}
+
+.dashboard-profile img {
+  opacity: 1;
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.92);
+  filter: none;
+}
+
+.dark .dashboard-profile img {
+  background: #0a0a0a;
+  border-color: rgba(63, 63, 70, 0.9);
+  filter: none;
+}
+
+.dashboard-continue-head > span,
+.member-overview-card span,
+.dashboard-quick-actions i {
+  color: #0f172a !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 55%, #c4b5fd 100%) !important;
+  border: 1px solid rgba(147, 197, 253, 0.46);
+}
+
+.dark .dashboard-continue-head > span,
+.dark .member-overview-card span,
+.dark .dashboard-quick-actions i {
+  color: #f8fafc !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 54%, #6d28d9 100%) !important;
+  border-color: rgba(147, 197, 253, 0.28);
+}
+
+.dashboard-status .badge {
+  width: fit-content;
+  color: #0f172a !important;
+  background: #dbeafe !important;
+  border-color: rgba(147, 197, 253, 0.55) !important;
+}
+
+.dark .dashboard-status .badge {
+  color: #e0f2fe !important;
+  background: rgba(14, 165, 233, 0.16) !important;
+  border-color: rgba(125, 211, 252, 0.34) !important;
+}
+
+.dashboard-learning-progress div {
+  background: #dbeafe !important;
+}
+
+.dark .dashboard-learning-progress div {
+  background: #27272a !important;
+}
+
+.dashboard-learning-progress strong {
+  color: #1d4ed8 !important;
+}
+
+.dark .dashboard-learning-progress strong {
+  color: #bfdbfe !important;
+}
+
+.dashboard-quick-actions i {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 13px;
+}
+
+@media (max-width: 760px) {
+  .dashboard-header .nav-bar {
+    min-height: 68px;
+  }
+
+  .dashboard-hero {
+    padding-top: 24px;
+  }
+
+  .dashboard-grid,
+  .member-overview-grid,
+  .dashboard-quick-actions {
+    gap: 12px;
+  }
+
+  .dashboard-profile,
+  .dashboard-continue-card,
+  .dashboard-status,
+  .member-overview-card {
+    padding: 18px;
+  }
+}
+
+/* Dashboard lower sections contrast fix 2026-06-30 */
+.dashboard-page :where(
+  .section,
+  .member-resource-section,
+  .member-schedule-section,
+  .member-notification-section,
+  .payment-history-section,
+  .billing-section
+) {
+  background: transparent !important;
+  border-color: rgba(203, 213, 225, 0.18);
+}
+
+.dark .dashboard-page :where(
+  .section,
+  .member-resource-section,
+  .member-schedule-section,
+  .member-notification-section,
+  .payment-history-section,
+  .billing-section
+) {
+  background: transparent !important;
+  border-color: rgba(63, 63, 70, 0.74) !important;
+}
+
+.dashboard-page .section-head h2 {
+  color: #0f172a !important;
+}
+
+.dark .dashboard-page .section-head h2 {
+  color: #fafafa !important;
+}
+
+.dashboard-page .section-head p,
+.dashboard-page .section-head .eyebrow {
+  color: #475569 !important;
+}
+
+.dark .dashboard-page .section-head p,
+.dark .dashboard-page .section-head .eyebrow {
+  color: #d4d4d8 !important;
+}
+
+.dashboard-page :where(
+  .member-resource-card,
+  .member-alert-card,
+  .member-schedule-card,
+  .payment-history-card,
+  .payment-history-empty,
+  .resource-card
+) {
+  color: #0f172a !important;
+  border-color: rgba(203, 213, 225, 0.92) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 18px 44px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: none !important;
+}
+
+.dark .dashboard-page :where(
+  .member-resource-card,
+  .member-alert-card,
+  .member-schedule-card,
+  .payment-history-card,
+  .payment-history-empty,
+  .resource-card
+) {
+  color: #fafafa !important;
+  border-color: rgba(63, 63, 70, 0.98) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.09), transparent 36%),
+    linear-gradient(180deg, rgba(24, 24, 27, 0.98), rgba(10, 10, 10, 0.96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.08),
+    0 22px 54px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
+}
+
+.dashboard-page :where(
+  .member-resource-card strong,
+  .member-alert-card strong,
+  .member-schedule-card h3,
+  .payment-history-card h3,
+  .payment-history-empty h3,
+  .resource-card h3,
+  .payment-history-side strong
+) {
+  color: #0f172a !important;
+}
+
+.dark .dashboard-page :where(
+  .member-resource-card strong,
+  .member-alert-card strong,
+  .member-schedule-card h3,
+  .payment-history-card h3,
+  .payment-history-empty h3,
+  .resource-card h3,
+  .payment-history-side strong
+) {
+  color: #fafafa !important;
+}
+
+.dashboard-page :where(
+  .member-resource-card small,
+  .member-alert-card small,
+  .member-schedule-card p,
+  .payment-history-card p,
+  .payment-history-empty p,
+  .resource-card p,
+  .receipt-pending
+) {
+  color: #475569 !important;
+}
+
+.dark .dashboard-page :where(
+  .member-resource-card small,
+  .member-alert-card small,
+  .member-schedule-card p,
+  .payment-history-card p,
+  .payment-history-empty p,
+  .resource-card p,
+  .receipt-pending
+) {
+  color: #d4d4d8 !important;
+}
+
+.dashboard-page :where(.payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-resource-card span) {
+  color: #0f172a !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 55%, #c4b5fd 100%) !important;
+  border: 1px solid rgba(147, 197, 253, 0.46);
+}
+
+.dark .dashboard-page :where(.payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-resource-card span) {
+  color: #f8fafc !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 54%, #6d28d9 100%) !important;
+  border-color: rgba(147, 197, 253, 0.28);
+}
+
+.dashboard-page .member-alert-card.unread {
+  background:
+    linear-gradient(135deg, rgba(219, 234, 254, 0.88), rgba(255, 255, 255, 0.98)) !important;
+}
+
+.dark .dashboard-page .member-alert-card.unread {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(56, 189, 248, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(24, 24, 27, 0.98), rgba(10, 10, 10, 0.96)) !important;
+}
+
+/* Inner page full contrast sweep 2026-06-30 */
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell) {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 82% 2%, rgba(96, 165, 250, 0.12), transparent 28rem),
+    radial-gradient(circle at 12% 18%, rgba(20, 184, 166, 0.06), transparent 24rem),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 48%, #f8fafc 100%);
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell) {
+  color: #fafafa;
+  background:
+    radial-gradient(circle at 76% 0%, rgba(56, 189, 248, 0.12), transparent 28rem),
+    radial-gradient(circle at 10% 18%, rgba(99, 102, 241, 0.08), transparent 24rem),
+    linear-gradient(180deg, #050505 0%, #09090b 48%, #050505 100%);
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.section, .alt-section, .catalog-section, .payment-page, .tools-box-hero, .tools-catalog-section, .tools-topic-section, .member-resource-section, .classroom-resource-section, .member-schedule-section, .member-notification-section, .payment-history-section, .live-workspace-section, .classroom-modules-section, .member-class-overview, .faq-section) {
+  background: transparent !important;
+  border-color: rgba(203, 213, 225, 0.18);
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.section, .alt-section, .catalog-section, .payment-page, .tools-box-hero, .tools-catalog-section, .tools-topic-section, .member-resource-section, .classroom-resource-section, .member-schedule-section, .member-notification-section, .payment-history-section, .live-workspace-section, .classroom-modules-section, .member-class-overview, .faq-section) {
+  background: transparent !important;
+  border-color: rgba(63, 63, 70, 0.74) !important;
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar) {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(203, 213, 225, 0.88) !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08) !important;
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar) {
+  color: #fafafa;
+  background: rgba(5, 5, 5, 0.9) !important;
+  border-color: rgba(39, 39, 42, 0.92) !important;
+  box-shadow: 0 1px 0 rgba(250, 250, 250, 0.08) !important;
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar) .brand img {
+  filter: invert(1) grayscale(1) contrast(1.08);
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar)
+  :where(.main-nav a, .main-nav button, .dashboard-nav-link, .classroom-nav-link, .dashboard-home-link, .classroom-home-link, .link-btn, .secondary-btn, .course-gate-close, .learn-brand span) {
+  color: #334155;
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar)
+  :where(.main-nav a, .main-nav button, .dashboard-nav-link, .classroom-nav-link, .dashboard-home-link, .classroom-home-link, .link-btn, .secondary-btn, .course-gate-close, .learn-brand span) {
+  color: #d4d4d8;
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar)
+  :where(.dashboard-nav-link:hover, .dashboard-nav-link.active, .classroom-nav-link:hover, .classroom-nav-link.active, .main-nav a:hover, .main-nav button:hover, .main-nav button.active) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.1) !important;
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar)
+  :where(.dashboard-nav-link:hover, .dashboard-nav-link.active, .classroom-nav-link:hover, .classroom-nav-link.active, .main-nav a:hover, .main-nav button:hover, .main-nav button.active) {
+  color: #0a0a0a !important;
+  background: #fafafa !important;
+  border-color: rgba(250, 250, 250, 0.92) !important;
+  box-shadow: 0 14px 30px rgba(250, 250, 250, 0.1) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .detail-hero-copy,
+    .enroll-card,
+    .enroll-mini,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .faq-grid details,
+    .brand-board,
+    .detail-skill-cloud,
+    .tool-row,
+    .course-card,
+    .resource-card,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .tools-hero-note,
+    .tools-hero-media,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .tools-action-card,
+    .tools-locked-state,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .live-countdown,
+    .classroom-panel,
+    .classroom-replay-card,
+    .classroom-video-player,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .course-gate-content,
+    .course-gate-list,
+    .course-gate-check,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .learn-tab-panel,
+    .learn-terminal-card,
+    .learn-terminal-kb,
+    .learn-terminal-actions button,
+    .learn-module-list button,
+    .learn-ai-messages
+  ) {
+  color: #0f172a !important;
+  border-color: rgba(203, 213, 225, 0.92) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 18px 44px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: none !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .detail-hero-copy,
+    .enroll-card,
+    .enroll-mini,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .faq-grid details,
+    .brand-board,
+    .detail-skill-cloud,
+    .tool-row,
+    .course-card,
+    .resource-card,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .tools-hero-note,
+    .tools-hero-media,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .tools-action-card,
+    .tools-locked-state,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .live-countdown,
+    .classroom-panel,
+    .classroom-replay-card,
+    .classroom-video-player,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .course-gate-content,
+    .course-gate-list,
+    .course-gate-check,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .learn-tab-panel,
+    .learn-terminal-card,
+    .learn-terminal-kb,
+    .learn-terminal-actions button,
+    .learn-module-list button,
+    .learn-ai-messages
+  ) {
+  color: #fafafa !important;
+  border-color: rgba(63, 63, 70, 0.98) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.09), transparent 36%),
+    linear-gradient(180deg, rgba(24, 24, 27, 0.98), rgba(10, 10, 10, 0.96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.08),
+    0 22px 54px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(h1, h2, h3, h4, strong, label, summary, .eyebrow, .provider, .badge, .course-badge, .live-class-badge, .tools-action-type, .detail-instructor span, .live-class-status, .learn-lab-head strong) {
+  color: #0f172a !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(h1, h2, h3, h4, strong, label, summary, .eyebrow, .provider, .badge, .course-badge, .live-class-badge, .tools-action-type, .detail-instructor span, .live-class-status, .learn-lab-head strong) {
+  color: #fafafa !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(p, small, em, li, span, .detail-subtitle, .section-copy, .payment-note, .course-meta, .course-progress-row, .live-class-meta, .receipt-pending, .tools-action-preview, .tools-action-body p, .learn-lab-prompt, .learn-editor-title span, .learn-terminal-top small, .learn-terminal-kb, .learn-run-result p) {
+  color: #475569 !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(p, small, em, li, span, .detail-subtitle, .section-copy, .payment-note, .course-meta, .course-progress-row, .live-class-meta, .receipt-pending, .tools-action-preview, .tools-action-body p, .learn-lab-prompt, .learn-editor-title span, .learn-terminal-top small, .learn-terminal-kb, .learn-run-result p) {
+  color: #d4d4d8 !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.member-overview-card span, .member-resource-card span, .payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-schedule-card > span i, .dashboard-quick-actions i, .tools-card-icon, .tools-resource-icon, .tools-action-icon, .live-class-icon, .result-icon, .detail-instructor img, .live-card-head > span, .live-class-meta-row span, .learn-lab-head strong) {
+  color: #0f172a !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 55%, #c4b5fd 100%) !important;
+  border-color: rgba(147, 197, 253, 0.46) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.member-overview-card span, .member-resource-card span, .payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-schedule-card > span i, .dashboard-quick-actions i, .tools-card-icon, .tools-resource-icon, .tools-action-icon, .live-class-icon, .result-icon, .detail-instructor img, .live-card-head > span, .live-class-meta-row span, .learn-lab-head strong) {
+  color: #f8fafc !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 54%, #6d28d9 100%) !important;
+  border-color: rgba(147, 197, 253, 0.28) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(input, textarea, select, .global-search, .catalog-search, .auth-input-wrap, .member-form input, .course-gate-form input, .learn-lab-form textarea, #liveNotes, #lessonNotes, #learnAiInput) {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(203, 213, 225, 0.94) !important;
+  box-shadow: none !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(input, textarea, select, .global-search, .catalog-search, .auth-input-wrap, .member-form input, .course-gate-form input, .learn-lab-form textarea, #liveNotes, #lessonNotes, #learnAiInput) {
+  color: #fafafa !important;
+  background: rgba(10, 10, 10, 0.92) !important;
+  border-color: rgba(63, 63, 70, 0.96) !important;
+  box-shadow: none !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(input, textarea)::placeholder {
+  color: #94a3b8 !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(input, textarea)::placeholder {
+  color: #71717a !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.secondary-btn, .link-btn, .text-link, .learn-tabs button, .learn-editor-tabs button, .learn-terminal-actions button, .tools-action-buttons button, .course-gate-close) {
+  color: #0f172a !important;
+  border-color: rgba(203, 213, 225, 0.9) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.secondary-btn, .link-btn, .text-link, .learn-tabs button, .learn-editor-tabs button, .learn-terminal-actions button, .tools-action-buttons button, .course-gate-close) {
+  color: #fafafa !important;
+  border-color: rgba(63, 63, 70, 0.96) !important;
+  background: rgba(24, 24, 27, 0.92) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.learn-tabs button.active, .learn-editor-tabs button.active, .payment-method.active, .course-gate-check:has(input:checked)) {
+  color: #0f172a !important;
+  border-color: rgba(96, 165, 250, 0.44) !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #ffffff 100%) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.learn-tabs button.active, .learn-editor-tabs button.active, .payment-method.active, .course-gate-check:has(input:checked)) {
+  color: #fafafa !important;
+  border-color: rgba(96, 165, 250, 0.44) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.14), transparent 36%),
+    rgba(24, 24, 27, 0.98) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.eyebrow, .provider, .badge, .course-badge, .live-class-badge, .tools-action-type, .tools-card-tags span, .detail-skill-cloud span, .tool-row span, .classroom-chip-row span, .live-class-status span, .live-countdown strong) {
+  color: #0f172a !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.eyebrow, .provider, .badge, .course-badge, .live-class-badge, .tools-action-type, .tools-card-tags span, .detail-skill-cloud span, .tool-row span, .classroom-chip-row span, .live-class-status span, .live-countdown strong) {
+  color: #fafafa !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]) {
+  color: #061438 !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]) {
+  color: #0a0a0a !important;
+}
+
+/* Inner page color system final guard 2026-07-03 */
+:root {
+  --aix-page-light: #f7faff;
+  --aix-page-light-2: #ffffff;
+  --aix-page-dark: #050505;
+  --aix-page-dark-2: #0a0a0a;
+  --aix-inner-light-card: rgba(255, 255, 255, 0.96);
+  --aix-inner-light-card-2: rgba(248, 250, 252, 0.94);
+  --aix-inner-dark-card: rgba(15, 23, 42, 0.78);
+  --aix-inner-dark-card-2: rgba(10, 10, 10, 0.94);
+  --aix-inner-light-text: #0f172a;
+  --aix-inner-light-muted: #475569;
+  --aix-inner-dark-text: #f8fafc;
+  --aix-inner-dark-muted: #cbd5e1;
+  --aix-inner-light-border: rgba(203, 213, 225, 0.9);
+  --aix-inner-dark-border: rgba(63, 63, 70, 0.96);
+}
+
+:where(body:has(#detailRoot), body:has(.dashboard-page), body:has(.tools-box-page), body:has(.live-class-page), body.course-gate-body, body.learn-body) {
+  color: var(--aix-inner-light-text) !important;
+  background:
+    radial-gradient(circle at 82% 0%, rgba(59, 130, 246, 0.14), transparent 28rem),
+    radial-gradient(circle at 12% 22%, rgba(20, 184, 166, 0.08), transparent 24rem),
+    linear-gradient(180deg, var(--aix-page-light) 0%, var(--aix-page-light-2) 50%, #f8fafc 100%) !important;
+}
+
+.dark :where(body:has(#detailRoot), body:has(.dashboard-page), body:has(.tools-box-page), body:has(.live-class-page), body.course-gate-body, body.learn-body) {
+  color: var(--aix-inner-dark-text) !important;
+  background:
+    radial-gradient(circle at 74% 0%, rgba(56, 189, 248, 0.11), transparent 28rem),
+    radial-gradient(circle at 16% 20%, rgba(99, 102, 241, 0.08), transparent 24rem),
+    linear-gradient(180deg, var(--aix-page-dark) 0%, var(--aix-page-dark-2) 52%, var(--aix-page-dark) 100%) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell) {
+  color: var(--aix-inner-light-text) !important;
+  background:
+    radial-gradient(circle at 82% 0%, rgba(59, 130, 246, 0.12), transparent 28rem),
+    radial-gradient(circle at 12% 20%, rgba(20, 184, 166, 0.07), transparent 24rem),
+    linear-gradient(180deg, var(--aix-page-light) 0%, var(--aix-page-light-2) 50%, #f8fafc 100%) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell) {
+  color: var(--aix-inner-dark-text) !important;
+  background:
+    radial-gradient(circle at 74% 0%, rgba(56, 189, 248, 0.1), transparent 28rem),
+    radial-gradient(circle at 14% 18%, rgba(99, 102, 241, 0.08), transparent 24rem),
+    linear-gradient(180deg, var(--aix-page-dark) 0%, var(--aix-page-dark-2) 52%, var(--aix-page-dark) 100%) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.section, .alt-section, .catalog-section, .detail-hero, .payment-page, .tools-box-hero, .tools-catalog-section, .tools-topic-section, .live-class-hero, .live-workspace-section, .classroom-modules-section, .classroom-resource-section, .member-class-overview, .member-resource-section, .member-schedule-section, .member-notification-section, .payment-history-section, .billing-section, .faq-section) {
+  color: inherit !important;
+  background: transparent !important;
+  border-color: color-mix(in srgb, var(--aix-inner-light-border) 72%, transparent) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.section, .alt-section, .catalog-section, .detail-hero, .payment-page, .tools-box-hero, .tools-catalog-section, .tools-topic-section, .live-class-hero, .live-workspace-section, .classroom-modules-section, .classroom-resource-section, .member-class-overview, .member-resource-section, .member-schedule-section, .member-notification-section, .payment-history-section, .billing-section, .faq-section) {
+  border-color: color-mix(in srgb, var(--aix-inner-dark-border) 76%, transparent) !important;
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar),
+:where(.detail-tabs) {
+  color: var(--aix-inner-light-text) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: var(--aix-inner-light-border) !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(18px);
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar),
+.dark :where(.detail-tabs) {
+  color: var(--aix-inner-dark-text) !important;
+  background: rgba(5, 5, 5, 0.88) !important;
+  border-color: var(--aix-inner-dark-border) !important;
+  box-shadow: 0 1px 0 rgba(250, 250, 250, 0.08) !important;
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar, .detail-tabs)
+  :where(a, button, .main-nav a, .main-nav button, .dashboard-nav-link, .classroom-nav-link, .dashboard-home-link, .classroom-home-link, .link-btn, .secondary-btn) {
+  color: var(--aix-inner-light-muted) !important;
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar, .detail-tabs)
+  :where(a, button, .main-nav a, .main-nav button, .dashboard-nav-link, .classroom-nav-link, .dashboard-home-link, .classroom-home-link, .link-btn, .secondary-btn) {
+  color: var(--aix-inner-dark-muted) !important;
+}
+
+:where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar, .detail-tabs)
+  :where(a:hover, button:hover, .dashboard-nav-link.active, .classroom-nav-link.active, .main-nav button.active) {
+  color: var(--aix-inner-light-text) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+}
+
+.dark :where(.site-header:not(.aix-home-header), .dashboard-header, .classroom-header, .tools-header, .live-header, .course-gate-header, .learn-topbar, .detail-tabs)
+  :where(a:hover, button:hover, .dashboard-nav-link.active, .classroom-nav-link.active, .main-nav button.active) {
+  color: #ffffff !important;
+  background: rgba(24, 24, 27, 0.98) !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .detail-hero-copy,
+    .enroll-card,
+    .enroll-mini,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .faq-grid details,
+    .brand-board,
+    .detail-skill-cloud,
+    .tool-row,
+    .course-card,
+    .resource-card,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .payment-phone-verify,
+    .tools-hero-note,
+    .tools-hero-media,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .tools-action-card,
+    .tools-locked-state,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .live-countdown,
+    .classroom-panel,
+    .classroom-replay-card,
+    .classroom-video-player,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .course-gate-content,
+    .course-gate-list,
+    .course-gate-check,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .learn-tab-panel,
+    .learn-terminal-card,
+    .learn-terminal-kb,
+    .learn-terminal-actions button,
+    .learn-module-list button,
+    .learn-ai-messages
+  ) {
+  color: var(--aix-inner-light-text) !important;
+  border-color: var(--aix-inner-light-border) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(219, 234, 254, 0.86), transparent 34%),
+    linear-gradient(180deg, var(--aix-inner-light-card), var(--aix-inner-light-card-2)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 18px 44px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: none !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(
+    .detail-hero-copy,
+    .enroll-card,
+    .enroll-mini,
+    .detail-project,
+    .instructor-panel,
+    .detail-info-grid article,
+    .outcome-list article,
+    .syllabus-item,
+    .faq-grid details,
+    .brand-board,
+    .detail-skill-cloud,
+    .tool-row,
+    .course-card,
+    .resource-card,
+    .payment-summary,
+    .payment-panel,
+    .payment-result-card,
+    .order-box,
+    .payment-method,
+    .payment-phone-verify,
+    .tools-hero-note,
+    .tools-hero-media,
+    .tools-stat-card,
+    .tools-category-card,
+    .tools-topic-panel,
+    .tools-resource-row,
+    .tools-action-card,
+    .tools-locked-state,
+    .live-class-main,
+    .live-class-side,
+    .live-note-card,
+    .live-support-card,
+    .live-countdown,
+    .classroom-panel,
+    .classroom-replay-card,
+    .classroom-video-player,
+    .member-resource-card,
+    .member-alert-card,
+    .member-schedule-card,
+    .payment-history-card,
+    .payment-history-empty,
+    .dashboard-profile,
+    .dashboard-continue-card,
+    .dashboard-status,
+    .member-overview-card,
+    .dashboard-quick-actions a,
+    .course-gate-content,
+    .course-gate-list,
+    .course-gate-check,
+    .learn-sidebar,
+    .learn-stage,
+    .learn-video-card,
+    .learn-reading-card,
+    .learn-lab-card,
+    .learn-ai-card,
+    .learn-run-result,
+    .learn-challenge-brief,
+    .learn-challenge-section,
+    .learn-download-list a,
+    .learn-tab-panel,
+    .learn-terminal-card,
+    .learn-terminal-kb,
+    .learn-terminal-actions button,
+    .learn-module-list button,
+    .learn-ai-messages
+  ) {
+  color: var(--aix-inner-dark-text) !important;
+  border-color: var(--aix-inner-dark-border) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.12), transparent 34%),
+    linear-gradient(180deg, var(--aix-inner-dark-card), var(--aix-inner-dark-card-2)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.08),
+    0 22px 54px rgba(0, 0, 0, 0.32) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(h1, h2, h3, h4, h5, strong, label, summary, .eyebrow, .provider, .badge, .course-badge, .live-class-badge, .tools-action-type, .detail-instructor span, .live-class-status, .learn-lab-head strong, .section-head h2) {
+  color: var(--aix-inner-light-text) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(h1, h2, h3, h4, h5, strong, label, summary, .eyebrow, .provider, .badge, .course-badge, .live-class-badge, .tools-action-type, .detail-instructor span, .live-class-status, .learn-lab-head strong, .section-head h2) {
+  color: var(--aix-inner-dark-text) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(p, small, em, li, span, .detail-subtitle, .section-copy, .payment-note, .course-meta, .course-progress-row, .live-class-meta, .receipt-pending, .tools-action-preview, .tools-action-body p, .learn-lab-prompt, .learn-editor-title span, .learn-terminal-top small, .learn-terminal-kb, .learn-run-result p, .section-head p) {
+  color: var(--aix-inner-light-muted) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(p, small, em, li, span, .detail-subtitle, .section-copy, .payment-note, .course-meta, .course-progress-row, .live-class-meta, .receipt-pending, .tools-action-preview, .tools-action-body p, .learn-lab-prompt, .learn-editor-title span, .learn-terminal-top small, .learn-terminal-kb, .learn-run-result p, .section-head p) {
+  color: var(--aix-inner-dark-muted) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(input, textarea, select, .global-search, .catalog-search, .auth-input-wrap, .member-form input, .course-gate-form input, .learn-lab-form textarea, #liveNotes, #lessonNotes, #learnAiInput) {
+  color: var(--aix-inner-light-text) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: var(--aix-inner-light-border) !important;
+  box-shadow: none !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(input, textarea, select, .global-search, .catalog-search, .auth-input-wrap, .member-form input, .course-gate-form input, .learn-lab-form textarea, #liveNotes, #lessonNotes, #learnAiInput) {
+  color: var(--aix-inner-dark-text) !important;
+  background: rgba(10, 10, 10, 0.88) !important;
+  border-color: var(--aix-inner-dark-border) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.secondary-btn, .link-btn, .text-link, .learn-tabs button, .learn-editor-tabs button, .learn-terminal-actions button, .tools-action-buttons button, .course-gate-close) {
+  color: var(--aix-inner-light-text) !important;
+  border-color: var(--aix-inner-light-border) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.secondary-btn, .link-btn, .text-link, .learn-tabs button, .learn-editor-tabs button, .learn-terminal-actions button, .tools-action-buttons button, .course-gate-close) {
+  color: var(--aix-inner-dark-text) !important;
+  border-color: var(--aix-inner-dark-border) !important;
+  background: rgba(24, 24, 27, 0.9) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]) {
+  color: #061438 !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #60a5fa 48%, #8b5cf6 100%) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  .primary-btn:not(.disabled):not([aria-disabled="true"]) {
+  color: #0a0a0a !important;
+  background: linear-gradient(135deg, #e0f2fe 0%, #93c5fd 46%, #a78bfa 100%) !important;
+}
+
+:where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.member-overview-card span, .member-resource-card span, .payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-schedule-card > span i, .dashboard-quick-actions i, .tools-card-icon, .tools-resource-icon, .tools-action-icon, .live-class-icon, .result-icon, .detail-instructor img, .live-card-head > span, .live-class-meta-row span, .learn-lab-head strong, .syllabus-number) {
+  color: var(--aix-inner-light-text) !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 55%, #c4b5fd 100%) !important;
+  border-color: rgba(147, 197, 253, 0.46) !important;
+}
+
+.dark :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+  :where(.member-overview-card span, .member-resource-card span, .payment-history-icon, .payment-history-empty span, .member-alert-card > span, .member-schedule-card > span i, .dashboard-quick-actions i, .tools-card-icon, .tools-resource-icon, .tools-action-icon, .live-class-icon, .result-icon, .detail-instructor img, .live-card-head > span, .live-class-meta-row span, .learn-lab-head strong, .syllabus-number) {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 54%, #6d28d9 100%) !important;
+  border-color: rgba(147, 197, 253, 0.28) !important;
+}
+
+@media (max-width: 760px) {
+  :where(#detailRoot, .dashboard-page, .tools-box-page, .live-class-page, .course-gate-page, .learn-shell)
+    :where(.section, .alt-section, .catalog-section, .detail-hero, .payment-page, .tools-box-hero, .live-class-hero) {
+    padding-top: clamp(22px, 6vw, 34px) !important;
+    padding-bottom: clamp(28px, 8vw, 44px) !important;
+  }
+
+  :where(.detail-tabs) {
+    top: 65px;
+  }
+}
+
+/* Inner page button specificity guard 2026-07-03 */
+#detailRoot .detail-hero,
+.classroom-page .detail-hero,
+.dashboard-page .section,
+.dashboard-page .alt-section,
+.tools-box-page .section,
+.tools-box-page .alt-section,
+.live-class-page .section,
+.live-class-page .alt-section,
+.course-gate-page .section,
+.course-gate-page .alt-section,
+.learn-shell .section,
+.learn-shell .alt-section {
+  background: transparent !important;
+}
+
+#detailRoot .detail-tabs {
+  color: var(--aix-inner-light-text) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: var(--aix-inner-light-border) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08) !important;
+}
+
+.dark #detailRoot .detail-tabs {
+  color: var(--aix-inner-dark-text) !important;
+  background: rgba(5, 5, 5, 0.88) !important;
+  border-color: var(--aix-inner-dark-border) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34) !important;
+}
+
+#detailRoot .secondary-btn,
+#detailRoot .secondary-btn.full,
+#detailRoot .secondary-btn.large,
+#detailRoot .link-btn,
+#detailRoot .text-link,
+.dashboard-page .secondary-btn,
+.dashboard-page .secondary-btn.full,
+.dashboard-page .secondary-btn.large,
+.dashboard-page .link-btn,
+.dashboard-page .text-link,
+.tools-box-page .secondary-btn,
+.tools-box-page .secondary-btn.full,
+.tools-box-page .secondary-btn.large,
+.tools-box-page .link-btn,
+.tools-box-page .text-link,
+.live-class-page .secondary-btn,
+.live-class-page .secondary-btn.full,
+.live-class-page .secondary-btn.large,
+.live-class-page .link-btn,
+.live-class-page .text-link,
+.course-gate-page .secondary-btn,
+.course-gate-page .secondary-btn.full,
+.course-gate-page .secondary-btn.large,
+.course-gate-page .link-btn,
+.course-gate-page .text-link,
+.learn-shell .secondary-btn,
+.learn-shell .secondary-btn.full,
+.learn-shell .secondary-btn.large,
+.learn-shell .link-btn,
+.learn-shell .text-link,
+.learn-shell .learn-tabs button,
+.learn-shell .learn-editor-tabs button,
+.learn-shell .learn-terminal-actions button,
+.tools-box-page .tools-action-buttons button,
+.course-gate-page .course-gate-close {
+  color: var(--aix-inner-light-text) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: var(--aix-inner-light-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 10px 24px rgba(15, 23, 42, 0.07) !important;
+}
+
+.dark #detailRoot .secondary-btn,
+.dark #detailRoot .secondary-btn.full,
+.dark #detailRoot .secondary-btn.large,
+.dark #detailRoot .link-btn,
+.dark #detailRoot .text-link,
+.dark .dashboard-page .secondary-btn,
+.dark .dashboard-page .secondary-btn.full,
+.dark .dashboard-page .secondary-btn.large,
+.dark .dashboard-page .link-btn,
+.dark .dashboard-page .text-link,
+.dark .tools-box-page .secondary-btn,
+.dark .tools-box-page .secondary-btn.full,
+.dark .tools-box-page .secondary-btn.large,
+.dark .tools-box-page .link-btn,
+.dark .tools-box-page .text-link,
+.dark .live-class-page .secondary-btn,
+.dark .live-class-page .secondary-btn.full,
+.dark .live-class-page .secondary-btn.large,
+.dark .live-class-page .link-btn,
+.dark .live-class-page .text-link,
+.dark .course-gate-page .secondary-btn,
+.dark .course-gate-page .secondary-btn.full,
+.dark .course-gate-page .secondary-btn.large,
+.dark .course-gate-page .link-btn,
+.dark .course-gate-page .text-link,
+.dark .learn-shell .secondary-btn,
+.dark .learn-shell .secondary-btn.full,
+.dark .learn-shell .secondary-btn.large,
+.dark .learn-shell .link-btn,
+.dark .learn-shell .text-link,
+.dark .learn-shell .learn-tabs button,
+.dark .learn-shell .learn-editor-tabs button,
+.dark .learn-shell .learn-terminal-actions button,
+.dark .tools-box-page .tools-action-buttons button,
+.dark .course-gate-page .course-gate-close {
+  color: var(--aix-inner-dark-text) !important;
+  background: rgba(24, 24, 27, 0.92) !important;
+  border-color: var(--aix-inner-dark-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(250, 250, 250, 0.08),
+    0 14px 30px rgba(0, 0, 0, 0.22) !important;
+}
+
+#detailRoot .primary-btn:not(.disabled):not([aria-disabled="true"]),
+#detailRoot .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+#detailRoot .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.dashboard-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dashboard-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dashboard-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.tools-box-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.tools-box-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.tools-box-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.live-class-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.live-class-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.live-class-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.course-gate-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.course-gate-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.course-gate-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.learn-shell .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.learn-shell .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.learn-shell .primary-btn.large:not(.disabled):not([aria-disabled="true"]) {
+  color: #061438 !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #60a5fa 48%, #8b5cf6 100%) !important;
+  border-color: rgba(147, 197, 253, 0.42) !important;
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.22) !important;
+}
+
+.dark #detailRoot .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dark #detailRoot .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dark #detailRoot .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.dark .dashboard-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dark .dashboard-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dark .dashboard-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.dark .tools-box-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dark .tools-box-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dark .tools-box-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.dark .live-class-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dark .live-class-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dark .live-class-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.dark .course-gate-page .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dark .course-gate-page .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dark .course-gate-page .primary-btn.large:not(.disabled):not([aria-disabled="true"]),
+.dark .learn-shell .primary-btn:not(.disabled):not([aria-disabled="true"]),
+.dark .learn-shell .primary-btn.full:not(.disabled):not([aria-disabled="true"]),
+.dark .learn-shell .primary-btn.large:not(.disabled):not([aria-disabled="true"]) {
+  color: #0a0a0a !important;
+  background: linear-gradient(135deg, #e0f2fe 0%, #93c5fd 46%, #a78bfa 100%) !important;
+  border-color: rgba(147, 197, 253, 0.5) !important;
+  box-shadow: 0 18px 40px rgba(96, 165, 250, 0.24) !important;
+}
+
+/* Class detail chip and logo color repair 2026-07-03 */
+#detailRoot .brand-logo-strip,
+#detailRoot .brand-board,
+#detailRoot .module-brand-row,
+#detailRoot .detail-skill-cloud,
+#detailRoot .tool-row {
+  padding: 0 !important;
+  color: inherit !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#detailRoot #detailStatus {
+  color: #075985 !important;
+  border: 1px solid rgba(14, 165, 233, 0.28) !important;
+  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 58%, #ede9fe 100%) !important;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12) !important;
+}
+
+.dark #detailRoot #detailStatus {
+  color: #e0f2fe !important;
+  border-color: rgba(96, 165, 250, 0.42) !important;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(139, 92, 246, 0.18)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px rgba(14, 165, 233, 0.12) !important;
+}
+
+#detailRoot .detail-instructor {
+  color: var(--aix-inner-light-text) !important;
+}
+
+.dark #detailRoot .detail-instructor {
+  color: var(--aix-inner-dark-text) !important;
+}
+
+#detailRoot .detail-instructor img {
+  padding: 7px !important;
+  color: inherit !important;
+  border: 1px solid rgba(203, 213, 225, 0.72) !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1) !important;
+  filter: none !important;
+}
+
+.dark #detailRoot .detail-instructor img {
+  border-color: rgba(148, 163, 184, 0.36) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28) !important;
+}
+
+#detailRoot .ai-brand-chip,
+#detailRoot .ai-brand-chip.compact {
+  color: #0f172a !important;
+  border-color: color-mix(in srgb, var(--brand-accent) 38%, rgba(203, 213, 225, 0.84)) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), color-mix(in srgb, var(--brand-bg) 74%, #ffffff)) !important;
+  box-shadow: 0 9px 22px rgba(15, 23, 42, 0.09) !important;
+}
+
+.dark #detailRoot .ai-brand-chip,
+.dark #detailRoot .ai-brand-chip.compact {
+  color: #f8fafc !important;
+  border-color: color-mix(in srgb, var(--brand-accent) 62%, rgba(148, 163, 184, 0.32)) !important;
+  background:
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--brand-accent) 20%, transparent), transparent 58%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.88)) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+#detailRoot .ai-brand-chip .brand-name,
+#detailRoot .ai-brand-chip.compact .brand-name {
+  color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+.dark #detailRoot .ai-brand-chip .brand-name,
+.dark #detailRoot .ai-brand-chip.compact .brand-name {
+  color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+#detailRoot .ai-brand-chip .brand-logo-img,
+#detailRoot .ai-brand-chip.compact .brand-logo-img {
+  display: block !important;
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 auto !important;
+  object-fit: contain !important;
+  border-radius: 8px !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+#detailRoot .ai-brand-chip.compact .brand-logo-img {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 7px !important;
+}
+
+#detailRoot .brand-higgsfield .brand-logo-img {
+  border-radius: 9px !important;
+}
+
+#detailRoot .ai-brand-chip .brand-mark,
+#detailRoot .ai-brand-chip.compact .brand-mark {
+  color: #ffffff !important;
+  border: 1px solid color-mix(in srgb, var(--brand-accent) 36%, rgba(255, 255, 255, 0.58)) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-accent) 78%, #ffffff), var(--brand-accent)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark #detailRoot .ai-brand-chip .brand-mark,
+.dark #detailRoot .ai-brand-chip.compact .brand-mark {
+  color: #ffffff !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--brand-accent) 22%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+#detailRoot .detail-skill-cloud span {
+  color: #0f172a !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+  background: linear-gradient(135deg, #ffffff, #eff6ff 58%, #f5f3ff) !important;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.09) !important;
+}
+
+.dark #detailRoot .detail-skill-cloud span {
+  color: #dbeafe !important;
+  border-color: rgba(96, 165, 250, 0.38) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.16), transparent 58%),
+    rgba(15, 23, 42, 0.78) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+#detailRoot .tool-row span {
+  color: #1e293b !important;
+  border-color: rgba(203, 213, 225, 0.88) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07) !important;
+}
+
+.dark #detailRoot .tool-row span {
+  color: #dbeafe !important;
+  border-color: rgba(148, 163, 184, 0.32) !important;
+  background: rgba(15, 23, 42, 0.78) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+#detailRoot .tool-row span i {
+  color: #2563eb !important;
+}
+
+.dark #detailRoot .tool-row span i {
+  color: #93c5fd !important;
+}
+
+/* Class detail mobile frame and menu polish 2026-07-03 */
+#detailMobileMenu.mobile-menu {
+  color: #0f172a !important;
+  border-color: rgba(203, 213, 225, 0.84) !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.94), transparent 44%),
+    linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 28px rgba(15, 23, 42, 0.1) !important;
+}
+
+.dark #detailMobileMenu.mobile-menu {
+  color: #dbeafe !important;
+  border-color: rgba(96, 165, 250, 0.38) !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(96, 165, 250, 0.22), transparent 50%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.88)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 30px rgba(0, 0, 0, 0.28) !important;
+}
+
+#detailMobileMenu.mobile-menu i {
+  color: currentColor !important;
+}
+
+@media (max-width: 760px) {
+  #detailRoot .detail-hero {
+    padding: 24px 0 28px !important;
+  }
+
+  #detailRoot .detail-hero-grid {
+    width: min(calc(100% - 40px), 480px) !important;
+    margin-inline: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  #detailRoot .detail-hero-copy {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    margin-inline: auto !important;
+    padding: clamp(20px, 5.4vw, 28px) clamp(18px, 5.2vw, 24px) !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  #detailRoot .breadcrumb {
+    gap: 6px !important;
+    margin-bottom: 16px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.35 !important;
+  }
+
+  #detailRoot .detail-hero .eyebrow {
+    margin-bottom: 12px !important;
+    font-size: 0.85rem !important;
+  }
+
+  #detailRoot .detail-hero h1 {
+    max-width: 100% !important;
+    font-size: clamp(2.05rem, 10.2vw, 2.85rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #detailRoot .detail-subtitle {
+    max-width: 100% !important;
+    font-size: clamp(1rem, 4.45vw, 1.18rem) !important;
+    line-height: 1.58 !important;
+  }
+
+  #detailRoot .detail-instructor {
+    margin: 18px 0 !important;
+    gap: 10px !important;
+  }
+
+  #detailRoot .detail-stats {
+    gap: 10px 14px !important;
+    margin-top: 18px !important;
+  }
+
+  #detailRoot .brand-logo-strip {
+    gap: 8px !important;
+    margin-top: 16px !important;
+    padding: 0 0 2px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  #detailRoot .brand-logo-strip::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #detailRoot .detail-hero-grid {
+    width: min(calc(100% - 28px), 420px) !important;
+  }
+
+  #detailRoot .detail-hero-copy {
+    padding: 18px 16px 20px !important;
+    border-radius: 16px !important;
+  }
+
+  #detailRoot .detail-hero h1 {
+    font-size: clamp(1.88rem, 10vw, 2.35rem) !important;
+  }
+}
+
+/* Dark-only mode 2026-07-03 */
+html {
+  color-scheme: dark !important;
+  background: #050505 !important;
+}
+
+body {
+  background-color: #050505;
+}
+
+[data-theme-toggle],
+.theme-toggle,
+.theme-toggle-mobile,
+.aix-shared-theme-toggle {
+  display: none !important;
+}
+
+/* Class detail dark frame and header polish 2026-07-03 */
+.detail-site-header {
+  color: #f8fafc !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(96, 165, 250, 0.1), transparent 26rem),
+    linear-gradient(180deg, rgba(8, 12, 18, 0.96), rgba(5, 5, 5, 0.92)) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(22px);
+}
+
+.detail-site-header .top-strip {
+  display: none !important;
+}
+
+.detail-site-header .nav-bar {
+  width: min(1180px, calc(100% - 56px)) !important;
+  min-height: 74px !important;
+  gap: 14px !important;
+}
+
+.detail-site-header .brand img {
+  filter: invert(1) grayscale(1) contrast(1.12) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.34)) !important;
+  opacity: 0.96 !important;
+}
+
+.detail-site-header :where(.explore-btn, .global-search, .link-btn, .main-nav button) {
+  color: #dbeafe !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.detail-site-header :where(.explore-btn, .link-btn, .main-nav button):hover,
+.detail-site-header .main-nav button.active {
+  color: #ffffff !important;
+  border-color: rgba(147, 197, 253, 0.36) !important;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(147, 197, 253, 0.18), transparent 60%),
+    rgba(15, 23, 42, 0.82) !important;
+}
+
+.detail-site-header .global-search {
+  min-width: clamp(220px, 22vw, 300px) !important;
+}
+
+.detail-site-header .global-search input {
+  color: #f8fafc !important;
+  min-width: 0 !important;
+}
+
+.detail-site-header .global-search input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.detail-site-header #detailNavCta {
+  color: #06111f !important;
+  border-color: rgba(191, 219, 254, 0.72) !important;
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 48%, #a78bfa 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 16px 34px rgba(59, 130, 246, 0.2) !important;
+}
+
+#detailRoot .detail-hero {
+  padding: clamp(34px, 4vw, 58px) 0 clamp(44px, 5vw, 72px) !important;
+  background:
+    radial-gradient(circle at 76% 0%, rgba(56, 189, 248, 0.08), transparent 28rem),
+    radial-gradient(circle at 12% 20%, rgba(99, 102, 241, 0.08), transparent 24rem),
+    linear-gradient(180deg, #050505 0%, #09090b 58%, #050505 100%) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.13) !important;
+}
+
+#detailRoot .detail-hero-grid {
+  width: min(1180px, calc(100% - clamp(48px, 7vw, 104px))) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 380px) !important;
+  gap: clamp(24px, 3vw, 36px) !important;
+  align-items: stretch !important;
+}
+
+#detailRoot .detail-hero-copy {
+  position: relative !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  min-height: clamp(430px, 37vw, 500px) !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: clamp(30px, 3.4vw, 46px) !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(148, 163, 184, 0.17) !important;
+  border-radius: clamp(20px, 2vw, 28px) !important;
+  color: #f8fafc !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 12%, rgba(99, 102, 241, 0.08), transparent 36%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(5, 5, 5, 0.94)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 70px rgba(0, 0, 0, 0.38) !important;
+}
+
+#detailRoot .detail-hero-copy::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, transparent 0 42%, rgba(147, 197, 253, 0.08) 50%, transparent 60%),
+    radial-gradient(circle at 12% 94%, rgba(14, 165, 233, 0.12), transparent 26%);
+  opacity: 0.78;
+}
+
+#detailRoot .detail-hero-copy > * {
+  position: relative;
+  z-index: 1;
+}
+
+#detailRoot .detail-hero h1 {
+  max-width: 760px !important;
+  font-size: clamp(3.25rem, 4.55vw, 4.85rem) !important;
+  line-height: 1.03 !important;
+  letter-spacing: 0 !important;
+  color: #ffffff !important;
+}
+
+#detailRoot .detail-subtitle {
+  max-width: 780px !important;
+  margin-top: clamp(14px, 1.7vw, 20px) !important;
+  color: #dbeafe !important;
+  font-size: clamp(1.05rem, 1.35vw, 1.22rem) !important;
+  line-height: 1.64 !important;
+}
+
+#detailRoot .breadcrumb,
+#detailRoot .detail-hero .eyebrow {
+  color: #b6c6dc !important;
+}
+
+#detailRoot .breadcrumb a {
+  color: #e0f2fe !important;
+}
+
+#detailRoot .detail-instructor {
+  margin: clamp(20px, 2.2vw, 28px) 0 0 !important;
+}
+
+#detailRoot .detail-stats {
+  margin-top: clamp(22px, 2.6vw, 34px) !important;
+}
+
+#detailRoot .brand-logo-strip {
+  margin-top: clamp(18px, 2.4vw, 28px) !important;
+}
+
+#detailRoot .enroll-card {
+  box-sizing: border-box !important;
+  min-height: clamp(430px, 37vw, 500px) !important;
+  align-self: stretch !important;
+  border-radius: clamp(20px, 1.8vw, 24px) !important;
+  overflow: hidden !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.12), transparent 38%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(5, 5, 5, 0.96)) !important;
+}
+
+#detailRoot .enroll-card img {
+  aspect-ratio: 16 / 10 !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+}
+
+@media (max-width: 1180px) {
+  .detail-site-header .nav-bar {
+    width: min(100% - 40px, 1040px) !important;
+    gap: 10px !important;
+  }
+
+  .detail-site-header .global-search {
+    min-width: 210px !important;
+  }
+
+  #detailRoot .detail-hero-grid {
+    width: min(100% - 44px, 1040px) !important;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 360px) !important;
+    gap: 24px !important;
+  }
+
+  #detailRoot .detail-hero h1 {
+    font-size: clamp(2.9rem, 4.6vw, 4.1rem) !important;
+  }
+}
+
+@media (max-width: 1060px) {
+  .detail-site-header .explore-btn,
+  .detail-site-header .global-search,
+  .detail-site-header .main-nav,
+  .detail-site-header .nav-actions {
+    display: none !important;
+  }
+
+  .detail-site-header .nav-bar {
+    min-height: 84px !important;
+    justify-content: space-between !important;
+  }
+
+  #detailRoot .detail-hero-grid {
+    width: min(100% - 44px, 760px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 22px !important;
+  }
+
+  #detailRoot .detail-hero-copy,
+  #detailRoot .enroll-card {
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .detail-site-header .nav-bar {
+    width: min(100% - 40px, 520px) !important;
+  }
+
+  #detailRoot .detail-hero-grid {
+    width: min(calc(100% - 32px), 520px) !important;
+    gap: 18px !important;
+  }
+
+  #detailRoot .detail-hero-copy {
+    justify-content: flex-start !important;
+    min-height: auto !important;
+    padding: clamp(22px, 5.4vw, 30px) clamp(18px, 5.2vw, 24px) !important;
+    border-radius: 18px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .detail-site-header .nav-bar {
+    width: min(100% - 28px, 420px) !important;
+  }
+
+  #detailRoot .detail-hero-grid {
+    width: min(calc(100% - 28px), 420px) !important;
+  }
+}
+
+/* Class detail navbar standardization 2026-07-03 */
+.detail-site-header.aix-home-header {
+  min-height: 82px !important;
+}
+
+.detail-site-header.aix-home-header .nav-bar {
+  min-height: 82px !important;
+  justify-content: space-between !important;
+}
+
+.detail-site-header .brand-lockup .brand-icon-card {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: #050505 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 12px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+.detail-site-header .brand-lockup .brand-icon {
+  filter: none !important;
+}
+
+.detail-site-header .brand-title {
+  color: #ffffff !important;
+}
+
+.detail-site-header .brand-tagline {
+  color: #a1a1aa !important;
+}
+
+.detail-site-header .hover-gradient-nav-item {
+  text-decoration: none !important;
+}
+
+.detail-site-header .hover-gradient-nav-list {
+  border-color: rgba(39, 39, 42, 0.88) !important;
+  background: rgba(10, 10, 10, 0.82) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 38px rgba(0, 0, 0, 0.34) !important;
+}
+
+@media (min-width: 1024px) {
+  .detail-site-header .hover-gradient-nav-bar {
+    top: 8px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .detail-site-header.aix-home-header .hover-gradient-nav-bar {
+    display: none !important;
+  }
+}
+
+/* Homepage hero and catalog empty state polish 2026-07-03 */
+.aix-stack-hero h1,
+.aix-hero-title {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  max-width: min(740px, 100%);
+  color: #f8fafc;
+  display: grid;
+  gap: 0.02em;
+  filter: drop-shadow(0 14px 34px rgba(96, 165, 250, 0.18));
+}
+
+.aix-hero-title-line {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  background:
+    linear-gradient(108deg, #ffffff 0%, #dbeafe 38%, #93c5fd 64%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.aix-hero-ai-word {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.12em;
+  margin-left: 0.04em;
+  border-radius: 0.18em;
+  background:
+    linear-gradient(135deg, #e0f2fe 0%, #60a5fa 42%, #a78bfa 72%, #f0abfc 100%);
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: #07111f;
+  color: #07111f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 14px 34px rgba(96, 165, 250, 0.24);
+}
+
+.aix-stack-hero h1::before,
+.aix-hero-title::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -0.16em -0.24em;
+  border-radius: 0.24em;
+  background:
+    radial-gradient(circle at 22% 14%, rgba(96, 165, 250, 0.18), transparent 36%),
+    radial-gradient(circle at 80% 72%, rgba(168, 85, 247, 0.16), transparent 34%);
+  opacity: 0.9;
+}
+
+.aix-stack-hero h1::after,
+.aix-hero-title::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: -0.12em;
+  width: min(72%, 420px);
+  height: 0.18em;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.58), rgba(167, 139, 250, 0.5), transparent);
+  filter: blur(10px);
+  opacity: 0.82;
+}
+
+html:not(.dark) .aix-hero-title-line {
+  background: linear-gradient(108deg, #050505 0%, #111827 35%, #2563eb 66%, #050505 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html:not(.dark) .aix-stack-hero h1,
+html:not(.dark) .aix-hero-title {
+  filter: drop-shadow(0 12px 28px rgba(37, 99, 235, 0.14));
+}
+
+#classesGrid > .catalog-empty-state {
+  grid-column: 1 / -1 !important;
+  min-height: clamp(190px, 26vw, 260px) !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 14px !important;
+  padding: clamp(24px, 5vw, 38px) !important;
+  overflow: hidden !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  color: #f8fafc !important;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(56, 189, 248, 0.2), transparent 34%),
+    radial-gradient(circle at 88% 88%, rgba(167, 139, 250, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(2, 6, 23, 0.98), rgba(8, 13, 24, 0.94) 58%, rgba(17, 24, 39, 0.9)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 22px 54px rgba(0, 0, 0, 0.28) !important;
+}
+
+#classesGrid > .catalog-empty-state::before {
+  opacity: 0.32 !important;
+}
+
+#classesGrid > .catalog-empty-state h3 {
+  margin: 0 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+#classesGrid > .catalog-empty-state p {
+  margin: 0 !important;
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+html:not(.dark) #classesGrid > .catalog-empty-state {
+  border-color: rgba(37, 99, 235, 0.18) !important;
+  color: #0f172a !important;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(219, 234, 254, 0.9), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94)) !important;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.1) !important;
+}
+
+html:not(.dark) #classesGrid > .catalog-empty-state h3 {
+  color: #0f172a !important;
+}
+
+html:not(.dark) #classesGrid > .catalog-empty-state p {
+  color: #475569 !important;
+}
+
+@media (max-width: 640px) {
+  .aix-stack-hero h1,
+  .aix-hero-title {
+    width: 100%;
+    text-align: center;
+    justify-items: center;
+    filter: drop-shadow(0 10px 24px rgba(96, 165, 250, 0.16));
+  }
+
+  #classesGrid > .catalog-empty-state {
+    min-height: 170px !important;
+    padding: 24px 22px !important;
+  }
+}
+
+/* Homepage hero title refinement 2026-07-03 */
+.aix-stack-hero .aix-hero-title {
+  width: min(100%, 760px);
+  gap: 0.04em;
+  justify-items: start;
+  letter-spacing: 0;
+  filter: drop-shadow(0 18px 44px rgba(15, 23, 42, 0.32));
+}
+
+.aix-stack-hero .aix-hero-title::before {
+  inset: -0.2em -0.28em;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 20% 8%, rgba(56, 189, 248, 0.12), transparent 35%),
+    radial-gradient(circle at 82% 68%, rgba(129, 140, 248, 0.12), transparent 34%);
+  opacity: 0.7;
+}
+
+.aix-stack-hero .aix-hero-title::after {
+  bottom: -0.18em;
+  width: min(62%, 360px);
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.72), rgba(167, 139, 250, 0.62), transparent);
+  filter: blur(5px);
+  opacity: 0.76;
+}
+
+.aix-stack-hero .aix-hero-title-line {
+  width: auto;
+  color: #f8fafc;
+  background:
+    linear-gradient(100deg, #ffffff 0%, #f8fafc 36%, #bfdbfe 78%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 34px rgba(96, 165, 250, 0.12);
+}
+
+.aix-stack-hero .aix-hero-ai-word {
+  padding: 0;
+  margin-left: 0.08em;
+  border-radius: 0;
+  color: #93c5fd;
+  background:
+    linear-gradient(135deg, #bae6fd 0%, #60a5fa 38%, #a78bfa 74%, #e879f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  box-shadow: none;
+  text-shadow:
+    0 0 22px rgba(96, 165, 250, 0.42),
+    0 0 34px rgba(167, 139, 250, 0.22);
+}
+
+.aix-stack-hero .aix-hero-ai-word::after {
+  content: "";
+  position: absolute;
+  left: 0.02em;
+  right: 0.02em;
+  bottom: 0.04em;
+  height: 0.08em;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.72), rgba(167, 139, 250, 0.72));
+  opacity: 0.62;
+}
+
+html:not(.dark) .aix-stack-hero .aix-hero-title-line {
+  background: linear-gradient(100deg, #050505 0%, #111827 38%, #2563eb 76%, #111827 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html:not(.dark) .aix-stack-hero .aix-hero-ai-word {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 52%, #9333ea 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (max-width: 640px) {
+  .aix-stack-hero .aix-hero-title {
+    justify-items: center;
+    gap: 0.02em;
+    filter: drop-shadow(0 14px 34px rgba(96, 165, 250, 0.18));
+  }
+
+  .aix-stack-hero .aix-hero-title::after {
+    width: min(58%, 250px);
+    bottom: -0.12em;
   }
 }

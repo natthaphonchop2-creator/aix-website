@@ -498,17 +498,26 @@ function renderDashboard(data) {
 
   const paid = Boolean(payment.active);
   const expired = Boolean(payment.expired);
+  const phoneVerified = Boolean(member.phoneVerified);
   paymentBadge.textContent = paid ? "ชำระแล้ว" : expired ? "หมดอายุ" : "ยังไม่ชำระ";
   paymentBadge.classList.toggle("paid", paid);
   paymentBadge.classList.toggle("expired", expired);
-  paymentTitle.textContent = paid ? "ปลดล็อกคอร์สแล้ว" : expired ? "สมาชิกหมดอายุแล้ว" : "ชำระเงินเพื่อเข้าเรียน";
+  paymentTitle.textContent = paid
+    ? "ปลดล็อกคอร์สแล้ว"
+    : !phoneVerified
+      ? "ยืนยันเบอร์ก่อนชำระเงิน"
+      : expired
+        ? "สมาชิกหมดอายุแล้ว"
+        : "ชำระเงินเพื่อเข้าเรียน";
   paymentCopy.textContent = paid
     ? `สิทธิ์ใช้งานถึง ${formatDate(payment.expiresAt)}`
-    : expired
-      ? `สิทธิ์ใช้งานหมดอายุเมื่อ ${formatDate(payment.expiresAt)} ต่ออายุเพื่อเข้าเรียนต่อ`
-    : `ยอดชำระ AiX Member ${payment.amount.toLocaleString("th-TH")} บาท ชำระผ่าน Stripe หรือ PromptPay เพื่อปลดล็อกคอร์ส`;
+    : !phoneVerified
+      ? "สมัครเรียบร้อยแล้ว กรุณายืนยันเบอร์โทรด้วย SMS ก่อนเข้าสู่ขั้นตอนชำระเงิน"
+      : expired
+        ? `สิทธิ์ใช้งานหมดอายุเมื่อ ${formatDate(payment.expiresAt)} ต่ออายุเพื่อเข้าเรียนต่อ`
+        : `ยอดชำระ AiX Member ${payment.amount.toLocaleString("th-TH")} บาท ชำระผ่าน Stripe หรือ PromptPay เพื่อปลดล็อกคอร์ส`;
   payBtn.hidden = paid;
-  payBtn.textContent = expired ? "ต่ออายุสมาชิก" : "ชำระเงินเพื่อเข้าเรียน";
+  payBtn.textContent = !phoneVerified ? "ยืนยันเบอร์ก่อนชำระเงิน" : expired ? "ต่ออายุสมาชิก" : "ชำระเงินเพื่อเข้าเรียน";
 
   accountStatusText.textContent = member.status === "active" ? "Active" : "Suspended";
   paymentMethodText.textContent = expired ? "หมดอายุ" : paymentMethodLabel(member);

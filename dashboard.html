@@ -13,20 +13,16 @@
   <meta name="color-scheme" content="dark">
   <script>
     (function () {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+      document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
       try {
-        var savedTheme = localStorage.getItem("aix-theme");
-        var isDark = savedTheme !== "light";
-        document.documentElement.classList.toggle("dark", isDark);
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
-      } catch (error) {
-        document.documentElement.classList.add("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
-      }
+        localStorage.setItem("aix-theme", "dark");
+      } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="styles.css?v=aix-footer-responsive-v61-20260624">
+  <link rel="stylesheet" href="styles.css?v=aix-hero-empty-state-polish-v68-20260703">
 </head>
 <body>
   <header class="site-header dashboard-header">
@@ -221,6 +217,6 @@
 
   <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast"></div>
-  <script src="dashboard.js?v=live-class-1"></script>
+  <script src="dashboard.js?v=phone-verify-before-payment-20260702"></script>
 </body>
 </html>

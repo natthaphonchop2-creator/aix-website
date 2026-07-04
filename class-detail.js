@@ -7,7 +7,7 @@ const detailCourses = {
     subtitle: "สร้าง AI Agent และ workflow automation ที่ช่วยตอบลูกค้า สรุปรายงาน วางแผนคอนเทนต์ และลดงานซ้ำในธุรกิจ",
     overview: "คอร์สนี้พาผู้เรียนตั้งแต่การเลือก use case ที่เหมาะกับธุรกิจ ไปจนถึงการสร้าง Agent ที่มีหน้าที่ชัดเจน ใช้ prompt ได้แม่นยำ และเชื่อม workflow เพื่อเอาผลลัพธ์ไปใช้กับงานจริง",
     instructor: "AiX Team",
-    image: "assets/generated/course-ai-agent.jpg",
+    image: "assets/generated/course-banner-manus-ai.png",
     price: 1999,
     rating: "4.9",
     learners: "เหมาะกับผู้ประกอบการและทีมธุรกิจ",
@@ -19,12 +19,12 @@ const detailCourses = {
       "ออกแบบ AI Agent ให้มีหน้าที่ ข้อมูล และขอบเขตการทำงานชัดเจน",
       "เขียน prompt สำหรับงานธุรกิจ เช่น สรุปรายงาน ตอบลูกค้า และวางแผนคอนเทนต์",
       "ทำ Deep Research และเปลี่ยน insight ให้เป็น action plan",
-      "เชื่อม workflow ด้วยเครื่องมือ automation เช่น Make หรือ n8n",
+      "ออกแบบ workflow automation จากงานจริงให้ทีมเอาไปใช้ต่อได้",
       "วางระบบ Content, Sales และ Customer Service ที่ใช้ซ้ำได้"
     ],
-    skills: ["AI Agent", "Prompt Engineering", "Workflow Automation", "Deep Research", "Customer Service AI", "Content System", "Business Operations"],
-    tools: ["Manus AI", "Claude", "ChatGPT", "Make", "n8n", "Google Sheets"],
-    brandFocus: [["Manus AI"], ["Manus AI", "Claude"], ["ChatGPT", "Claude"], ["Claude", "Google Sheets"], ["Make", "n8n"], ["Manus AI", "Make"]],
+    skills: ["Manus AI", "AI Agent", "Prompt Engineering", "Workflow Automation", "Deep Research", "Customer Service AI", "Business Operations"],
+    tools: ["Manus AI", "Claude", "ChatGPT"],
+    brandFocus: [["Manus AI"], ["Manus AI"], ["Claude", "ChatGPT"], ["Claude", "Perplexity"], ["Manus AI", "ChatGPT"], ["Manus AI", "Claude"]],
     info: [
       ["รูปแบบเรียน", "คลาสสดกลุ่มเล็ก พร้อมวิดีโอย้อนหลัง"],
       ["ระดับ", "เริ่มต้นได้ แต่เน้นลงมือทำจริง"],
@@ -73,13 +73,13 @@ const detailCourses = {
   },
   "claude-manus-vibe-coding": {
     id: "claude-manus-vibe-coding",
-    title: "Claude & Manus Vibe Coding",
+    title: "Claude & Codex Vibe Coding",
     type: "Special Class",
     status: "แจ้งเตือน",
     subtitle: "ใช้ AI ช่วยเปลี่ยนไอเดียธุรกิจให้เป็น prototype เว็บ แอป และ workflow ที่ทีมเข้าใจตรงกัน",
-    overview: "คอร์สนี้เหมาะกับคนที่อยากทำ MVP หรือ prototype โดยใช้ Claude และ Manus ช่วยคิด requirement, เขียนสเปก, สร้างโครงหน้า และ debug แนวคิดก่อนส่งต่อให้ทีมพัฒนา",
+    overview: "คอร์สนี้เหมาะกับคนที่อยากทำ MVP หรือ prototype โดยใช้ Claude และ Codex ช่วยคิด requirement, เขียนสเปก, สร้างโครงหน้า และ debug แนวคิดก่อนส่งต่อให้ทีมพัฒนา",
     instructor: "AiX Team",
-    image: "assets/generated/course-ai-coding.jpg",
+    image: "assets/generated/course-banner-claude-codex-vibe-coding.png",
     price: 0,
     rating: "New",
     learners: "เหมาะกับ Founder, PM, Marketer และ Creator",
@@ -87,16 +87,16 @@ const detailCourses = {
     level: "Practical",
     schedule: "วิดีโอ + workshop",
     lessons: "4 modules",
-    outcomes: ["เขียน prompt เพื่อสร้างสเปก product", "ออกแบบ user flow ด้วย AI", "สร้าง prototype และ iterate อย่างเป็นระบบ", "สื่อสารกับ developer ได้ชัดขึ้น"],
-    skills: ["Vibe Coding", "Product Spec", "AI Coding", "Prototype", "Debugging", "Claude"],
-    tools: ["Claude", "Manus AI", "Cursor", "GitHub", "Browser DevTools"],
-    brandFocus: [["Claude"], ["Manus AI", "Claude"], ["Cursor", "GitHub"], ["GitHub", "Browser DevTools"]],
+    outcomes: ["เขียน prompt เพื่อสร้างสเปก product", "ออกแบบ user flow ด้วย AI", "สร้าง prototype และ iterate อย่างเป็นระบบ", "เข้าใจภาพรวม API และ MCP ก่อนส่งต่อให้ทีม", "สื่อสารกับ developer ได้ชัดขึ้น"],
+    skills: ["Claude", "Codex", "Cursor", "Vibe Coding", "Product Spec", "Prototype", "Debugging"],
+    tools: ["Claude", "Codex", "Cursor", "Copilot"],
+    brandFocus: [["Claude"], ["Claude", "Codex"], ["Codex", "Cursor"], ["Claude", "Codex", "Cursor"]],
     info: [["รูปแบบเรียน", "Workshop สั้นพร้อมตัวอย่าง"], ["ระดับ", "ผู้เริ่มต้นที่อยากทำ prototype"], ["ภาษา", "ภาษาไทย"], ["Resource", "Spec Template, Prompt Checklist"]],
     syllabus: [
       { title: "Module 1: Prompt to Product Spec", time: "45 นาที", points: ["แปลงไอเดียเป็น requirement", "เขียน user story", "กำหนด scope MVP"] },
       { title: "Module 2: Prototype Workflow", time: "60 นาที", points: ["สร้างโครงหน้า", "กำหนด component", "ตรวจ UX flow"] },
-      { title: "Module 3: Debug กับ AI", time: "45 นาที", points: ["อ่าน error", "ตั้งคำถามให้ AI ช่วยแก้", "ตรวจผลลัพธ์แบบไม่หลงทาง"] },
-      { title: "Module 4: ส่งต่อให้ทีม", time: "30 นาที", points: ["จัดเอกสาร", "เขียน acceptance criteria", "วาง next step"] }
+      { title: "Module 3: API, MCP และ Debug กับ AI", time: "55 นาที", points: ["อ่าน error", "เข้าใจ request/response", "วาง workflow ก่อนเชื่อมระบบจริง"] },
+      { title: "Module 4: ส่งต่อให้ทีม", time: "35 นาที", points: ["จัดเอกสาร", "เขียน acceptance criteria", "วาง next step"] }
     ],
     project: "ผู้เรียนจะสร้าง prototype brief สำหรับไอเดียเว็บหรือระบบธุรกิจหนึ่งชิ้น พร้อม user flow, feature list และ prompt สำหรับส่งต่อให้ AI หรือทีมพัฒนา",
     faq: [["ต้องเขียนโค้ดไหม?", "ไม่จำเป็น แต่จะช่วยให้เข้าใจภาพรวมการทำ prototype กับ AI"], ["เหมาะกับใคร?", "เหมาะกับคนที่มีไอเดียระบบแต่ยังไม่อยากเริ่มจ้างพัฒนาเต็มรูปแบบ"]]
@@ -109,7 +109,7 @@ const detailCourses = {
     subtitle: "ใช้ Claude สำหรับงานคิด วิเคราะห์ เขียนเอกสาร สรุปข้อมูล และทำงานร่วมกับทีมแบบมืออาชีพ",
     overview: "คอร์สนี้พาผู้เรียนเข้าใจวิธีใช้ Claude ให้เหมาะกับงานที่ต้องการเหตุผล ความละเอียด และคุณภาพของภาษา ตั้งแต่การตั้ง context ไปจนถึงการทำเอกสารและ workflow สำหรับทีม",
     instructor: "AiX Team",
-    image: "assets/generated/course-ai-coding.jpg",
+    image: "assets/generated/course-banner-claude-deep-dive.png",
     price: 1999,
     rating: "4.8",
     learners: "เหมาะกับทีมการตลาด เจ้าของธุรกิจ และคนทำเอกสาร",
@@ -118,9 +118,9 @@ const detailCourses = {
     schedule: "เรียนออนไลน์ + ดูย้อนหลัง",
     lessons: "5 modules",
     outcomes: ["ตั้ง context ให้ Claude เข้าใจงานและข้อจำกัด", "วิเคราะห์ข้อมูลและสรุป insight เป็นเอกสารที่ใช้ต่อได้", "สร้าง prompt สำหรับงานเขียน แผนงาน และ research", "ทำ checklist ตรวจคุณภาพ output ก่อนส่งงาน"],
-    skills: ["Claude", "Prompt Context", "AI Writing", "Research Summary", "Document Workflow", "Quality Review"],
-    tools: ["Claude", "Google Docs", "ChatGPT", "Notion", "Google Sheets"],
-    brandFocus: [["Claude"], ["Claude", "Google Docs"], ["Claude", "ChatGPT"], ["Google Docs", "Notion"], ["Notion", "Google Sheets"]],
+    skills: ["Claude", "Perplexity", "ChatGPT", "Prompt Context", "Research Summary", "Document Workflow", "Quality Review"],
+    tools: ["Claude", "Perplexity", "ChatGPT"],
+    brandFocus: [["Claude"], ["Claude"], ["Claude", "Perplexity"], ["Claude", "ChatGPT"], ["Claude"]],
     info: [["รูปแบบเรียน", "บทเรียนวิดีโอพร้อมตัวอย่าง"], ["ระดับ", "เริ่มต้นได้"], ["ภาษา", "ภาษาไทย"], ["Resource", "Prompt Library, Review Checklist"]],
     syllabus: [
       { title: "Module 1: Claude สำหรับงานจริง", time: "40 นาที", points: ["เข้าใจจุดแข็งของ Claude", "เลือกงานที่เหมาะ", "ตั้งเป้าหมาย output"] },
@@ -130,7 +130,7 @@ const detailCourses = {
       { title: "Module 5: Team Playbook", time: "50 นาที", points: ["ทำ template สำหรับทีม", "ตั้งเกณฑ์ตรวจงาน", "ลดงานซ้ำ"] }
     ],
     project: "ผู้เรียนจะสร้าง Claude workflow สำหรับงานหนึ่งประเภท เช่น proposal, content brief, report summary หรือ SOP พร้อม prompt template และ checklist ตรวจคุณภาพ",
-    faq: [["Claude ต่างจาก ChatGPT อย่างไร?", "คอร์สจะสอนวิธีเลือกใช้ตามลักษณะงาน และเน้นงานที่ Claude ทำได้เด่น เช่น เอกสารยาว การวิเคราะห์ และการเรียบเรียง"], ["ต้องมี Claude Pro ไหม?", "เรียนได้แม้ใช้แพ็กเกจพื้นฐาน แต่บางตัวอย่างจะทำงานได้เต็มขึ้นเมื่อมี quota สูงกว่า"]]
+    faq: [["Claude เหมาะกับงานแบบไหน?", "คอร์สจะสอนวิธีเลือกใช้ Claude ตามลักษณะงาน และเน้นงานที่ต้องใช้เหตุผล เอกสารยาว การวิเคราะห์ และการเรียบเรียง"], ["ต้องมี Claude Pro ไหม?", "เรียนได้แม้ใช้แพ็กเกจพื้นฐาน แต่บางตัวอย่างจะทำงานได้เต็มขึ้นเมื่อมี quota สูงกว่า"]]
   },
   "ai-video-graphic": {
     id: "ai-video-graphic",
@@ -138,9 +138,9 @@ const detailCourses = {
     type: "Creative Class",
     status: "พร้อมเรียน",
     subtitle: "สร้างภาพ วิดีโอ และสื่อโฆษณาด้วย AI ให้มีทิศทางแบรนด์ชัด ใช้งานได้จริง และผลิตซ้ำได้เร็วขึ้น",
-    overview: "คอร์สนี้เน้น workflow งานครีเอทีฟด้วย AI ตั้งแต่การออกแบบ visual direction, เขียน prompt ภาพ, ทำ storyboard, สร้างวิดีโอสั้น และเตรียม asset สำหรับแคมเปญ",
+    overview: "คอร์สนี้เน้น workflow งานครีเอทีฟด้วย AI และ Higgsfield ตั้งแต่การวาง visual direction, เขียน prompt ภาพ, ทำ storyboard, สร้างวิดีโอสั้น และเตรียม asset สำหรับแคมเปญให้กลับมาใช้ซ้ำได้",
     instructor: "AiX Team",
-    image: "assets/generated/course-creative-ai.jpg",
+    image: "assets/generated/course-banner-ai-video-graphic.png",
     price: 1999,
     rating: "4.8",
     learners: "เหมาะกับ Creator, Marketer, Designer และเจ้าของแบรนด์",
@@ -148,17 +148,17 @@ const detailCourses = {
     level: "Practical",
     schedule: "เรียนออนไลน์ + workshop",
     lessons: "6 modules",
-    outcomes: ["วาง visual direction สำหรับแบรนด์หรือแคมเปญ", "เขียน prompt เพื่อสร้างภาพประกอบและ key visual", "สร้าง storyboard และวิดีโอสั้นด้วย AI", "จัด workflow ตรวจงานและปรับภาพให้สื่อสารตรงโจทย์"],
-    skills: ["AI Image", "AI Video", "Visual Direction", "Storyboard", "Creative Prompt", "Campaign Asset"],
-    tools: ["Image Model", "Runway", "Midjourney", "Canva", "CapCut", "ChatGPT"],
-    brandFocus: [["ChatGPT", "Canva"], ["Image Model", "Midjourney"], ["Canva", "Image Model"], ["ChatGPT", "Runway"], ["Runway", "CapCut"], ["Canva", "CapCut"]],
+    outcomes: ["วาง visual direction สำหรับแบรนด์หรือแคมเปญ", "เขียน prompt เพื่อสร้างภาพประกอบและ key visual", "ใช้ Higgsfield สร้างวิดีโอสั้นและ motion idea", "จัด workflow ตรวจงานและปรับภาพให้สื่อสารตรงโจทย์"],
+    skills: ["Higgsfield", "ChatGPT", "Perplexity", "AI Image", "AI Video", "Visual Direction", "Campaign Asset"],
+    tools: ["Higgsfield", "ChatGPT", "Perplexity"],
+    brandFocus: [["ChatGPT", "Perplexity"], ["Higgsfield", "ChatGPT"], ["Higgsfield"], ["ChatGPT"], ["Higgsfield"], ["Higgsfield", "ChatGPT"]],
     info: [["รูปแบบเรียน", "วิดีโอพร้อมแบบฝึกหัด"], ["ระดับ", "เหมาะกับผู้เริ่มใช้ AI creative"], ["ภาษา", "ภาษาไทย"], ["Resource", "Prompt Pack, Storyboard Template"]],
     syllabus: [
       { title: "Module 1: Creative Brief to Visual Direction", time: "45 นาที", points: ["อ่านโจทย์แบรนด์", "กำหนด mood", "เลือก reference ให้ถูก"] },
       { title: "Module 2: Prompt ภาพที่ควบคุมได้", time: "60 นาที", points: ["กำหนด subject, style, lighting", "สร้างหลาย variation", "คุมความสม่ำเสมอ"] },
       { title: "Module 3: Key Visual สำหรับแคมเปญ", time: "60 นาที", points: ["ทำภาพหลัก", "เตรียม asset", "ตรวจความพร้อมใช้งาน"] },
       { title: "Module 4: Storyboard & Script", time: "50 นาที", points: ["แตก scene", "เขียน shot list", "ทำ prompt วิดีโอ"] },
-      { title: "Module 5: AI Video Workflow", time: "70 นาที", points: ["สร้างคลิปสั้น", "แก้ motion", "จัดไฟล์ส่งตัดต่อ"] },
+      { title: "Module 5: AI Video Workflow ด้วย Higgsfield", time: "70 นาที", points: ["สร้างคลิปสั้น", "แก้ motion", "จัดไฟล์ส่งตัดต่อ"] },
       { title: "Module 6: Content Production System", time: "50 นาที", points: ["ทำ template", "วางรอบผลิตงาน", "เก็บ prompt ที่ใช้ซ้ำ"] }
     ],
     project: "ผู้เรียนจะสร้างชุด asset หนึ่งแคมเปญ ประกอบด้วย key visual, prompt library, storyboard และวิดีโอสั้นที่พร้อมนำไปต่อยอดในงานโฆษณาหรือคอนเทนต์",
@@ -172,7 +172,7 @@ const detailCourses = {
     subtitle: "ออกแบบ AI Agent สำหรับฝ่ายขาย บริการลูกค้า คอนเทนต์ และงานปฏิบัติการ เพื่อให้ทีมทำงานเร็วขึ้นอย่างวัดผลได้",
     overview: "คอร์สนี้สอนวิธีออกแบบ AI Agent จากปัญหาธุรกิจจริง กำหนดข้อมูลที่ต้องใช้ ตั้งขอบเขตการตัดสินใจ และวาง human-in-the-loop เพื่อให้ระบบปลอดภัยและใช้ต่อในทีมได้",
     instructor: "AiX Team",
-    image: "assets/generated/course-ai-agent.jpg",
+    image: "assets/generated/course-banner-ai-agent-business.png",
     price: 1999,
     rating: "4.9",
     learners: "เหมาะกับ SME, Sales, Operation และ Customer Support",
@@ -181,9 +181,9 @@ const detailCourses = {
     schedule: "เรียนสด + ดูย้อนหลัง",
     lessons: "7 modules",
     outcomes: ["วิเคราะห์งานซ้ำที่เหมาะกับ AI Agent", "ออกแบบ instruction และ knowledge ให้ Agent ทำงานตรงบทบาท", "วาง workflow สำหรับฝ่ายขายและบริการลูกค้า", "ตั้งเกณฑ์ตรวจผลลัพธ์และจุดอนุมัติโดยมนุษย์"],
-    skills: ["AI Agent Design", "Business Process", "Automation", "Knowledge Base", "Human Review", "KPI"],
-    tools: ["Manus AI", "ChatGPT", "Claude", "Make", "n8n", "Google Workspace"],
-    brandFocus: [["ChatGPT", "Claude"], ["Manus AI"], ["Claude", "Google Workspace"], ["Manus AI", "ChatGPT"], ["Make", "n8n"], ["Google Workspace", "Claude"], ["Manus AI", "Make"]],
+    skills: ["ChatGPT", "Claude", "Manus AI", "Perplexity", "AI Agent Design", "Business Process", "Human Review", "KPI"],
+    tools: ["ChatGPT", "Claude", "Manus AI", "Perplexity"],
+    brandFocus: [["ChatGPT", "Claude"], ["Manus AI", "Claude"], ["Claude", "Perplexity"], ["ChatGPT", "Manus AI"], ["Manus AI", "Claude"], ["ChatGPT", "Perplexity"], ["Manus AI", "Claude", "ChatGPT"]],
     info: [["รูปแบบเรียน", "Workshop พร้อมกรณีธุรกิจ"], ["ระดับ", "เหมาะกับคนทำงานธุรกิจ"], ["ภาษา", "ภาษาไทย"], ["Resource", "Agent Canvas, KPI Checklist"]],
     syllabus: [
       { title: "Module 1: Agent Use Case Mapping", time: "50 นาที", points: ["หา pain point", "เลือกงานที่คุ้มค่า", "กำหนด KPI"] },
@@ -205,30 +205,24 @@ const AUTH_TOKEN_KEY = "aix_member_token";
 let currentMember = null;
 
 const aiBrandCatalog = {
-  "Manus AI": { mark: "M", className: "manus" },
-  "Claude": { mark: "C", className: "claude" },
-  "ChatGPT": { mark: "GPT", className: "chatgpt" },
-  "Make": { mark: "Mk", className: "make" },
-  "n8n": { mark: "n8n", className: "n8n" },
-  "Google Sheets": { mark: "G", className: "google" },
-  "Google Docs": { mark: "G", className: "google" },
-  "Google Workspace": { mark: "G", className: "google" },
-  "Cursor": { mark: "Cu", className: "cursor" },
-  "GitHub": { mark: "GH", className: "github" },
-  "Browser DevTools": { mark: "Dev", className: "devtools" },
-  "Image Model": { mark: "IM", className: "image-model" },
-  "Runway": { mark: "R", className: "runway" },
-  "Midjourney": { mark: "MJ", className: "midjourney" },
-  "Canva": { mark: "Ca", className: "canva" },
-  "CapCut": { mark: "CC", className: "capcut" },
-  "Notion": { mark: "N", className: "notion" }
+  "Manus AI": { mark: "M", className: "manus", logo: "assets/ai-logos/manus.webp" },
+  "Claude": { mark: "C", className: "claude", logo: "assets/ai-logos/claude.svg" },
+  "Codex": { mark: "Cx", className: "codex", logo: "assets/ai-logos/codex.svg" },
+  "Cursor": { mark: "Cu", className: "cursor", logo: "assets/ai-logos/cursor.svg" },
+  "Copilot": { mark: "Co", className: "copilot", logo: "assets/ai-logos/copilot.svg" },
+  "ChatGPT": { mark: "GPT", className: "chatgpt", logo: "assets/ai-logos/chatgpt.svg" },
+  "Perplexity": { mark: "Px", className: "perplexity", logo: "assets/ai-logos/perplexity.svg" },
+  "Higgsfield": { mark: "Hg", className: "higgsfield", logo: "assets/ai-logos/higgsfield.png" }
 };
 
 function renderBrandLogo(name, compact = false) {
   const brand = aiBrandCatalog[name] || { mark: name.slice(0, 2), className: "default" };
+  const visual = brand.logo
+    ? `<img class="brand-logo-img" src="${brand.logo}" alt="" loading="lazy" decoding="async">`
+    : `<span class="brand-mark">${brand.mark}</span>`;
   return `
     <span class="ai-brand-chip ${compact ? "compact" : ""} brand-${brand.className}" title="${name}">
-      <span class="brand-mark">${brand.mark}</span>
+      ${visual}
       <span class="brand-name">${name}</span>
     </span>
   `;
@@ -288,7 +282,7 @@ function getCourse() {
 async function loadCourseFromDatabase() {
   const id = getCourseId();
   try {
-    const response = await fetch(`${API_ORIGIN}/api/platform/courses/${encodeURIComponent(id)}`);
+    const response = await fetch(`${API_ORIGIN}/api/platform/courses/${encodeURIComponent(id)}?_=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error("course api unavailable");
     return await response.json();
   } catch (error) {
@@ -307,12 +301,12 @@ function normalizeCourse(course) {
     overview: course.overview || course.description || fallback.overview,
     rating: course.rating || fallback.rating,
     skills: Array.isArray(course.skills) && course.skills.length ? course.skills : fallback.skills,
-    tools: Array.isArray(course.tools) && course.tools.length ? course.tools : fallback.tools,
+    tools: Array.isArray(course.tools) ? course.tools : fallback.tools,
     outcomes: Array.isArray(course.outcomes) && course.outcomes.length ? course.outcomes : fallback.outcomes,
     info: Array.isArray(course.info) && course.info.length ? course.info : fallback.info,
     syllabus: Array.isArray(course.syllabus) && course.syllabus.length ? course.syllabus : fallback.syllabus,
     faq: Array.isArray(course.faq) && course.faq.length ? course.faq : fallback.faq,
-    brandFocus: Array.isArray(course.brandFocus) && course.brandFocus.length ? course.brandFocus : fallback.brandFocus
+    brandFocus: Array.isArray(course.brandFocus) ? course.brandFocus : fallback.brandFocus
   };
 }
 
@@ -371,15 +365,22 @@ function renderDetail(rawCourse = getCourse()) {
     ["fa-solid fa-globe", "เรียนออนไลน์ ภาษาไทย"]
   ].map(([icon, label]) => `<span><i class="${icon}"></i>${label}</span>`).join("");
 
-  document.getElementById("detailBrandStrip").innerHTML = course.tools.slice(0, 5).map((tool) => renderBrandLogo(tool, true)).join("");
+  const courseTools = Array.isArray(course.tools) ? course.tools : [];
+  const detailBrandStrip = document.getElementById("detailBrandStrip");
+  const detailBrandBoard = document.getElementById("detailBrandBoard");
+  const detailTools = document.getElementById("detailTools");
+  detailBrandStrip.hidden = courseTools.length === 0;
+  detailBrandBoard.hidden = courseTools.length === 0;
+  detailTools.hidden = courseTools.length === 0;
+  detailBrandStrip.innerHTML = courseTools.slice(0, 5).map((tool) => renderBrandLogo(tool, true)).join("");
 
   document.getElementById("detailOutcomes").innerHTML = course.outcomes.map((item) => `
     <article><i class="fa-solid fa-check"></i><span>${item}</span></article>
   `).join("");
 
   document.getElementById("detailSkills").innerHTML = course.skills.map((skill) => `<span>${skill}</span>`).join("");
-  document.getElementById("detailBrandBoard").innerHTML = course.tools.map((tool) => renderBrandLogo(tool)).join("");
-  document.getElementById("detailTools").innerHTML = course.tools.map((tool) => `<span><i class="fa-solid fa-toolbox"></i>${tool}</span>`).join("");
+  detailBrandBoard.innerHTML = courseTools.map((tool) => renderBrandLogo(tool)).join("");
+  detailTools.innerHTML = courseTools.map((tool) => `<span><i class="fa-solid fa-toolbox"></i>${tool}</span>`).join("");
 
   document.getElementById("detailInfo").innerHTML = course.info.map(([label, value]) => `
     <article>
@@ -394,7 +395,7 @@ function renderDetail(rawCourse = getCourse()) {
       <div>
         <span>${module.time}</span>
         <h3>${module.title}</h3>
-        <div class="module-brand-row">${(course.brandFocus?.[index] || course.tools.slice(0, 2)).map((tool) => renderBrandLogo(tool, true)).join("")}</div>
+        <div class="module-brand-row">${(course.brandFocus?.[index] || courseTools.slice(0, 2)).map((tool) => renderBrandLogo(tool, true)).join("")}</div>
         <ul>${module.points.map((point) => `<li>${point}</li>`).join("")}</ul>
       </div>
     </article>

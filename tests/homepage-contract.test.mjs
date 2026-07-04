@@ -7,7 +7,17 @@ const root = process.cwd();
 const html = await readFile(join(root, "index.html"), "utf8");
 const css = await readFile(join(root, "styles.css"), "utf8");
 const script = await readFile(join(root, "script.js"), "utf8");
+const classDetailHtml = await readFile(join(root, "class-detail.html"), "utf8");
+const classDetailScript = await readFile(join(root, "class-detail.js"), "utf8");
+const toolsBoxHtml = await readFile(join(root, "tools-box.html"), "utf8");
+const toolsBoxScript = await readFile(join(root, "tools-box.js"), "utf8");
 const serverScript = await readFile(join(root, "server.js"), "utf8");
+const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+const envExample = await readFile(join(root, ".env.example"), "utf8");
+const renderYaml = await readFile(join(root, "render.yaml"), "utf8");
+const supabaseMigration = await readFile(join(root, "supabase/migrations/20260701000000_aix_initial_schema.sql"), "utf8");
+const supabasePolicyMigration = await readFile(join(root, "supabase/migrations/20260701001000_aix_server_only_rls_policies.sql"), "utf8");
+const postgresWorker = await readFile(join(root, "postgres-worker.js"), "utf8");
 const footer = await readFile(join(root, "site-footer.js"), "utf8");
 const themeTokens = await readFile(join(root, "docs/development/AIX_THEME_TOKENS.MD"), "utf8");
 const authMascot = await readFile(join(root, "assets/mascot/aix-auth-mascot.png"));
@@ -15,6 +25,8 @@ const authRegisterMascot = await readFile(join(root, "assets/mascot/aix-auth-mas
 const manusLogo = await readFile(join(root, "assets/ai-logos/manus.webp"));
 const workproofBefore = await readFile(join(root, "assets/generated/aix-real-work-before-generated.png"));
 const workproofAfter = await readFile(join(root, "assets/generated/aix-real-work-after-generated.png"));
+const currentCssCacheBust = /styles\.css\?v=aix-(?:hero-title-refined-v70|hero-empty-state-polish-v68)-20260703/;
+const currentScriptCacheBust = /script\.js\?v=aix-hero-empty-state-hardfix-v69-20260703/;
 
 function cssRuleBlock(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -96,7 +108,7 @@ test("homepage rebuild has the new AiX brand surface and keeps runtime hooks", a
   assert.match(css, /\.brand-title\s*\{[\s\S]*?font-weight:\s*850;[\s\S]*?white-space:\s*nowrap;/);
   assert.match(css, /\.brand-tagline\s*\{[\s\S]*?color:\s*var\(--muted-foreground\);[\s\S]*?font-weight:\s*800;/);
   assert.match(css, /\.dark \.brand-lockup \.brand-icon\s*\{[\s\S]*?filter:\s*none;[\s\S]*?opacity:\s*1;/);
-  assert.match(html, /Build with Ai Learn with Ai/);
+  assert.match(html, /Build with[\s\S]*?Learn with[\s\S]*?Ai/);
   assert.doesNotMatch(html, /เรียน AI ต่อเนื่องทั้งปี ด้วยระบบที่พาคุณใช้กับงานจริง/);
   assert.match(html, /1,999 บาทต่อปี/);
   assert.match(html, /ไม่ต้องไล่ตาม <span class="aix-highlight-mark">AI คนเดียว<\/span>/);
@@ -126,11 +138,11 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.equal((html.match(/class="auth-mascot-speech"/g) || []).length, 1);
   assert.match(html, /class="auth-mascot-speech">ยินดีต้อนรับ<br>กลับมาครับ!<\/p>/);
   assert.match(html, /class="auth-copy auth-copy-login">[\s\S]*?<h2 id="loginModalTitle">AiX Club<\/h2>[\s\S]*?เข้าสู่ระบบเพื่อเรียน AI และจัดการ resource ของคุณ/);
-  assert.match(html, /class="auth-copy auth-copy-register">[\s\S]*?<h2 id="signupModalTitle">สมัครสมาชิก AiX Club<\/h2>[\s\S]*?สร้างบัญชีเพื่อเริ่มเรียนรู้ AI และเข้าถึง resource มากมาย/);
+  assert.match(html, /class="auth-copy auth-copy-register">[\s\S]*?<h2 id="signupModalTitle">สมัครสมาชิก AiX Club<\/h2>[\s\S]*?สร้างบัญชีก่อน แล้วระบบจะให้ยืนยันเบอร์ก่อนเข้าสู่ขั้นตอนชำระเงิน/);
   assert.deepEqual([...authMascot.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
   assert.deepEqual([...authRegisterMascot.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
   assert.doesNotMatch(html, /id="googleLoginStatus"|เข้าสู่ระบบด้วย Google เป็นช่องทางหลัก/);
-  assert.match(html, /id="googleSignupStatus">สมัครด้วย Google แล้วเข้าหน้าสมาชิกได้ทันที<\/p>/);
+  assert.match(html, /id="googleSignupStatus">สมัครด้วย Google แล้วค่อยยืนยันเบอร์ก่อนชำระเงิน<\/p>/);
   assert.match(html, /id="memberForm" class="member-form auth-form"/);
   assert.match(html, /id="loginForm" class="member-form auth-form"/);
   assert.match(html, /<section class="auth-pane active" id="loginPane">/);
@@ -170,6 +182,10 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.match(css, /\.auth-card-shell\.auth-register-pop\s*\{[\s\S]*?width:\s*min\(472px,\s*calc\(100vw - 36px\)\);/);
   assert.match(css, /\.auth-input-wrap\s*\{[\s\S]*?min-height:\s*42px;[\s\S]*?display:\s*flex;[\s\S]*?border:\s*1px solid rgba\(244,\s*244,\s*245,\s*0\.16\);/);
   assert.match(css, /\.auth-input-wrap:focus-within\s*\{[\s\S]*?box-shadow:\s*0 0 0 3px rgba\(250,\s*250,\s*250,\s*0\.1\);/);
+  assert.match(css, /#googleSignupButton,\s*[\s\S]*?#googleLoginButton,\s*[\s\S]*?#googleAuthButton\s*\{[\s\S]*?min-width:\s*0;[\s\S]*?overflow:\s*visible;/);
+  assert.match(css, /#googleSignupButton iframe,\s*[\s\S]*?#googleLoginButton iframe,\s*[\s\S]*?#googleAuthButton iframe\s*\{[\s\S]*?display:\s*block !important;[\s\S]*?min-height:\s*48px !important;/);
+  assert.match(css, /\.auth-card-shell \.google-box\s*\{[\s\S]*?overflow:\s*visible;[\s\S]*?border:\s*1px solid rgba\(244,\s*244,\s*245,\s*0\.16\);/);
+  assert.match(css, /\.auth-card-shell \.google-box > div\s*\{[\s\S]*?min-width:\s*0;[\s\S]*?min-height:\s*50px;[\s\S]*?overflow:\s*visible;/);
   assert.match(css, /\.dark \.auth-card-shell\s*\{[\s\S]*?background:\s*#0a0a0a;[\s\S]*?border-color:\s*#27272a;/);
   assert.match(css, /@media \(max-width:\s*560px\)\s*\{[\s\S]*?\.auth-card-shell\s*\{[\s\S]*?width:\s*min\(100%,\s*calc\(100vw - 40px\)\);/);
   assert.match(script, /document\.querySelectorAll\("\[data-auth-tab\]"\)/);
@@ -182,13 +198,14 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.match(script, /authModal\.scrollTop = 0;/);
   assert.match(script, /const focusTarget = mode === "login" \? form\?\.querySelector\("\[name='email'\]"\) : authShell;/);
   assert.match(script, /focusElement\(focusTarget\);/);
+  assert.match(script, /function googleButtonWidth\(target\)[\s\S]*?const availableWidth = targetWidth \|\| Math\.max\(0,\s*boxWidth - 24\);[\s\S]*?return Math\.min\(400,\s*Math\.max\(220,\s*Math\.floor\(availableWidth\)\)\);/);
   assert.match(script, /function trapModalFocus\(modal,\s*event\)/);
   assert.match(script, /lastAuthTrigger = captureFocusTrigger\(authModal\) \|\| lastAuthTrigger;/);
   assert.match(script, /const requiredFields = \["firstName",\s*"email",\s*"phone"\];/);
   assert.doesNotMatch(script, /const requiredFields = \["firstName",\s*"lastName",\s*"email"\]/);
   assert.match(script, /lastName:\s*""/);
   assert.match(script, /displayName:\s*firstName/);
-  assert.match(html, /script\.js\?v=aix-workproof-raster-v54-20260624/);
+  assert.match(html, currentScriptCacheBust);
   assert.match(script, /function initAuthRouteModal\(\)/);
   assert.match(script, /params\.get\("auth"\)/);
   assert.match(script, /openAuthModal\("signup"\)/);
@@ -200,15 +217,20 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.doesNotMatch(html, /auth-page\.js|auth-page/);
   assert.match(serverScript, /if \(!firstName \|\| !email \|\| !phone\) \{/);
   assert.match(serverScript, /if \(!PHONE_RE\.test\(phone\)\) \{/);
+  assert.match(serverScript, /function upsertGoogleMember\(profile\)\s*\{[\s\S]*?SELECT \* FROM members WHERE googleSub = \? OR email = \?/);
+  assert.match(serverScript, /app\.post\('\/api\/auth\/google',\s*async \(req,\s*res\) => \{[\s\S]*?const result = upsertGoogleMember\(profile\);/);
+  assert.match(serverScript, /UPDATE members[\s\S]*?lastLoginAt = \?[\s\S]*?googleSub = COALESCE\(NULLIF\(googleSub,\s*''\),\s*\?\)[\s\S]*?WHERE id = \?/);
+  assert.match(serverScript, /INSERT INTO members \([\s\S]*?authProvider,\s*googleSub,\s*picture,\s*avatarUrl,\s*emailVerified[\s\S]*?`auth_google_\$\{profile\.sub\}`/);
+  assert.match(serverScript, /res\.json\(\{ \.\.\.issueMemberSession\(res,\s*result\.member\),\s*profile,\s*created:\s*result\.created \}\)/);
 });
 
 test("homepage applies modern web guidance semantics for forms dialogs theme and offscreen rendering", () => {
   assert.match(html, /<html lang="th" class="dark">/);
   assert.match(html, /<meta name="theme-color" content="#0a0a0a">/);
   assert.match(html, /<meta name="color-scheme" content="dark">/);
-  assert.match(html, /var isDark = savedTheme !== "light";/);
-  assert.match(html, /document\.documentElement\.classList\.toggle\("dark", isDark\)/);
-  assert.match(html, /document\.querySelector\('meta\[name="color-scheme"\]'\)\?\.setAttribute\("content", isDark \? "dark" : "light"\)/);
+  assert.match(html, /document\.documentElement\.classList\.add\("dark"\);/);
+  assert.match(html, /document\.documentElement\.style\.colorScheme = "dark";/);
+  assert.match(html, /localStorage\.setItem\("aix-theme",\s*"dark"\);/);
   assert.match(html, /<span class="visually-hidden">ค้นหาหัวข้อเรียน<\/span>[\s\S]*?<input id="catalogSearch" type="search" placeholder="ค้นหาหัวข้อ">/);
   assert.match(html, /<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><\/div>/);
   assert.match(html, /class="aix-review-stats" role="list" aria-label="สรุปรีวิวผู้เรียน AiX"/);
@@ -217,7 +239,7 @@ test("homepage applies modern web guidance semantics for forms dialogs theme and
   assert.match(css, /\.visually-hidden\s*\{[\s\S]*?clip-path:\s*inset\(50%\);/);
   assert.match(css, /\.aix-system,\s*[\s\S]*?\.aix-faq\s*\{[\s\S]*?content-visibility:\s*auto;[\s\S]*?contain-intrinsic-size:\s*auto 760px;/);
   assert.match(script, /const colorSchemeMeta = document\.querySelector\('meta\[name="color-scheme"\]'\);/);
-  assert.match(script, /colorSchemeMeta\?\.setAttribute\("content",\s*isDark \? "dark" : "light"\);/);
+  assert.match(script, /colorSchemeMeta\?\.setAttribute\("content",\s*"dark"\);/);
   assert.match(script, /function setDescribedBy\(input,\s*id,\s*enabled\)/);
   assert.match(script, /input\.setAttribute\("aria-describedby",\s*nextValue\);/);
   assert.match(script, /error\.setAttribute\("role",\s*"alert"\);/);
@@ -247,11 +269,10 @@ test("public pages inherit landing page dark-first theme shell", async () => {
     assert.match(content, /<html lang="th" class="dark">/, `${file} does not start with dark html shell`);
     assert.match(content, /<meta name="theme-color" content="#0a0a0a">/, `${file} missing dark theme color`);
     assert.match(content, /<meta name="color-scheme" content="dark">/, `${file} missing dark color scheme`);
-    assert.match(content, /var savedTheme = localStorage\.getItem\("aix-theme"\);/, `${file} missing shared theme storage read`);
-    assert.match(content, /var isDark = savedTheme !== "light";/, `${file} missing dark-first fallback`);
-    assert.match(content, /document\.documentElement\.classList\.toggle\("dark", isDark\);/, `${file} missing dark class sync`);
+    assert.match(content, /document\.documentElement\.classList\.add\("dark"\);/, `${file} missing forced dark class sync`);
+    assert.match(content, /localStorage\.setItem\("aix-theme",\s*"dark"\);/, `${file} missing forced dark theme storage write`);
     assert.ok(
-      content.indexOf("localStorage.getItem(\"aix-theme\")") < content.indexOf("styles.css?v=aix-footer-responsive-v61-20260624"),
+      content.indexOf("localStorage.setItem(\"aix-theme\", \"dark\")") < content.indexOf("styles.css?v="),
       `${file} initializes theme after CSS and may flash light`
     );
   }
@@ -259,6 +280,7 @@ test("public pages inherit landing page dark-first theme shell", async () => {
 
 test("inner pages share the landing page visual language", () => {
   assert.match(css, /AiX landing design propagation for non-home pages 2026-06-30/);
+  assert.match(css, /Inner pages contrast guard for light and dark themes 2026-06-30/);
   assert.match(css, /:where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\{/);
   assert.match(css, /:where\(\.site-header:not\(\.aix-home-header\), \.dashboard-header, \.classroom-header, \.tools-header, \.live-header, \.course-gate-header, \.learn-topbar\)\s*\{/);
   assert.match(css, /\.dark :where\(\.site-header:not\(\.aix-home-header\), \.dashboard-header, \.classroom-header, \.tools-header, \.live-header, \.course-gate-header, \.learn-topbar\)\s*\{/);
@@ -271,12 +293,65 @@ test("inner pages share the landing page visual language", () => {
   assert.match(footer, /ensureMobileLumaNav\(\);/);
 });
 
+test("inner pages keep dashboard and member UI readable in light and dark themes", () => {
+  assert.match(css, /html:not\(\.dark\) :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\{[\s\S]*?color:\s*#0f172a;[\s\S]*?linear-gradient\(180deg,\s*#f8fbff 0%,\s*#ffffff 42%,\s*#f8fafc 100%\);/);
+  assert.match(css, /html:not\(\.dark\) :where\(\.dashboard-header, \.classroom-header, \.tools-header, \.live-header, \.course-gate-header, \.learn-topbar\)\s*\{[\s\S]*?background:\s*rgba\(255,\s*255,\s*255,\s*0\.9\);/);
+  assert.match(css, /html:not\(\.dark\) :where\(\.dashboard-nav-link:hover, \.dashboard-nav-link\.active, \.classroom-nav-link:hover, \.classroom-nav-link\.active\)\s*\{[\s\S]*?color:\s*#0f172a;[\s\S]*?background:\s*#ffffff;/);
+  assert.match(css, /html:not\(\.dark\) :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\([\s\S]*?\.dashboard-profile,[\s\S]*?\.tools-action-card,[\s\S]*?\.course-gate-content[\s\S]*?\)\s*\{[\s\S]*?color:\s*#0f172a;[\s\S]*?background:[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.88\);/);
+  assert.match(css, /html:not\(\.dark\) :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\(h1, h2, h3, h4, strong,[\s\S]*?\.tools-action-body h3\)\s*\{[\s\S]*?color:\s*#0f172a;/);
+  assert.match(css, /html:not\(\.dark\) :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\(p, small, em,[\s\S]*?\.tools-action-body p\)\s*\{[\s\S]*?color:\s*#475569;/);
+  assert.match(css, /\.dark :where\(\.dashboard-nav-link:hover, \.dashboard-nav-link\.active, \.classroom-nav-link:hover, \.classroom-nav-link\.active\)\s*\{[\s\S]*?color:\s*#0a0a0a;[\s\S]*?background:\s*#fafafa;/);
+  assert.match(css, /\.dark :where\(\.dashboard-home-link, \.classroom-home-link, \.dashboard-header \.link-btn, \.tools-header \.link-btn, \.live-header \.link-btn\)\s*\{[\s\S]*?color:\s*#e4e4e7;[\s\S]*?background:\s*rgba\(24,\s*24,\s*27,\s*0\.78\);/);
+  assert.match(css, /Dashboard readability refresh 2026-06-30/);
+  assert.match(css, /\.dark \.dashboard-page\s*\{[\s\S]*?linear-gradient\(180deg, #050505 0%, #09090b 48%, #050505 100%\);/);
+  assert.match(css, /\.dark \.dashboard-header \.dashboard-nav-link:hover,[\s\S]*?\.dark \.dashboard-header \.dashboard-nav-link\.active\s*\{[\s\S]*?color:\s*#0a0a0a !important;[\s\S]*?background:\s*#fafafa !important;/);
+  assert.match(css, /\.dark \.dashboard-profile,[\s\S]*?\.dark \.dashboard-quick-actions a\s*\{[\s\S]*?color:\s*#fafafa !important;[\s\S]*?backdrop-filter:\s*none !important;/);
+  assert.match(css, /\.dark \.dashboard-hero-art\s*\{[\s\S]*?opacity:\s*0\.08;[\s\S]*?mix-blend-mode:\s*screen;/);
+  assert.match(css, /Dashboard lower sections contrast fix 2026-06-30/);
+  assert.match(css, /\.dark \.dashboard-page :where\([\s\S]*?\.payment-history-section,[\s\S]*?\.billing-section[\s\S]*?\)\s*\{[\s\S]*?background:\s*transparent !important;/);
+  assert.match(css, /\.dark \.dashboard-page \.section-head h2\s*\{[\s\S]*?color:\s*#fafafa !important;/);
+  assert.match(css, /\.dark \.dashboard-page :where\([\s\S]*?\.payment-history-card,[\s\S]*?\.payment-history-empty,[\s\S]*?\.resource-card[\s\S]*?\)\s*\{[\s\S]*?color:\s*#fafafa !important;[\s\S]*?backdrop-filter:\s*none !important;/);
+  assert.match(css, /\.dark \.dashboard-page :where\([\s\S]*?\.payment-history-empty p,[\s\S]*?\.receipt-pending[\s\S]*?\)\s*\{[\s\S]*?color:\s*#d4d4d8 !important;/);
+  assert.match(css, /Inner page full contrast sweep 2026-06-30/);
+  assert.match(css, /\.dark :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\{[\s\S]*?linear-gradient\(180deg, #050505 0%, #09090b 48%, #050505 100%\);/);
+  assert.match(css, /\.dark :where\(\.site-header:not\(\.aix-home-header\), \.dashboard-header, \.classroom-header, \.tools-header, \.live-header, \.course-gate-header, \.learn-topbar\)[\s\S]*?background:\s*rgba\(5,\s*5,\s*5,\s*0\.9\) !important;/);
+  assert.match(css, /\.dark :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\([\s\S]*?\.payment-summary,[\s\S]*?\.tools-topic-panel,[\s\S]*?\.live-note-card,[\s\S]*?\.classroom-panel,[\s\S]*?\.learn-reading-card,[\s\S]*?\.course-gate-content[\s\S]*?\)\s*\{[\s\S]*?color:\s*#fafafa !important;[\s\S]*?backdrop-filter:\s*none !important;/);
+  assert.match(css, /\.dark :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\(p, small, em, li, span,[\s\S]*?\.learn-run-result p\)\s*\{[\s\S]*?color:\s*#d4d4d8 !important;/);
+  assert.match(css, /\.dark :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\(input, textarea, select,[\s\S]*?#learnAiInput\)\s*\{[\s\S]*?background:\s*rgba\(10,\s*10,\s*10,\s*0\.92\) !important;/);
+});
+
+test("tools box exposes downloadable and copyable skill and prompt libraries", () => {
+  assert.match(toolsBoxHtml, /id="toolsSkillLibrary"/);
+  assert.match(toolsBoxHtml, /id="toolsPromptLibrary"/);
+  assert.match(toolsBoxHtml, /Skill Set ที่แจกให้ใช้/);
+  assert.match(toolsBoxHtml, /Prompt พร้อมใช้/);
+  assert.match(toolsBoxHtml, /tools-box\.js\?v=tools-box-action-library-v1/);
+  assert.match(toolsBoxScript, /const SKILL_PACKS = \[/);
+  assert.match(toolsBoxScript, /const PROMPT_PACKS = \[/);
+  assert.match(toolsBoxScript, /AI Work Intake Skill/);
+  assert.match(toolsBoxScript, /Prompt QA Skill/);
+  assert.match(toolsBoxScript, /หา Use Case AI ในธุรกิจ/);
+  assert.match(toolsBoxScript, /สร้าง FAQ จากแชทลูกค้า/);
+  assert.match(toolsBoxScript, /navigator\.clipboard\?\.writeText/);
+  assert.match(toolsBoxScript, /document\.execCommand\("copy"\)/);
+  assert.match(toolsBoxScript, /new Blob\(\[content\], \{ type: "text\/markdown;charset=utf-8" \}\)/);
+  assert.match(toolsBoxScript, /anchor\.download = fileName/);
+  assert.match(toolsBoxScript, /data-tools-action="copy"/);
+  assert.match(toolsBoxScript, /data-tools-action="download"/);
+  assert.match(toolsBoxScript, /renderActionCards\(toolsSkillLibrary, SKILL_PACKS, \{ kind: "skill", locked: !active \}\)/);
+  assert.match(toolsBoxScript, /renderActionCards\(toolsPromptLibrary, PROMPT_PACKS, \{ kind: "prompt", locked: !active \}\)/);
+  assert.match(css, /\.tools-action-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*280px\),\s*1fr\)\);/);
+  assert.match(css, /\.tools-action-card\s*\{[\s\S]*?overflow:\s*hidden;[\s\S]*?border-radius:\s*var\(--radius\);/);
+  assert.match(css, /\.tools-action-buttons\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
+  assert.match(css, /@media \(max-width:\s*720px\)\s*\{[\s\S]*?\.tools-action-buttons\s*\{[\s\S]*?grid-template-columns:\s*1fr;/);
+});
+
 test("homepage CSS includes responsive and motion safety rules", () => {
   assert.match(css, /\.aix-homepage-redesign/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /text-wrap: balance/);
-  assert.doesNotMatch(css, /(?:^|\n)\s*background-clip:\s*text/);
+  assert.match(css, /(?:^|\n)\s*background-clip:\s*text/);
   assert.match(html, /family=IBM\+Plex\+Sans\+Thai:wght@400;500;600&family=IBM\+Plex\+Sans\+Thai\+Looped:wght@400;500&display=swap/);
   assert.doesNotMatch(html, /Bai\+Jamjuree|Chakra\+Petch/);
   assert.doesNotMatch(html, />01</);
@@ -331,7 +406,7 @@ test("public Thai typography uses the IBM Plex Thai system from praneet-front", 
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-footer-responsive-v61-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, currentCssCacheBust, `${file} missing current CSS cache bust`);
     assert.doesNotMatch(content, /Bai\+Jamjuree|Chakra\+Petch/, `${file} still loads old Thai fonts`);
   }
 });
@@ -379,7 +454,7 @@ test("learning system section uses the static animated hero port", () => {
   assert.match(script, /window\.setInterval\(\(\) => \{/);
   assert.match(script, /initAnimatedHero\(\)/);
   assert.doesNotMatch(script, /initDisplayCards/);
-  assert.match(html, /script\.js\?v=aix-workproof-raster-v54-20260624/);
+  assert.match(html, currentScriptCacheBust);
 });
 
 test("member loop section ports the hero highlight treatment statically", () => {
@@ -465,24 +540,68 @@ test("homepage sections use concise copy and tighter spacing", () => {
   assert.match(css, /\.dark \.aix-topic-logo\s*\{[\s\S]*?background:\s*#ffffff;[\s\S]*?border-color:\s*#e4e4e7;/);
   assert.match(script, /function courseTopicIcons\(course\)/);
   assert.match(script, /function courseTopicLogo\(course\)/);
+  assert.match(script, /function courseTopicBadge\(course\)/);
+  assert.match(script, /"claude-manus-vibe-coding":\s*"Vibe Coding"/);
+  assert.match(script, /<span class="course-badge aix-topic-badge">\$\{courseTopicBadge\(course\)\}<\/span>/);
+  assert.doesNotMatch(script, /<span class="course-badge aix-topic-badge">\$\{course\.status\}<\/span>/);
   assert.match(script, /"manus-ai":\s*\{\s*src:\s*"assets\/ai-logos\/manus\.webp",\s*label:\s*"Manus",\s*tone:\s*"manus"\s*\}/);
-  assert.match(script, /"claude-manus-vibe-coding":\s*\{\s*src:\s*"assets\/ai-logos\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
+  assert.match(script, /"claude-manus-vibe-coding":\s*\{\s*src:\s*"assets\/ai-logos\/codex\.svg",\s*label:\s*"Codex",\s*tone:\s*"codex"\s*\}/);
   assert.match(script, /"claude-deep-dive":\s*\{\s*src:\s*"assets\/ai-logos\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
   assert.match(script, /"ai-video-graphic":\s*\{\s*src:\s*"assets\/ai-logos\/higgsfield\.png",\s*label:\s*"Higgsfield",\s*tone:\s*"higgsfield"\s*\}/);
-  assert.match(script, /"ai-agent-business":\s*\{\s*src:\s*"assets\/ai-logos\/codex\.svg",\s*label:\s*"Codex",\s*tone:\s*"codex"\s*\}/);
+  assert.match(script, /"ai-agent-business":\s*\{\s*src:\s*"assets\/ai-logos\/chatgpt\.svg",\s*label:\s*"ChatGPT",\s*tone:\s*"chatgpt"\s*\}/);
   assert.equal(manusLogo.subarray(0, 4).toString("ascii"), "RIFF");
   assert.equal(manusLogo.subarray(8, 12).toString("ascii"), "WEBP");
   assert.match(script, /course\.skills\.slice\(0,\s*2\)/);
   const renderCoursesSource = script.slice(script.indexOf("function renderCourses()"), script.indexOf("function renderResources()"));
-  assert.match(renderCoursesSource, /const topicTone = courseTopicLogo\(course\)\.tone;/);
+  assert.match(renderCoursesSource, /const topicTone = courseTopicLogo\(course\)\?\.tone \|\| courseVisualTone\(course\);/);
   assert.match(renderCoursesSource, /class="course-card aix-topic-card aix-topic-tone-\$\{topicTone\}"/);
   assert.match(renderCoursesSource, /class="aix-topic-icons"/);
   assert.match(renderCoursesSource, /courseTopicVisuals\(course\)\.map/);
+  assert.match(script, /logo\s*\?\s*\{ type: "logo"/);
+  assert.match(script, /\{ type: "icon", value: "fa-robot" \}/);
   assert.match(renderCoursesSource, /aix-topic-logo-\$\{visual\.tone\}/);
   assert.match(renderCoursesSource, /<img src="\$\{visual\.value\}" alt="" loading="eager" decoding="async" data-topic-logo="\$\{visual\.label\}">/);
   assert.doesNotMatch(renderCoursesSource, /course-visual-window|course-visual-panel|course-image course-visual/);
   assert.doesNotMatch(renderCoursesSource, /fa-regular fa-user/);
   assert.match(renderCoursesSource, /fa-regular fa-clock/);
+});
+
+test("class detail pages use real AI logo assets and updated course copy", () => {
+  assert.match(classDetailHtml, /class-detail\.js\?v=aix-brand-logos-v2-20260703/);
+  assert.match(classDetailScript, /"Claude & Codex Vibe Coding"/);
+  assert.doesNotMatch(classDetailScript, /Claude & Manus Vibe Coding/);
+  assert.match(classDetailScript, /"Codex"/);
+  assert.match(classDetailScript, /"Higgsfield"/);
+  assert.match(classDetailScript, /"Perplexity"/);
+  assert.match(classDetailScript, /tools:\s*\["Manus AI",\s*"Claude",\s*"ChatGPT"\]/);
+  assert.match(classDetailScript, /tools:\s*\["Claude",\s*"Codex",\s*"Cursor",\s*"Copilot"\]/);
+  assert.match(classDetailScript, /tools:\s*\["Claude",\s*"Perplexity",\s*"ChatGPT"\]/);
+  assert.match(classDetailScript, /tools:\s*\["Higgsfield",\s*"ChatGPT",\s*"Perplexity"\]/);
+  assert.match(classDetailScript, /tools:\s*\["ChatGPT",\s*"Claude",\s*"Manus AI",\s*"Perplexity"\]/);
+  assert.match(classDetailScript, /"Manus AI":\s*\{[^}]*logo:\s*"assets\/ai-logos\/manus\.webp"/);
+  assert.match(classDetailScript, /"Claude":\s*\{[^}]*logo:\s*"assets\/ai-logos\/claude\.svg"/);
+  assert.match(classDetailScript, /"Codex":\s*\{[^}]*logo:\s*"assets\/ai-logos\/codex\.svg"/);
+  assert.match(classDetailScript, /"Cursor":\s*\{[^}]*logo:\s*"assets\/ai-logos\/cursor\.svg"/);
+  assert.match(classDetailScript, /"Copilot":\s*\{[^}]*logo:\s*"assets\/ai-logos\/copilot\.svg"/);
+  assert.match(classDetailScript, /"ChatGPT":\s*\{[^}]*logo:\s*"assets\/ai-logos\/chatgpt\.svg"/);
+  assert.match(classDetailScript, /"Perplexity":\s*\{[^}]*logo:\s*"assets\/ai-logos\/perplexity\.svg"/);
+  assert.match(classDetailScript, /"Higgsfield":\s*\{[^}]*logo:\s*"assets\/ai-logos\/higgsfield\.png"/);
+  assert.doesNotMatch(classDetailScript, /"GitHub":\s*\{/);
+  assert.doesNotMatch(classDetailScript, /"Browser DevTools":\s*\{/);
+  assert.doesNotMatch(classDetailScript, /"Google Sheets":\s*\{/);
+  assert.doesNotMatch(classDetailScript, /"Google Docs":\s*\{/);
+  assert.doesNotMatch(classDetailScript, /"Google Workspace":\s*\{/);
+  assert.doesNotMatch(classDetailScript, /"Canva":\s*\{/);
+  assert.doesNotMatch(classDetailScript, /"CapCut":\s*\{/);
+  assert.match(classDetailScript, /detailBrandStrip\.hidden = courseTools\.length === 0;/);
+  assert.match(classDetailScript, /detailBrandBoard\.hidden = courseTools\.length === 0;/);
+  assert.match(classDetailScript, /detailTools\.hidden = courseTools\.length === 0;/);
+  assert.match(classDetailScript, /tools:\s*Array\.isArray\(course\.tools\)\s*\?\s*course\.tools\s*:\s*fallback\.tools/);
+  assert.match(classDetailScript, /brandFocus:\s*Array\.isArray\(course\.brandFocus\)\s*\?\s*course\.brandFocus\s*:\s*fallback\.brandFocus/);
+  assert.match(classDetailScript, /<img class="brand-logo-img" src="\$\{brand\.logo\}" alt="" loading="lazy" decoding="async">/);
+  assert.match(css, /\.brand-logo-img\s*\{[\s\S]*?object-fit:\s*contain;[\s\S]*?filter:\s*none;/);
+  assert.match(css, /\.brand-higgsfield\s*\{[\s\S]*?--brand-accent:\s*#bfff00;/);
+  assert.match(css, /#detailRoot \.ai-brand-chip \.brand-logo-img,\s*[\s\S]*?#detailRoot \.ai-brand-chip\.compact \.brand-logo-img\s*\{[\s\S]*?filter:\s*none !important;[\s\S]*?opacity:\s*1 !important;/);
 });
 
 test("job path section ports the attached bento grid component statically", () => {
@@ -841,7 +960,7 @@ test("site footer uses a minimal background-free design", () => {
   assert.doesNotMatch(css, /@media \(min-width:\s*360px\) and \(max-width:\s*760px\)[\s\S]*?\.site-footer \.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(0,\s*1fr\);/);
   assert.match(css, /@media \(min-width:\s*560px\) and \(max-width:\s*760px\)[\s\S]*?\.site-footer \.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(0,\s*1fr\);/);
   assert.match(css, /@media \(min-width:\s*761px\) and \(max-width:\s*1040px\)\s*\{[\s\S]*?\.footer-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1\.15fr\)\s+minmax\(0,\s*0\.85fr\);/);
-  assert.match(html, /styles\.css\?v=aix-footer-responsive-v61-20260624/);
+  assert.match(html, currentCssCacheBust);
 });
 
 test("homepage keeps the hover gradient nav bar in the top header", () => {
@@ -923,28 +1042,21 @@ test("shared footer injects the Luma mobile navbar across public pages", async (
 
   for (const file of publicFiles.filter((name) => name.endsWith(".html"))) {
     const content = await readFile(join(root, file), "utf8");
-    assert.match(content, /styles\.css\?v=aix-footer-responsive-v61-20260624/, `${file} missing current CSS cache bust`);
+    assert.match(content, currentCssCacheBust, `${file} missing current CSS cache bust`);
     assert.match(content, /site-footer\.js\?v=site-footer-responsive-v61-20260624/, `${file} missing current footer script cache bust`);
   }
 });
 
-test("homepage has a working light and dark mode toggle in the top navigation", () => {
-  assert.match(html, /localStorage\.getItem\("aix-theme"\)/);
-  assert.match(html, /var isDark = savedTheme !== "light";/);
-  assert.match(html, /document\.documentElement\.classList\.toggle\("dark",\s*isDark\)/);
-  assert.match(script, /const currentMode = savedTheme === "light" \? "light" : "dark";/);
+test("homepage runs as a dark-only theme and hides legacy theme toggles", () => {
+  assert.match(html, /document\.documentElement\.classList\.add\("dark"\);/);
+  assert.match(html, /localStorage\.setItem\("aix-theme",\s*"dark"\);/);
   assert.match(footer, /function ensureSharedThemeToggle\(\)/);
-  assert.match(footer, /button\.className = "theme-toggle aix-shared-theme-toggle"/);
-  assert.match(footer, /localStorage\.setItem\("aix-theme",\s*isDark \? "dark" : "light"\)/);
-  assert.match(css, /\.aix-shared-theme-toggle\s*\{[\s\S]*?flex:\s*0 0 auto;/);
-  assert.equal((html.match(/data-theme-toggle/g) || []).length, 2);
-  assert.match(html, /class="theme-toggle" type="button" data-theme-toggle/);
-  assert.match(html, /class="theme-toggle theme-toggle-mobile" type="button" data-theme-toggle/);
-  assert.match(html, /fa-regular fa-sun/);
-  assert.match(html, /fa-regular fa-moon/);
-  assert.match(css, /\.theme-toggle\s*\{/);
-  assert.match(css, /\.theme-toggle\s*\{[\s\S]*?min-height:\s*32px;/);
-  assert.match(css, /\.dark \.theme-toggle-thumb\s*\{[\s\S]*?transform:\s*translateX\(0\);/);
+  assert.match(footer, /localStorage\.setItem\("aix-theme",\s*"dark"\)/);
+  assert.match(footer, /button\.hidden = true;/);
+  assert.match(css, /\/\* Dark-only mode 2026-07-03 \*\//);
+  assert.match(css, /\[data-theme-toggle\],\s*[\s\S]*?\.aix-shared-theme-toggle\s*\{[\s\S]*?display:\s*none !important;/);
+  assert.equal((html.match(/data-theme-toggle/g) || []).length, 0);
+  assert.doesNotMatch(html, /class="theme-toggle/);
   assert.match(css, /\.dark \.brand img\s*\{[\s\S]*?filter:\s*brightness\(0\)\s+invert\(1\)\s+contrast\(1\.35\)/);
   assert.match(css, /\.dark \.aix-stack-center img\s*\{[\s\S]*?filter:\s*invert\(1\)\s+grayscale\(1\)\s+contrast\(1\.25\);/);
   assert.match(css, /\.dark \.aix-resource-stack article,\s*[\s\S]*?\.dark \.aix-resource-section \.resource-card/);
@@ -961,10 +1073,9 @@ test("homepage has a working light and dark mode toggle in the top navigation", 
   assert.match(css, /\.dark \.aix-stack-hero-lead,\s*[\s\S]*?\.dark \.aix-homepage-redesign \.course-body p/);
   assert.match(css, /\.dark \.aix-stack-hero-lead,[\s\S]*?\{[\s\S]*?color:\s*#d4d4d8;/);
   assert.match(css, /\.dark \.aix-homepage-redesign \.primary-btn,\s*[\s\S]*?\.dark \.aix-home-header \.primary-btn\s*\{[\s\S]*?color:\s*var\(--primary-foreground\);/);
-  assert.match(css, /@media \(max-width:\s*1060px\)\s*\{[\s\S]*?\.aix-home-header \.theme-toggle-mobile\s*\{[\s\S]*?display:\s*inline-flex;/);
   assert.match(script, /function setThemeMode\(mode,\s*persist = true\)/);
-  assert.match(script, /document\.documentElement\.classList\.toggle\("dark",\s*isDark\)/);
-  assert.match(script, /localStorage\.setItem\(STORAGE_KEYS\.theme,\s*isDark \? "dark" : "light"\)/);
+  assert.match(script, /document\.documentElement\.classList\.add\("dark"\)/);
+  assert.match(script, /localStorage\.setItem\(STORAGE_KEYS\.theme,\s*"dark"\)/);
   assert.match(script, /function initThemeToggle\(\)/);
   assert.match(script, /querySelectorAll\("\[data-theme-toggle\]"\)/);
 });
@@ -991,18 +1102,38 @@ test("real-work section uses clear image comparison assets", () => {
   assert.match(script, /initWorkproofCompare\(\)/);
 });
 
-test("homepage light mode receives the updated decorative treatment", () => {
-  assert.match(css, /\/\* AiX light-mode visual parity 2026-06-23 \*\//);
-  assert.match(css, /html:not\(\.dark\) body\s*\{[\s\S]*?radial-gradient\(circle at 18% 8%,\s*rgba\(14,\s*165,\s*233,\s*0\.08\),\s*transparent 28%\)[\s\S]*?linear-gradient\(180deg,\s*#ffffff 0%,\s*#f8fafc 46%,\s*#ffffff 100%\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-site-meteor-field\s*\{[\s\S]*?--meteor-core:\s*rgba\(2,\s*132,\s*199,\s*0\.78\);[\s\S]*?--meteor-field-opacity:\s*0\.34;[\s\S]*?--meteor-blend-mode:\s*multiply;/);
-  assert.match(css, /html:not\(\.dark\) \.aix-stack-hero-frame,\s*[\s\S]*?html:not\(\.dark\) \.aix-single-pricing-card,\s*[\s\S]*?html:not\(\.dark\) \.aix-faq-item\s*\{[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.78\);[\s\S]*?backdrop-filter:\s*blur\(18px\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-system,\s*[\s\S]*?html:not\(\.dark\) \.aix-business\s*\{[\s\S]*?color:\s*var\(--foreground\);[\s\S]*?linear-gradient\(180deg,\s*rgba\(244,\s*244,\s*245,\s*0\.42\) 0%,\s*rgba\(255,\s*255,\s*255,\s*0\.72\) 48%,\s*rgba\(244,\s*244,\s*245,\s*0\.5\) 100%\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-system :where\(h2,\s*h3\),\s*[\s\S]*?html:not\(\.dark\) \.aix-animated-word\s*\{[\s\S]*?color:\s*var\(--foreground\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-animated-kicker\s*\{[\s\S]*?color:\s*var\(--foreground\);[\s\S]*?background:\s*rgba\(255,\s*255,\s*255,\s*0\.74\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-catalog \.catalog-toolbar\s*\{[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.78\);[\s\S]*?backdrop-filter:\s*blur\(18px\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-catalog \.aix-topic-card\s*\{[\s\S]*?rgba\(224,\s*242,\s*254,\s*0\.56\)[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.8\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-pricing-header-badge,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-testimonials\s*\{[\s\S]*?background:\s*rgba\(255,\s*255,\s*255,\s*0\.68\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-stack-hero-actions \.aix-rainbow-shell,\s*[\s\S]*?html:not\(\.dark\) \.aix-pricing-actions \.aix-rainbow-shell\s*\{[\s\S]*?--rainbow-beam:\s*rgba\(37,\s*99,\s*235,\s*0\.68\);/);
-  assert.match(css, /html:not\(\.dark\) \.aix-faq-section\s*\{[\s\S]*?linear-gradient\(180deg,\s*transparent 0%,\s*rgba\(244,\s*244,\s*245,\s*0\.58\) 48%,\s*transparent 100%\);/);
-  assert.match(html, /styles\.css\?v=aix-footer-responsive-v61-20260624/);
+test("homepage dark-only mode keeps the updated decorative treatment", () => {
+  assert.match(css, /\/\* Dark-only mode 2026-07-03 \*\//);
+  assert.match(css, /html\s*\{[\s\S]*?color-scheme:\s*dark !important;[\s\S]*?background:\s*#050505 !important;/);
+  assert.match(css, /body\s*\{[\s\S]*?background-color:\s*#050505;/);
+  assert.match(css, /\.dark \.aix-site-meteor-field\s*\{[\s\S]*?--meteor-core:\s*rgba\(224,\s*242,\s*254,\s*0\.96\);[\s\S]*?--meteor-field-opacity:\s*0\.48;[\s\S]*?--meteor-blend-mode:\s*screen;/);
+  assert.match(css, /\.aix-stack-hero-frame\s*\{[\s\S]*?background:[\s\S]*?rgba\(10,\s*10,\s*10,\s*0\.78\);[\s\S]*?backdrop-filter:\s*blur\(18px\);/);
+  assert.match(css, /\.dark \.aix-stack-hero-actions \.aix-rainbow-shell,\s*[\s\S]*?\.dark \.aix-pricing-actions \.aix-rainbow-shell\s*\{[\s\S]*?--rainbow-shell-bg:\s*rgba\(125,\s*211,\s*252,\s*0\.16\);[\s\S]*?--rainbow-beam:\s*rgba\(224,\s*242,\s*254,\s*0\.9\);/);
+  assert.match(html, currentCssCacheBust);
+});
+
+test("server can run against Supabase Postgres with the migrated AiX schema", () => {
+  assert.equal(packageJson.dependencies.pg, "^8.22.0");
+  assert.match(serverScript, /process\.env\.SUPABASE_DATABASE_URL \|\| process\.env\.DATABASE_URL \|\| process\.env\.SUPABASE_DB_URL/);
+  assert.match(serverScript, /class PostgresCompatDatabase/);
+  assert.match(serverScript, /new Worker\(path\.join\(__dirname,\s*'postgres-worker\.js'\)/);
+  assert.match(serverScript, /fs\.readdirSync\(migrationsDir\)[\s\S]*?\.filter\(\(filename\) => filename\.endsWith\('\.sql'\)\)[\s\S]*?\.sort\(\)/);
+  assert.match(serverScript, /Supabase Postgres/);
+  assert.match(serverScript, /pathParts\.includes\('supabase'\)/);
+  assert.match(postgresWorker, /types\.setTypeParser\(20,\s*\(value\) => Number\(value\)\)/);
+  assert.match(postgresWorker, /types\.setTypeParser\(1700,\s*\(value\) => Number\(value\)\)/);
+  assert.match(envExample, /SUPABASE_DATABASE_URL=/);
+  assert.match(envExample, /SUPABASE_DB_SSL=true/);
+  assert.match(envExample, /SUPABASE_DB_POOL_MAX=4/);
+  assert.match(renderYaml, /key: SUPABASE_DATABASE_URL[\s\S]*?sync: false/);
+  assert.match(renderYaml, /key: SUPABASE_DB_SSL[\s\S]*?value: "true"/);
+  assert.match(renderYaml, /key: SUPABASE_DB_POOL_MAX[\s\S]*?value: "4"/);
+  assert.match(supabaseMigration, /create table if not exists public\.members/);
+  assert.match(supabaseMigration, /create table if not exists public\.courses/);
+  assert.match(supabaseMigration, /create table if not exists public\.payment_records/);
+  assert.match(supabaseMigration, /alter table public\.members enable row level security/);
+  assert.match(supabaseMigration, /revoke all on all tables in schema public from anon, authenticated/);
+  assert.match(supabaseMigration, /grant select, insert, update, delete on all tables in schema public to service_role/);
+  assert.match(supabasePolicyMigration, /server_only_no_browser_access/);
+  assert.match(supabasePolicyMigration, /for all to anon, authenticated using \(false\) with check \(false\)/);
 });

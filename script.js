@@ -8,7 +8,7 @@ const courses = [
     duration: "6 ชั่วโมง",
     price: 1999,
     status: "เปิดรับ",
-    image: "assets/generated/course-ai-agent.jpg",
+    image: "assets/generated/course-banner-manus-ai.png",
     rating: "4.9",
     lessons: "8 modules",
     skills: ["AI Agent", "Workflow Automation", "Prompt Engineering"],
@@ -19,36 +19,36 @@ const courses = [
       "ออกแบบ Prompt Engineering สำหรับงานซับซ้อน",
       "ทำ Deep Research และสรุปรายงานธุรกิจ",
       "วางระบบ Content, Sales และ Customer Service ด้วย AI",
-      "เชื่อม workflow ด้วย Make / n8n",
+      "ออกแบบ workflow automation จากงานจริง",
       "สร้าง AI Business System ที่นำกลับไปใช้กับธุรกิจของตัวเอง"
     ]
   },
   {
     id: "claude-manus-vibe-coding",
-    title: "Claude & Manus Vibe Coding",
+    title: "Claude & Codex Vibe Coding",
     type: "Coming Soon",
     level: "Coding",
     instructor: "AiX Team",
     duration: "3 ชั่วโมง",
     price: 0,
     status: "แจ้งเตือน",
-    image: "assets/generated/course-ai-coding.jpg",
+    image: "assets/generated/course-banner-claude-codex-vibe-coding.png",
     rating: "New",
     lessons: "4 modules",
     skills: ["Vibe Coding", "Prototype", "AI Coding"],
-    description: "ใช้ Claude และ Manus ทำ prototype เว็บ แอป และ workflow จาก prompt กับสเปกที่ชัดเจน",
+    description: "ใช้ Claude และ Codex ทำ prototype เว็บ แอป และ workflow จาก prompt กับสเปกที่ชัดเจน",
     topics: ["Vibe Coding workflow", "เปลี่ยน Prompt เป็น Prototype", "Debug กับ AI", "เขียนสเปกส่งต่อให้ Developer"]
   },
   {
     id: "claude-deep-dive",
-    title: "Claude แบบลงลึก",
+    title: "Claude Deep Dive",
     type: "Coming Soon",
     level: "Prompt",
     instructor: "AiX Team",
     duration: "4 ชั่วโมง",
     price: 0,
     status: "แจ้งเตือน",
-    image: "assets/generated/course-ai-coding.jpg",
+    image: "assets/generated/course-banner-claude-deep-dive.png",
     rating: "New",
     lessons: "5 modules",
     skills: ["Deep Research", "Prompt Chain", "Business Strategy"],
@@ -61,28 +61,28 @@ const courses = [
     type: "Creative",
     level: "Creative",
     instructor: "AiX Team",
-    duration: "3 ชั่วโมง",
+    duration: "5 ชั่วโมง",
     price: 0,
     status: "เร็วๆ นี้",
-    image: "assets/generated/course-creative-ai.jpg",
+    image: "assets/generated/course-banner-ai-video-graphic.png",
     rating: "New",
-    lessons: "4 modules",
+    lessons: "6 modules",
     skills: ["Image AI", "AI Video", "Content Marketing"],
     description: "สร้างภาพ วิดีโอ กราฟิก และคอนเทนต์การตลาดด้วย AI ตั้งแต่ไอเดียจนพร้อมเผยแพร่",
     topics: ["AI Image Generation", "AI Video Workflow", "Brand Style Prompt", "Content Repurpose"]
   },
   {
     id: "ai-agent-business",
-    title: "AI Agent สำหรับธุรกิจ",
+    title: "AI Agent for Business",
     type: "Business",
     level: "Automation",
     instructor: "AiX Team",
-    duration: "5 ชั่วโมง",
+    duration: "6 ชั่วโมง",
     price: 0,
     status: "เร็วๆ นี้",
-    image: "assets/generated/course-ai-agent.jpg",
+    image: "assets/generated/course-banner-ai-agent-business.png",
     rating: "New",
-    lessons: "6 modules",
+    lessons: "7 modules",
     skills: ["Agent Design", "Business Operations", "Customer Service"],
     description: "ออกแบบ AI Agent สำหรับ operation ตอบลูกค้า สรุปเอกสาร และประสานงานหลายเครื่องมือ",
     topics: ["Agent Architecture", "Tool Connection", "Human Approval", "Monitoring & Improvement"]
@@ -208,7 +208,8 @@ function apiUrl(path) {
 
 async function apiRequest(path, options = {}) {
   const token = localStorage.getItem(STORAGE_KEYS.token);
-  const requestPath = path === "/api/config" ? `${path}?_=${Date.now()}` : path;
+  const shouldBypassCache = path === "/api/config" || path.startsWith("/api/platform/courses");
+  const requestPath = shouldBypassCache ? `${path}${path.includes("?") ? "&" : "?"}_=${Date.now()}` : path;
   const requestOptions = {
     ...options,
     headers: {
@@ -217,7 +218,7 @@ async function apiRequest(path, options = {}) {
       ...(options.headers || {})
     }
   };
-  if (path === "/api/config") requestOptions.cache = "no-store";
+  if (shouldBypassCache) requestOptions.cache = "no-store";
 
   const response = await fetch(apiUrl(requestPath), requestOptions);
 
@@ -711,41 +712,29 @@ function scrollToId(id) {
 }
 
 function setThemeMode(mode, persist = true) {
-  const isDark = mode === "dark";
-  document.documentElement.classList.toggle("dark", isDark);
-  themeColorMeta?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
-  colorSchemeMeta?.setAttribute("content", isDark ? "dark" : "light");
+  document.documentElement.classList.add("dark");
+  document.documentElement.style.colorScheme = "dark";
+  themeColorMeta?.setAttribute("content", "#0a0a0a");
+  colorSchemeMeta?.setAttribute("content", "dark");
 
   document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-    button.setAttribute("aria-pressed", String(isDark));
-    button.setAttribute("aria-label", isDark ? "เปิดโหมดสว่าง" : "เปิดโหมดมืด");
+    button.hidden = true;
+    button.setAttribute("aria-hidden", "true");
+    button.setAttribute("aria-pressed", "true");
+    button.setAttribute("aria-label", "ธีมมืด");
   });
 
   if (persist) {
     try {
-      localStorage.setItem(STORAGE_KEYS.theme, isDark ? "dark" : "light");
+      localStorage.setItem(STORAGE_KEYS.theme, "dark");
     } catch (error) {
-      // Theme switching still works for the current page when storage is unavailable.
+      // Keep the forced dark theme usable when storage is unavailable.
     }
   }
 }
 
 function initThemeToggle() {
-  let savedTheme = null;
-  try {
-    savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
-  } catch (error) {
-    savedTheme = null;
-  }
-  const currentMode = savedTheme === "light" ? "light" : "dark";
-
-  setThemeMode(currentMode, false);
-
-  document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setThemeMode(document.documentElement.classList.contains("dark") ? "light" : "dark");
-    });
-  });
+  setThemeMode("dark", true);
 }
 
 function initAnimatedHero() {
@@ -1379,7 +1368,7 @@ function renderClassFilters() {
 
 const filterAliases = {
   Agent: ["agent", "ai agent"],
-  Automation: ["automation", "workflow", "make", "n8n"],
+  Automation: ["automation", "workflow"],
   Creative: ["creative", "content", "video", "graphic", "image"],
   Coding: ["coding", "prototype", "vibe coding", "developer"],
   Prompt: ["prompt", "prompt engineering", "prompt chain"]
@@ -1452,12 +1441,12 @@ function courseTopicIcons(course) {
 function courseTopicLogo(course) {
   const logosById = {
     "manus-ai": { src: "assets/ai-logos/manus.webp", label: "Manus", tone: "manus" },
-    "claude-manus-vibe-coding": { src: "assets/ai-logos/claude.svg", label: "Claude", tone: "claude" },
+    "claude-manus-vibe-coding": { src: "assets/ai-logos/codex.svg", label: "Codex", tone: "codex" },
     "claude-deep-dive": { src: "assets/ai-logos/claude.svg", label: "Claude", tone: "claude" },
     "ai-video-graphic": { src: "assets/ai-logos/higgsfield.png", label: "Higgsfield", tone: "higgsfield" },
-    "ai-agent-business": { src: "assets/ai-logos/codex.svg", label: "Codex", tone: "codex" }
+    "ai-agent-business": { src: "assets/ai-logos/chatgpt.svg", label: "ChatGPT", tone: "chatgpt" }
   };
-  return logosById[course.id] || { src: "assets/ai-logos/perplexity.svg", label: "AI", tone: "perplexity" };
+  return logosById[course.id] || null;
 }
 
 function courseTopicVisuals(course) {
@@ -1465,7 +1454,9 @@ function courseTopicVisuals(course) {
   const logo = courseTopicLogo(course);
   return [
     { type: "icon", value: icons[0] },
-    { type: "logo", value: logo.src, label: logo.label, tone: logo.tone },
+    logo
+      ? { type: "logo", value: logo.src, label: logo.label, tone: logo.tone }
+      : { type: "icon", value: "fa-robot" },
     { type: "icon", value: icons[1] }
   ];
 }
@@ -1474,10 +1465,21 @@ function courseVisualTone(course) {
   return normalizeText(course.level || course.type || "ai").toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
+function courseTopicBadge(course) {
+  const labelsById = {
+    "manus-ai": "Manus AI",
+    "claude-manus-vibe-coding": "Vibe Coding",
+    "claude-deep-dive": "Claude",
+    "ai-video-graphic": "AI Video",
+    "ai-agent-business": "AI Agent"
+  };
+  return labelsById[course.id] || course.skills?.[0] || course.level || course.type || "AI";
+}
+
 function renderCourses() {
   const filtered = courses.filter((course) => matchesFilter(course) && matchesSearch(course));
   classesGrid.innerHTML = filtered.map((course) => {
-    const topicTone = courseTopicLogo(course).tone;
+    const topicTone = courseTopicLogo(course)?.tone || courseVisualTone(course);
 
     return `
     <article class="course-card aix-topic-card aix-topic-tone-${topicTone}">
@@ -1491,7 +1493,7 @@ function renderCourses() {
         `).join("")}
       </div>
       <div class="course-body aix-topic-body">
-        <span class="course-badge aix-topic-badge">${course.status}</span>
+        <span class="course-badge aix-topic-badge">${courseTopicBadge(course)}</span>
         <h3>${course.title}</h3>
         <p>${course.description}</p>
         <div class="skill-row aix-topic-skills">
@@ -1508,7 +1510,7 @@ function renderCourses() {
       </div>
     </article>
   `;
-  }).join("") || `<div class="resource-card"><h3>ไม่พบคอร์ส</h3><p>ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ใหม่</p></div>`;
+  }).join("") || `<div class="resource-card catalog-empty-state"><h3>ไม่พบคอร์ส</h3><p>ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ใหม่</p></div>`;
 
   refreshPageEffects();
 }

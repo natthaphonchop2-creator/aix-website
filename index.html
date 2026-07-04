@@ -28,20 +28,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script>
     (function () {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
+      document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
       try {
-        var savedTheme = localStorage.getItem("aix-theme");
-        var isDark = savedTheme !== "light";
-        document.documentElement.classList.toggle("dark", isDark);
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isDark ? "#0a0a0a" : "#ffffff");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", isDark ? "dark" : "light");
-      } catch (error) {
-        document.documentElement.classList.add("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
-        document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", "dark");
-      }
+        localStorage.setItem("aix-theme", "dark");
+      } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="styles.css?v=aix-auth-google-fit-v65-20260701">
+  <link rel="stylesheet" href="styles.css?v=aix-hero-title-refined-v70-20260703">
   <link rel="stylesheet" href="member-resource-glow.css?v=aix-member-glow-v1-20260702">
   <link rel="stylesheet" href="google-auth-fix.css?v=aix-google-oauth-button-v70-20260702">
   <link rel="stylesheet" href="reviews-color-polish.css?v=aix-reviews-polish-v1-20260702">
@@ -60,29 +56,6 @@
         </span>
       </a>
 
-      <div class="nav-actions">
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="เปิดโหมดมืด" aria-pressed="false">
-          <span class="theme-toggle-track" aria-hidden="true">
-            <span class="theme-toggle-idle theme-toggle-idle-moon"><i class="fa-regular fa-moon"></i></span>
-            <span class="theme-toggle-idle theme-toggle-idle-sun"><i class="fa-regular fa-sun"></i></span>
-            <span class="theme-toggle-thumb">
-              <i class="theme-toggle-icon-sun fa-regular fa-sun"></i>
-              <i class="theme-toggle-icon-moon fa-regular fa-moon"></i>
-            </span>
-          </span>
-        </button>
-      </div>
-
-      <button class="theme-toggle theme-toggle-mobile" type="button" data-theme-toggle aria-label="เปิดโหมดมืด" aria-pressed="false">
-        <span class="theme-toggle-track" aria-hidden="true">
-          <span class="theme-toggle-idle theme-toggle-idle-moon"><i class="fa-regular fa-moon"></i></span>
-          <span class="theme-toggle-idle theme-toggle-idle-sun"><i class="fa-regular fa-sun"></i></span>
-          <span class="theme-toggle-thumb">
-            <i class="theme-toggle-icon-sun fa-regular fa-sun"></i>
-            <i class="theme-toggle-icon-moon fa-regular fa-moon"></i>
-          </span>
-        </span>
-      </button>
     </div>
 
     <div class="mobile-panel" id="mobilePanel" hidden></div>
@@ -153,7 +126,10 @@
     <section class="aix-stack-hero" id="home" aria-labelledby="homeTitle">
       <div class="container aix-stack-hero-frame">
         <div class="aix-stack-hero-copy">
-          <h1 id="homeTitle">Build with Ai Learn with Ai</h1>
+          <h1 id="homeTitle" class="aix-hero-title">
+            <span class="aix-hero-title-line">Build with <span class="aix-hero-ai-word">Ai</span></span>
+            <span class="aix-hero-title-line">Learn with <span class="aix-hero-ai-word">Ai</span></span>
+          </h1>
           <p class="aix-stack-hero-lead">AiX คัดเรื่อง AI ที่ควรรู้ จัดเป็นเส้นทางเรียน และให้ resource ที่กลับมาใช้กับงานจริงได้</p>
 
           <div class="aix-stack-hero-actions">
@@ -213,9 +189,9 @@
             <p>เริ่มจากงานที่ต้องทำ แล้วค่อยเลือก prompt, agent หรือ automation</p>
           </article>
           <article>
-            <span>ลงมือฝึก</span>
-            <strong>มีโจทย์และตัวอย่างให้ทำตาม</strong>
-            <p>เปลี่ยนบทเรียนเป็น prompt, checklist หรือ workflow</p>
+            <span>Live สอนสด</span>
+            <strong>ทุกอาทิตย์กับทีมงาน AiX</strong>
+            <p>พร้อม use case ใหม่ๆ สำหรับเอาไปปรับใช้กับงานจริง</p>
           </article>
           <article>
             <span>กลับมาใช้ต่อ</span>
@@ -306,7 +282,7 @@
             <div class="aix-bento-card-content">
               <div class="aix-bento-top">
                 <span class="aix-bento-icon" aria-hidden="true"><i class="fa-solid fa-briefcase"></i></span>
-                <span class="aix-bento-status">เริ่มตรงนี้</span>
+                <span class="aix-bento-status">business</span>
               </div>
               <div class="aix-bento-copy">
                 <h3>เจ้าของธุรกิจ <span>Agent</span></h3>
@@ -791,11 +767,11 @@
           </div>
           <div class="auth-copy auth-copy-register">
             <h2 id="signupModalTitle">สมัครสมาชิก AiX Club</h2>
-            <p>สร้างบัญชีเพื่อเริ่มเรียนรู้ AI และเข้าถึง resource มากมาย</p>
+            <p>สร้างบัญชีก่อน แล้วระบบจะให้ยืนยันเบอร์ก่อนเข้าสู่ขั้นตอนชำระเงิน</p>
           </div>
           <div class="google-box">
             <div id="googleSignupButton"></div>
-            <p id="googleSignupStatus">สมัครด้วย Google แล้วเข้าหน้าสมาชิกได้ทันที</p>
+            <p id="googleSignupStatus">สมัครด้วย Google แล้วค่อยยืนยันเบอร์ก่อนชำระเงิน</p>
           </div>
           <div class="auth-divider"><span>หรือสมัครด้วย Email/Password</span></div>
 
@@ -962,7 +938,7 @@
     ]
   }
   </script>
-  <script src="script.js?v=aix-google-oauth-button-v70-20260702"></script>
+  <script src="script.js?v=aix-hero-empty-state-hardfix-v69-20260703"></script>
   <script src="member-resource-glow.js?v=aix-member-glow-v1-20260702"></script>
 </body>
 </html>
