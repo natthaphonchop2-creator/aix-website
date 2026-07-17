@@ -4,6 +4,45 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 1 fail-closed security configuration
+
+Scope:
+- Added `security/config-security.cjs` with strict `parseAllowedOrigins()` and production-only `validateSecurityConfig()` contracts.
+- Required production `AUTH_SECRET`, `CSRF_SECRET`, and `SMS_OTP_SECRET` values to be distinct, non-default, and at least 32 UTF-8 bytes; required a valid admin email, a non-default admin password of at least 14 characters, and at least one exact HTTPS application origin.
+- Normalized only valid exact origins and a single root trailing slash while rejecting malformed URLs, credentials, wildcards, opaque or unsupported schemes, backslashes, internal whitespace, repeated root slashes, and every configured path, query, or fragment, including dot-segment paths a URL parser would otherwise normalize away.
+- Wired validation immediately after local environment loading and before `DATA_DIR`, upload directory creation, database opening, or server listen.
+- Removed production random signing-secret fallbacks. Development/test fallbacks remain deterministic and retain independent derivation inputs for auth, CSRF, and SMS signing.
+- Expanded `.env.example` with the exact six-value production security contract and independent secret-generation guidance.
+- Added isolated unit and child-process regression coverage without loading local environment files or inheriting real local secrets.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `security/config-security.cjs`
+- `tests/config-security.test.mjs`
+- `server.js`
+- `.env.example`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Initial RED: `node --test tests/config-security.test.mjs` exited 1 with the expected `MODULE_NOT_FOUND` for `security/config-security.cjs`.
+- Startup-wiring RED: after the validator existed but before server wiring, the focused suite ran 31 tests with 30 passing and 1 failing because the weak production child remained alive until the test killed it with `SIGKILL`.
+- Focused GREEN: `node --test tests/config-security.test.mjs` passed 31 tests with 0 failures.
+- Production startup proof: the focused child used `AIX_SKIP_LOCAL_ENV=1`, weak production values, and an isolated nonexistent `DATA_DIR`; it exited itself nonzero with `Invalid production security configuration: AUTH_SECRET`, left the whole data/database/upload path absent, and preserved the outside sentinel unchanged.
+- Full suite: `npm test` passed 138 tests with 0 failures.
+- Syntax: `node --check security/config-security.cjs`, `node --check tests/config-security.test.mjs`, and `node --check server.js` passed.
+- Cloudflare dry-run: `npm run cf:check` exited 0, prepared 99 manifest-approved files, Wrangler `4.95.0` read 106 asset-directory files, and stopped at `--dry-run` without deployment.
+- Dependency audit: `npm audit --audit-level=high` exited 1 with the unchanged 6 pre-existing advisories (1 low, 5 high) in Multer and the Wrangler development chain; no dependency or lockfile was changed and no automatic fix was applied.
+- `git diff --check` and `git diff --cached --check` passed; the cached file list contained exactly the five authorized Task 1 files.
+- Independent read-only self-review returned Approved with no concrete blocker.
+
+Unresolved risks:
+- Production deployment configuration must provision `CSRF_SECRET` and `APP_ORIGINS` in addition to the other required values before the next production start; this task did not inspect, print, or mutate live credentials or deployment state.
+- `.env.local` intentionally retains its existing local override precedence unless `AIX_SKIP_LOCAL_ENV=1`; production operators must avoid shipping stale local overrides.
+- This task establishes configuration for later cookie, Origin/CSRF, and rate-limit work but intentionally does not change session transport or request enforcement yet.
+- The 5 pre-existing high dependency advisories remain assigned to the separate dependency-hardening task.
+
 ## 2026-07-18 - Phase 0A Task 4 manifest-driven Cloudflare package
 
 Scope:

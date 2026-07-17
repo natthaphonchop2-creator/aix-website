@@ -14,6 +14,7 @@ const Stripe = require('stripe');
 const multer = require('multer');
 const { Worker } = require('worker_threads');
 const { resolvePublicPath } = require('./security/publication-manifest.cjs');
+const { validateSecurityConfig } = require('./security/config-security.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -344,10 +345,11 @@ function loadLocalEnv() {
 
 loadLocalEnv();
 
+const SECURITY_CONFIG = validateSecurityConfig(process.env);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = path.resolve(process.env.DATA_DIR || __dirname);
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^0\d{9}$/;
@@ -355,19 +357,27 @@ const SMS_OTP_TTL_MS = Number(process.env.SMS_OTP_TTL_MS || 5 * 60 * 1000);
 const SMS_OTP_RESEND_MS = Number(process.env.SMS_OTP_RESEND_MS || 60 * 1000);
 const SMS_OTP_MAX_ATTEMPTS = Number(process.env.SMS_OTP_MAX_ATTEMPTS || 5);
 const SMS_TOKEN_TTL_MS = Number(process.env.SMS_TOKEN_TTL_MS || 15 * 60 * 1000);
-const SMS_OTP_SECRET = process.env.SMS_OTP_SECRET || (
-  IS_PRODUCTION
-    ? crypto.randomBytes(32).toString('hex')
-    : crypto.createHash('sha256').update(`${__dirname}:aix-sms-otp`).digest('hex')
-);
+
+function deriveDevelopmentSigningSecret(purpose) {
+  return crypto.createHash('sha256').update(`${__dirname}:${purpose}`).digest('hex');
+}
+
+const SMS_OTP_SECRET = IS_PRODUCTION
+  ? process.env.SMS_OTP_SECRET
+  : (process.env.SMS_OTP_SECRET || deriveDevelopmentSigningSecret('aix-sms-otp'));
 const AUTH_SESSION_TTL_MS = Number(process.env.AUTH_SESSION_TTL_MS || 7 * 24 * 60 * 60 * 1000);
-const AUTH_SECRET = process.env.AUTH_SECRET || (
-  IS_PRODUCTION
-    ? crypto.randomBytes(32).toString('hex')
-    : crypto.createHash('sha256').update(`${__dirname}:aix-auth-session`).digest('hex')
+const AUTH_SECRET = IS_PRODUCTION
+  ? process.env.AUTH_SECRET
+  : (process.env.AUTH_SECRET || deriveDevelopmentSigningSecret('aix-auth-session'));
+const CSRF_SECRET = IS_PRODUCTION
+  ? process.env.CSRF_SECRET
+  : (process.env.CSRF_SECRET || deriveDevelopmentSigningSecret('aix-csrf'));
+const ADMIN_EMAIL = String(
+  IS_PRODUCTION ? process.env.ADMIN_EMAIL : (process.env.ADMIN_EMAIL || 'admin@aix.club')
+).trim();
+const ADMIN_PASSWORD = String(
+  IS_PRODUCTION ? process.env.ADMIN_PASSWORD : (process.env.ADMIN_PASSWORD || 'admin1234')
 );
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || (IS_PRODUCTION ? '' : 'admin@aix.club');
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (IS_PRODUCTION ? '' : 'admin1234');
 const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS || 8 * 60 * 60 * 1000);
 const MEMBER_PRICE = Number(process.env.MEMBER_PRICE || 1999);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
