@@ -2851,6 +2851,44 @@ function publicCourse(course) {
   };
 }
 
+function publicCatalogCourse(course) {
+  const projected = publicCourse(course);
+  if (!projected) return null;
+  return {
+    id: projected.id,
+    title: projected.title,
+    name: projected.name,
+    originalPrice: projected.originalPrice,
+    type: projected.type,
+    status: projected.status,
+    subtitle: projected.subtitle,
+    description: projected.description,
+    overview: projected.overview,
+    instructor: projected.instructor,
+    image: projected.image,
+    price: projected.price,
+    rating: projected.rating,
+    ratingCount: projected.ratingCount,
+    students: projected.students,
+    learners: projected.learners,
+    duration: projected.duration,
+    hours: projected.hours,
+    level: projected.level,
+    schedule: projected.schedule,
+    lessons: projected.lessons,
+    lessonsCount: projected.lessonsCount,
+    skills: projected.skills,
+    tools: projected.tools,
+    outcomes: projected.outcomes,
+    topics: projected.topics,
+    info: projected.info,
+    syllabus: projected.syllabus,
+    project: projected.project,
+    faq: projected.faq,
+    brandFocus: projected.brandFocus
+  };
+}
+
 function publicReplay(replay) {
   if (!replay) return null;
   return {
@@ -3237,14 +3275,14 @@ function removeLocalUpload(filePath = '') {
 app.get('/api/platform/courses', (req, res) => {
   res.set('Cache-Control', 'no-store');
   const courses = db.prepare('SELECT * FROM courses WHERE featured = 1 ORDER BY sortOrder ASC, name ASC').all();
-  res.json(courses.map(publicCourse));
+  res.json(courses.map(publicCatalogCourse));
 });
 
 app.get('/api/platform/courses/:id', (req, res) => {
   res.set('Cache-Control', 'no-store');
   const course = db.prepare('SELECT * FROM courses WHERE id = ? AND featured = 1').get(req.params.id);
   if (!course) return res.status(404).json({ error: 'Course not found' });
-  res.json(publicCourse(course));
+  res.json(publicCatalogCourse(course));
 });
 
 app.get('/api/courses/:id/content', requireMemberSession, (req, res) => {

@@ -9,7 +9,10 @@ Rule: every meaningful code, asset, dependency, deployment, or documentation cha
 Scope:
 - Added one exhaustive literal `API_ROUTE_POLICIES` contract covering every current `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` declaration under `/api/` exactly once.
 - Locked member and admin route declarations to their existing authorization middleware and corrected member logout to require `requireMemberSession`.
-- Added real-HTTP assertions that anonymous config and public course projections omit protected fields.
+- Replaced the review-rejected route regex with a dependency-free structural JavaScript tokenizer/parser that ignores comments and string contents, reads the real call arguments, supports multiline single/double-quoted declarations, and fails closed for computed `app[...]`, Express routers, API mounts, and route aliases.
+- Added synthetic parser contracts for recognized declarations, ignored comments/strings, actual middleware argument identity, and every unsupported routing form.
+- Made the anonymous projection check non-vacuous by creating a featured course through the protected admin flow, then requiring an exact approved key set for every public list item and the public detail response.
+- Added an explicit public catalog projection so anonymous course responses no longer expose the admin-only `featured` and internal `sortOrder` fields; authenticated admin/member projections remain unchanged.
 - Preserved the Stripe raw-body webhook order, Task 2 publication boundary, current session architecture, and local-only scope.
 
 Version:
@@ -24,11 +27,19 @@ Validation:
 - RED: `node --test tests/api-route-policy.test.mjs` ran 3 tests with 2 passing and 1 failing. The exhaustive route equality and anonymous projections passed; the middleware contract failed specifically because `POST /api/auth/logout` did not declare `requireMemberSession`.
 - GREEN focused suite: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs` passed: 8 tests, 0 failures.
 - Full applicable suite: `node --test tests/*.test.mjs` passed: 46 tests, 0 failures.
+- Review-fix parser RED: `node --test tests/api-route-policy.test.mjs` ran 7 tests with 4 passing and 3 failing. The naive replacement missed a multiline double-quoted route, extracted fake routes from comments/strings, and did not reject computed `app['get']` syntax.
+- Review-fix parser GREEN: `node --test tests/api-route-policy.test.mjs` passed: 7 tests, 0 failures after the structural tokenizer/parser replaced the regex.
+- Review-fix projection RED: `node --test tests/api-route-policy.test.mjs` ran 7 tests with 6 passing and 1 failing. The non-empty seeded public list contained the unapproved `featured` and `sortOrder` keys.
+- Review edge-case RED: `node --test tests/api-route-policy.test.mjs` ran 9 tests with 6 passing and 3 failing. Active calls inside template interpolation were missed, a computed `app.use(prefix, router)` mount was accepted, and regex contents after `if (...)` produced a false route.
+- Review edge-case GREEN: `node --test tests/api-route-policy.test.mjs` passed: 9 tests, 0 failures after template-expression tokenization, computed-mount rejection, and control-flow regex recognition were added.
+- Review-fix focused GREEN: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs` passed: 14 tests, 0 failures.
+- Review-fix full suite: `node --test tests/*.test.mjs` passed: 52 tests, 0 failures.
 - `git diff --check` passed with no whitespace errors.
 - `git diff --cached --check` passed with no whitespace errors.
 
 Unresolved risks:
 - The matrix is a source-level regression contract; cookie-only sessions, retired bearer-token rejection, Origin/CSRF checks, and rate limits remain Phase 0B work.
+- Anonymous catalog fields are now governed by an explicit allowlist; future intentional public fields must be added to both the projection and exact list/detail contract.
 - The two legacy routes classified as `disabled` still retain their existing handlers until the separately scoped legacy-auth shutdown task changes them to intentional `410 Gone` responses.
 
 ## 2026-07-18 - Phase 0A Task 2 Express publication boundary
