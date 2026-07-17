@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { METHODS } from "node:http";
 import { parse } from "acorn";
 
 const source = await readFile("server.js", "utf8");
@@ -37,8 +38,9 @@ const API_ROUTE_POLICIES = {
   disabled: ["POST /api/auth/signup", "POST /api/auth/login"]
 };
 
-const HTTP_ROUTE_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
-const ROUTER_METHODS = new Set([...HTTP_ROUTE_METHODS, "use", "route"]);
+const POLICY_ROUTE_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
+const EXPRESS_ROUTE_METHODS = new Set([...METHODS.map((method) => method.toLowerCase()), "all"]);
+const ROUTER_METHODS = new Set([...EXPRESS_ROUTE_METHODS, "use", "route"]);
 
 function unsupportedRouting(message, node) {
   const location = node?.loc?.start ? ` at line ${node.loc.start.line}` : "";
@@ -74,6 +76,75 @@ function isIdentifier(node, name) {
   return node?.type === "Identifier" && node.name === name;
 }
 
+function bindingPatternContainsName(pattern, name) {
+  if (!pattern) return false;
+  if (pattern.type === "Identifier") return pattern.name === name;
+  if (pattern.type === "RestElement") return bindingPatternContainsName(pattern.argument, name);
+  if (pattern.type === "AssignmentPattern") return bindingPatternContainsName(pattern.left, name);
+  if (pattern.type === "ArrayPattern") {
+    return pattern.elements.some((element) => bindingPatternContainsName(element, name));
+  }
+  if (pattern.type === "ObjectPattern") {
+    return pattern.properties.some((property) => (
+      property.type === "RestElement"
+        ? bindingPatternContainsName(property.argument, name)
+        : bindingPatternContainsName(property.value, name)
+    ));
+  }
+  return false;
+}
+
+function isExpressFactoryCall(node) {
+  return node?.type === "CallExpression"
+    && isIdentifier(node.callee, "express")
+    && node.arguments.length === 0
+    && !node.optional;
+}
+
+function findExpressAppDeclarator(program) {
+  const matches = [];
+  for (const statement of program.body) {
+    if (
+      statement.type !== "VariableDeclaration"
+      || statement.kind !== "const"
+      || statement.declarations.length !== 1
+    ) continue;
+    const declarator = statement.declarations[0];
+    if (isIdentifier(declarator.id, "app") && isExpressFactoryCall(declarator.init)) {
+      matches.push(declarator);
+    }
+  }
+  if (matches.length !== 1) {
+    throw unsupportedRouting("expected exactly one top-level `const app = express()` binding", program);
+  }
+  return matches[0];
+}
+
+function rejectShadowedAppBinding(node, expressAppDeclarator) {
+  if (node.type === "VariableDeclarator" && bindingPatternContainsName(node.id, "app")) {
+    if (node !== expressAppDeclarator) throw unsupportedRouting("another variable binding shadows app", node);
+    return;
+  }
+  if (node.type === "FunctionDeclaration" || node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression") {
+    if (bindingPatternContainsName(node.id, "app")) {
+      throw unsupportedRouting("a function name shadows app", node);
+    }
+    if (node.params.some((parameter) => bindingPatternContainsName(parameter, "app"))) {
+      throw unsupportedRouting("a function parameter shadows app", node);
+    }
+    return;
+  }
+  if (node.type === "ClassDeclaration" || node.type === "ClassExpression") {
+    if (bindingPatternContainsName(node.id, "app")) {
+      throw unsupportedRouting("a class name shadows app", node);
+    }
+    return;
+  }
+  if (node.type === "CatchClause" && bindingPatternContainsName(node.param, "app")) {
+    throw unsupportedRouting("a catch parameter shadows app", node);
+  }
+}
+
 function memberPropertyName(member) {
   if (member?.type !== "MemberExpression") return null;
   if (!member.computed && member.property.type === "Identifier") return member.property.name;
@@ -94,13 +165,33 @@ function isApiPath(pathname) {
 function parseAppRoutes(sourceText = source) {
   const routes = [];
   const program = parseProgram(sourceText);
+  const expressAppDeclarator = findExpressAppDeclarator(program);
 
   walkAst(program, (node, parent) => {
+    rejectShadowedAppBinding(node, expressAppDeclarator);
+    if (node.type === "WithStatement") {
+      throw unsupportedRouting("with statements can shadow the Express app binding", node);
+    }
     if (node.type === "VariableDeclarator" && isIdentifier(node.init, "app")) {
       throw unsupportedRouting("an alias of app can hide API routes", node);
     }
-    if (node.type === "AssignmentExpression" && isIdentifier(node.right, "app")) {
-      throw unsupportedRouting("an assignment alias of app can hide API routes", node);
+    if (node.type === "AssignmentExpression") {
+      if (isIdentifier(node.right, "app")) {
+        throw unsupportedRouting("an assignment alias of app can hide API routes", node);
+      }
+      if (bindingPatternContainsName(node.left, "app")) {
+        throw unsupportedRouting("the Express app binding cannot be reassigned", node);
+      }
+    }
+    if (node.type === "UpdateExpression" && bindingPatternContainsName(node.argument, "app")) {
+      throw unsupportedRouting("the Express app binding cannot be updated", node);
+    }
+    if (
+      (node.type === "ForInStatement" || node.type === "ForOfStatement")
+      && node.left.type !== "VariableDeclaration"
+      && bindingPatternContainsName(node.left, "app")
+    ) {
+      throw unsupportedRouting("the Express app binding cannot be reassigned by iteration", node);
     }
     if (node.type === "MemberExpression" && isIdentifier(node.object, "app")) {
       const method = memberPropertyName(node);
@@ -128,9 +219,15 @@ function parseAppRoutes(sourceText = source) {
       throw unsupportedRouting("computed or optional app route access", node);
     }
 
-    if (directApp && HTTP_ROUTE_METHODS.has(method)) {
+    if (directApp && EXPRESS_ROUTE_METHODS.has(method)) {
       if (pathname === null) {
         throw unsupportedRouting(`dynamic pathname in app.${method}()`, node.arguments[0] || node);
+      }
+      if (!POLICY_ROUTE_METHODS.has(method)) {
+        if (isApiPath(pathname)) {
+          throw unsupportedRouting(`app.${method}() is outside the approved API policy methods`, node);
+        }
+        return;
       }
       if (isApiPath(pathname)) {
         routes.push({
@@ -184,6 +281,10 @@ function routesByKey(sourceText = source) {
   return new Map(parseAppRoutes(sourceText).map((route) => [`${route.method} ${route.path}`, route]));
 }
 
+function withExpressApp(body) {
+  return `const app = express();\n${body}`;
+}
+
 test("every API route has exactly one policy", () => {
   const policyRoutes = Object.values(API_ROUTE_POLICIES).flat().sort();
   assert.deepEqual(policyRoutes, declaredRoutes());
@@ -201,7 +302,7 @@ test("member and admin declarations include their auth middleware", () => {
 });
 
 test("route discovery recognizes single and double quoted multiline app calls", () => {
-  const synthetic = `
+  const synthetic = withExpressApp(`
     app.get('/api/single', publicHandler);
     app
       .post(
@@ -209,53 +310,71 @@ test("route discovery recognizes single and double quoted multiline app calls", 
         requireMemberSession,
         memberHandler
       );
-  `;
+  `);
   assert.deepEqual(declaredRoutes(synthetic), ["GET /api/single", "POST /api/double"]);
 });
 
 test("route discovery ignores comments and ordinary strings", () => {
-  const synthetic = `
+  const synthetic = withExpressApp(`
     // app.get('/api/comment', requireMemberSession, handler);
     /* app.post('/api/block-comment', requireMemberSession, handler); */
     const sample = "app.delete('/api/string', requireAdminSession, handler)";
     app.get('/not-api', publicHandler);
-  `;
+  `);
   assert.deepEqual(declaredRoutes(synthetic), []);
 });
 
 test("route discovery scans active template interpolations", () => {
-  const synthetic = "const result = `${app.get('/api/template-expression', handler)}`;";
+  const synthetic = withExpressApp("const result = `${app.get('/api/template-expression', handler)}`;");
   assert.deepEqual(declaredRoutes(synthetic), ["GET /api/template-expression"]);
 });
 
 test("route discovery ignores regular expression contents after control flow", () => {
-  const synthetic = String.raw`if (enabled) /app.get('\/api\/regex-fake', handler)/.test(value);`;
+  const synthetic = withExpressApp(String.raw`if (enabled) /app.get('\/api\/regex-fake', handler)/.test(value);`);
   assert.deepEqual(declaredRoutes(synthetic), []);
 });
 
 test("route discovery ignores regular expression contents after a closed block", () => {
-  const synthetic = String.raw`if (enabled) {} /app.get('\/api\/block-regex-fake', handler)/.test(value);`;
+  const synthetic = withExpressApp(String.raw`if (enabled) {} /app.get('\/api\/block-regex-fake', handler)/.test(value);`);
   assert.deepEqual(declaredRoutes(synthetic), []);
 });
 
 test("middleware identity comes from the matched call arguments", () => {
-  const synthetic = `
+  const synthetic = withExpressApp(`
     app.get('/api/member/example', otherMiddleware, () => {
       const unrelated = "requireMemberSession";
     });
-  `;
+  `);
   const route = routesByKey(synthetic).get("GET /api/member/example");
   assert.equal(argumentIdentifier(route?.arguments[1]), "otherMiddleware");
 });
 
-test("route discovery fails closed for unsupported API routing forms", async (t) => {
+test("route discovery requires one exact top-level Express app binding", async (t) => {
   for (const synthetic of [
+    "app.get('/api/missing-binding', handler);",
+    "const app = makeApp(); app.get('/api/wrong-factory', handler);",
+    "let app = express(); app.get('/api/mutable-binding', handler);",
+    "const app = express('unexpected'); app.get('/api/factory-argument', handler);",
+    "const app = express(), extra = true; app.get('/api/multi-declarator', handler);"
+  ]) {
+    await t.test(synthetic, () => {
+      assert.throws(() => parseAppRoutes(synthetic), /Unsupported API routing syntax/);
+    });
+  }
+});
+
+test("route discovery fails closed for unsupported API routing forms", async (t) => {
+  for (const body of [
     "app['get']('/api/computed', handler);",
     "const router = express.Router();",
     "app.use('/api', apiRouter);",
     "const prefix = '/api'; app.use(prefix, apiRouter);",
     "app.route('/api/chained').get(handler);",
+    "app.head('/api/head', handler);",
     "app.options('/api/preflight', handler);",
+    "app.all('/api/all', handler);",
+    "app.options(apiPrefix, handler);",
+    "app.propfind(apiPrefix, handler);",
     "router.get('/api/alias', handler);",
     "const apiApp = app; apiApp.get('/api/direct-alias', handler);",
     "wrapper.app.get('/api/nested-app', handler);",
@@ -263,8 +382,25 @@ test("route discovery fails closed for unsupported API routing forms", async (t)
     "app?.get('/api/optional', handler);",
     "app.get(`${prefix}/secret`, handler);",
     "const register = app['get'].bind(app); register('/api/computed-alias', handler);",
-    "const register = app.get; register('/api/method-alias', handler);"
+    "const register = app.get; register('/api/method-alias', handler);",
+    "const register = app.all; register('/api/all-alias', handler);",
+    "function fake(app) { app.get('/api/members', requireAdminSession, handler); }",
+    "function fake() { const app = makeApp(); app.get('/api/members', requireAdminSession, handler); }",
+    "const fake = ({ app }) => app.get('/api/members', requireAdminSession, handler);",
+    "const fake = (app = makeApp()) => app.get('/api/members', handler);",
+    "const fake = (...app) => app[0].get('/api/members', handler);",
+    "try {} catch (app) { app.get('/api/members', handler); }",
+    "{ function app() {} }",
+    "{ class app {} }",
+    "{ const [app] = makeApps(); }",
+    "{ const { nested: app } = makeApps(); }",
+    "({ app } = replacement);",
+    "for (app of apps) {}",
+    "app = makeApp();",
+    "app++;",
+    "with ({ app: makeApp() }) { app.get('/api/members', handler); }"
   ]) {
+    const synthetic = withExpressApp(body);
     await t.test(synthetic, () => {
       assert.throws(() => parseAppRoutes(synthetic), /Unsupported API routing syntax/);
     });

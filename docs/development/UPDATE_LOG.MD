@@ -12,8 +12,10 @@ Scope:
 - Superseded the review-rejected regex and hand-written tokenizer with Acorn `8.15.0` plus a small generic AST traversal over active `CallExpression` and `MemberExpression` nodes.
 - Restricted route collection to direct, non-computed, non-optional `app.<method>(<plain string literal>, ...)` calls and reads middleware identity from the actual AST argument node.
 - Added fail-closed AST contracts for malformed JavaScript, dynamic/template paths, computed/optional method access, method aliases, Express routers, literal/computed API mounts, nested/call-result receivers, unsupported API methods, comments, strings, template raw text, and regex literals.
+- Bound accepted route calls to the sole exact top-level `const app = express()` declarator and conservatively reject every other `app` variable, function/class name, parameter, catch binding, destructuring/rest/default pattern, reassignment, update, iteration target, and `with` shadow.
+- Expanded route-method guards to Express's complete Node HTTP/WebDAV method set plus `all`, while continuing to handle `use` and `route` as mounts/builders; unsupported static API methods, dynamic paths, and detached methods now fail closed.
 - Replaced the one dynamic member-page asset registration loop with eight behavior-equivalent literal route registrations so every Express route path is statically reviewable.
-- Reduced `tests/api-route-policy.test.mjs` from 523 to 339 lines while increasing unsupported-routing coverage to 14 AST fixtures.
+- Kept `tests/api-route-policy.test.mjs` below the former custom-parser size at 475 versus 523 lines while increasing coverage to 5 exact-binding fixtures and 34 unsupported/shadowing fixtures.
 - Made the anonymous projection check non-vacuous by creating a featured course through the protected admin flow, then requiring an exact approved key set for every public list item and the public detail response.
 - Added an explicit public catalog projection so anonymous course responses no longer expose the admin-only `featured` and internal `sortOrder` fields; authenticated admin/member projections remain unchanged.
 - Preserved the Stripe raw-body webhook order, Task 2 publication boundary, current session architecture, and local-only scope.
@@ -48,6 +50,12 @@ Validation:
 - Final AST full suite: `node --test tests/*.test.mjs` passed: 67 tests, 0 failures.
 - `node --check server.js` and `node --check tests/api-route-policy.test.mjs` passed.
 - `npm audit --audit-level=high` completed with exit code 1 and the unchanged 6 pre-existing vulnerabilities: 1 low and 5 high in Multer and the Wrangler development dependency chain. Acorn introduced no advisory and no automatic fix was applied.
+- Third-review RED: `node --test tests/api-route-policy.test.mjs` ran 37 tests including subtests; 25 passed and 12 failed. Five exact-binding cases plus their parent failed, and dynamic `options`, detached `all`, function-parameter `app`, nested `const app`, and destructured arrow `app` plus their parent remained open.
+- Third-review API GREEN: `node --test tests/api-route-policy.test.mjs` passed: 50 tests, 0 failures after lexical binding and comprehensive Express method guards were added.
+- Third-review focused GREEN: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs` passed: 55 tests, 0 failures.
+- Third-review full suite: `node --test tests/*.test.mjs` passed: 93 tests, 0 failures.
+- Third-review `node --check server.js` and `node --check tests/api-route-policy.test.mjs` passed.
+- Third-review `npm audit --audit-level=high` again exited 1 with the unchanged 6 pre-existing vulnerabilities: 1 low and 5 high; package files did not change.
 - `git diff --check` passed with no whitespace errors.
 - `git diff --cached --check` passed with no whitespace errors.
 
@@ -56,6 +64,7 @@ Unresolved risks:
 - Anonymous catalog fields are now governed by an explicit allowlist; future intentional public fields must be added to both the projection and exact list/detail contract.
 - The two legacy routes classified as `disabled` still retain their existing handlers until the separately scoped legacy-auth shutdown task changes them to intentional `410 Gone` responses.
 - The 5 pre-existing high dependency advisories remain open for the dedicated dependency-hardening task; this AST-only dependency change did not run `npm audit fix`.
+- Reflective/dynamic constructs such as `Reflect.get(app, "get")` and direct `eval(...)` remain outside this conservative lexical-binding model; neither exists in current `server.js` or the approved route-registration patterns.
 
 ## 2026-07-18 - Phase 0A Task 2 Express publication boundary
 
