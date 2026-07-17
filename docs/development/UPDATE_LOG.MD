@@ -4,6 +4,27 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0A Task 1 canonical public publication manifest
+
+Scope:
+- Added the canonical positive allowlist contract for anonymous root files and safe static assets.
+- Defined pathname decoding, traversal/hidden-path/backslash/null-byte rejection, and repository-root containment for resolved public paths.
+- Kept this task local-only; Express and Cloudflare consumers remain separate later Phase 0A tasks.
+
+Changed files:
+- `security/publication-manifest.cjs`
+- `tests/publication-manifest.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- RED: `node --test tests/publication-manifest.test.mjs` failed as expected with `Cannot find module '../security/publication-manifest.cjs'` before the manifest existed.
+- GREEN: `node --test tests/publication-manifest.test.mjs` passed: 4 tests, 0 failures.
+- Full applicable suite: `node --test tests/*.test.mjs` passed: 36 tests, 0 failures.
+- `git diff --check` passed.
+
+Unresolved risks:
+- The manifest is not yet enforced by Express static serving or Cloudflare packaging; those integrations are explicitly owned by subsequent Phase 0A tasks.
+
 ## 2026-07-18 - Phase 0 implementation plan pack
 
 Scope:
