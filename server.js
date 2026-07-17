@@ -4052,22 +4052,20 @@ function requireMemberPage(req, res, next) {
   next();
 }
 
-const MEMBER_PAGE_ASSETS = [
-  'dashboard.js',
-  'tools-box.js',
-  'live-class.js',
-  'payment.js',
-  'payment-success.js',
-  'course-start.js',
-  'course-content.js',
-  'course-learn.js'
-];
-
-for (const filename of MEMBER_PAGE_ASSETS) {
-  app.get(`/${filename}`, requireMemberPage, (req, res) => {
+function memberPageAsset(filename) {
+  return (req, res) => {
     res.sendFile(path.join(__dirname, filename));
-  });
+  };
 }
+
+app.get('/dashboard.js', requireMemberPage, memberPageAsset('dashboard.js'));
+app.get('/tools-box.js', requireMemberPage, memberPageAsset('tools-box.js'));
+app.get('/live-class.js', requireMemberPage, memberPageAsset('live-class.js'));
+app.get('/payment.js', requireMemberPage, memberPageAsset('payment.js'));
+app.get('/payment-success.js', requireMemberPage, memberPageAsset('payment-success.js'));
+app.get('/course-start.js', requireMemberPage, memberPageAsset('course-start.js'));
+app.get('/course-content.js', requireMemberPage, memberPageAsset('course-content.js'));
+app.get('/course-learn.js', requireMemberPage, memberPageAsset('course-learn.js'));
 
 app.get('/dashboard', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));

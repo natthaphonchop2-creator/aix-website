@@ -9,8 +9,11 @@ Rule: every meaningful code, asset, dependency, deployment, or documentation cha
 Scope:
 - Added one exhaustive literal `API_ROUTE_POLICIES` contract covering every current `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` declaration under `/api/` exactly once.
 - Locked member and admin route declarations to their existing authorization middleware and corrected member logout to require `requireMemberSession`.
-- Replaced the review-rejected route regex with a dependency-free structural JavaScript tokenizer/parser that ignores comments and string contents, reads the real call arguments, supports multiline single/double-quoted declarations, and fails closed for computed `app[...]`, Express routers, API mounts, and route aliases.
-- Added synthetic parser contracts for recognized declarations, ignored comments/strings, actual middleware argument identity, and every unsupported routing form.
+- Superseded the review-rejected regex and hand-written tokenizer with Acorn `8.15.0` plus a small generic AST traversal over active `CallExpression` and `MemberExpression` nodes.
+- Restricted route collection to direct, non-computed, non-optional `app.<method>(<plain string literal>, ...)` calls and reads middleware identity from the actual AST argument node.
+- Added fail-closed AST contracts for malformed JavaScript, dynamic/template paths, computed/optional method access, method aliases, Express routers, literal/computed API mounts, nested/call-result receivers, unsupported API methods, comments, strings, template raw text, and regex literals.
+- Replaced the one dynamic member-page asset registration loop with eight behavior-equivalent literal route registrations so every Express route path is statically reviewable.
+- Reduced `tests/api-route-policy.test.mjs` from 523 to 339 lines while increasing unsupported-routing coverage to 14 AST fixtures.
 - Made the anonymous projection check non-vacuous by creating a featured course through the protected admin flow, then requiring an exact approved key set for every public list item and the public detail response.
 - Added an explicit public catalog projection so anonymous course responses no longer expose the admin-only `featured` and internal `sortOrder` fields; authenticated admin/member projections remain unchanged.
 - Preserved the Stripe raw-body webhook order, Task 2 publication boundary, current session architecture, and local-only scope.
@@ -21,6 +24,8 @@ Version:
 Changed files:
 - `tests/api-route-policy.test.mjs`
 - `server.js`
+- `package.json`
+- `package-lock.json`
 - `docs/development/UPDATE_LOG.MD`
 
 Validation:
@@ -34,6 +39,15 @@ Validation:
 - Review edge-case GREEN: `node --test tests/api-route-policy.test.mjs` passed: 9 tests, 0 failures after template-expression tokenization, computed-mount rejection, and control-flow regex recognition were added.
 - Review-fix focused GREEN: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs` passed: 14 tests, 0 failures.
 - Review-fix full suite: `node --test tests/*.test.mjs` passed: 52 tests, 0 failures.
+- AST review RED on the hand-written parser: `node --test tests/api-route-policy.test.mjs` ran 20 tests including table subtests; 14 passed and 6 failed. Closed-block regex text created a false route, while nested `wrapper.app`, call-result receivers, optional app access, and a computed template pathname were not rejected; their parent group also failed.
+- Added exact dev dependency `acorn@8.15.0` with `npm install --save-dev --save-exact acorn@8.15.0`; `npm ls acorn --depth=0` resolved exactly `8.15.0`.
+- AST integration RED: `node --test tests/api-route-policy.test.mjs` ran 20 tests with 18 passing and 2 failing because the new fail-closed AST contract rejected the existing dynamic member-page asset route at `server.js` line 4067.
+- AST integration GREEN: the same suite passed all 20 tests after replacing that loop with literal registrations.
+- Method-alias RED: `node --test tests/api-route-policy.test.mjs` ran 22 tests with 19 passing and 3 failing. Computed `app['get'].bind(app)` and direct `app.get` aliases were accepted, and their parent group failed.
+- Final AST focused suite: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs` passed: 29 tests, 0 failures.
+- Final AST full suite: `node --test tests/*.test.mjs` passed: 67 tests, 0 failures.
+- `node --check server.js` and `node --check tests/api-route-policy.test.mjs` passed.
+- `npm audit --audit-level=high` completed with exit code 1 and the unchanged 6 pre-existing vulnerabilities: 1 low and 5 high in Multer and the Wrangler development dependency chain. Acorn introduced no advisory and no automatic fix was applied.
 - `git diff --check` passed with no whitespace errors.
 - `git diff --cached --check` passed with no whitespace errors.
 
@@ -41,6 +55,7 @@ Unresolved risks:
 - The matrix is a source-level regression contract; cookie-only sessions, retired bearer-token rejection, Origin/CSRF checks, and rate limits remain Phase 0B work.
 - Anonymous catalog fields are now governed by an explicit allowlist; future intentional public fields must be added to both the projection and exact list/detail contract.
 - The two legacy routes classified as `disabled` still retain their existing handlers until the separately scoped legacy-auth shutdown task changes them to intentional `410 Gone` responses.
+- The 5 pre-existing high dependency advisories remain open for the dedicated dependency-hardening task; this AST-only dependency change did not run `npm audit fix`.
 
 ## 2026-07-18 - Phase 0A Task 2 Express publication boundary
 

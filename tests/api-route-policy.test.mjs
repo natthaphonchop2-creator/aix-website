@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { parse } from "acorn";
 
 const source = await readFile("server.js", "utf8");
 const API_ROUTE_POLICIES = {
@@ -37,259 +38,53 @@ const API_ROUTE_POLICIES = {
 };
 
 const HTTP_ROUTE_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
+const ROUTER_METHODS = new Set([...HTTP_ROUTE_METHODS, "use", "route"]);
 
-function unsupportedRouting(message) {
-  return new Error(`Unsupported API routing syntax: ${message}`);
+function unsupportedRouting(message, node) {
+  const location = node?.loc?.start ? ` at line ${node.loc.start.line}` : "";
+  return new Error(`Unsupported API routing syntax${location}: ${message}`);
 }
 
-function tokenizeJavaScript(sourceText) {
-  const tokens = [];
-  const templateExpressions = [];
-  let index = 0;
-
-  function push(type, value, start, end = index) {
-    tokens.push({ type, value, start, end });
+function parseProgram(sourceText) {
+  try {
+    return parse(sourceText, {
+      ecmaVersion: "latest",
+      sourceType: "script",
+      locations: true
+    });
+  } catch (error) {
+    throw unsupportedRouting(`JavaScript parse failed: ${error.message}`);
   }
-
-  function readQuotedString(quote) {
-    const start = index;
-    index += 1;
-    let value = "";
-    const escapes = { b: "\b", f: "\f", n: "\n", r: "\r", t: "\t", v: "\v", 0: "\0" };
-    while (index < sourceText.length) {
-      const char = sourceText[index];
-      if (char === quote) {
-        index += 1;
-        push("string", value, start);
-        return;
-      }
-      if (char === "\\") {
-        index += 1;
-        if (index >= sourceText.length) throw unsupportedRouting("unterminated string literal");
-        const escaped = sourceText[index];
-        index += 1;
-        if (escaped === "\n") continue;
-        if (escaped === "\r") {
-          if (sourceText[index] === "\n") index += 1;
-          continue;
-        }
-        value += escapes[escaped] ?? escaped;
-        continue;
-      }
-      value += char;
-      index += 1;
-    }
-    throw unsupportedRouting("unterminated string literal");
-  }
-
-  function readTemplate(openingBacktick = true) {
-    const start = index;
-    if (openingBacktick) index += 1;
-    let value = "";
-    while (index < sourceText.length) {
-      const char = sourceText[index];
-      const next = sourceText[index + 1];
-      if (char === "\\") {
-        value += char;
-        index += 1;
-        if (index < sourceText.length) {
-          value += sourceText[index];
-          index += 1;
-        }
-        continue;
-      }
-      if (char === "`") {
-        index += 1;
-        push("template", value, start);
-        return;
-      }
-      if (char === "$" && next === "{") {
-        push("template", value, start);
-        const expressionStart = index;
-        index += 2;
-        push("punctuator", "{", expressionStart);
-        templateExpressions.push({ braceDepth: 0 });
-        return;
-      }
-      value += char;
-      index += 1;
-    }
-    throw unsupportedRouting("unterminated template literal");
-  }
-
-  function regexCanStart() {
-    const previous = tokens.at(-1);
-    if (!previous) return true;
-    if (previous.type === "identifier") {
-      return new Set([
-        "return", "throw", "case", "delete", "void", "typeof", "instanceof", "in", "of",
-        "yield", "await", "else", "do"
-      ]).has(previous.value);
-    }
-    if (previous.value === ")") {
-      let depth = 0;
-      for (let tokenIndex = tokens.length - 1; tokenIndex >= 0; tokenIndex -= 1) {
-        if (tokens[tokenIndex].value === ")") depth += 1;
-        if (tokens[tokenIndex].value !== "(") continue;
-        depth -= 1;
-        if (depth !== 0) continue;
-        return new Set(["if", "while", "for", "with", "switch"]).has(tokens[tokenIndex - 1]?.value);
-      }
-    }
-    return previous.type === "punctuator" && new Set([
-      "(", "[", "{", ",", ";", "=", ":", "!", "?", "&", "|", "+", "-", "*", "%", "~", "<", ">"
-    ]).has(previous.value);
-  }
-
-  function readRegex() {
-    const start = index;
-    let value = "/";
-    index += 1;
-    let inClass = false;
-    while (index < sourceText.length) {
-      const char = sourceText[index];
-      value += char;
-      index += 1;
-      if (char === "\\") {
-        if (index < sourceText.length) {
-          value += sourceText[index];
-          index += 1;
-        }
-        continue;
-      }
-      if (char === "[") inClass = true;
-      else if (char === "]") inClass = false;
-      else if (char === "/" && !inClass) {
-        while (/[A-Za-z]/.test(sourceText[index] || "")) {
-          value += sourceText[index];
-          index += 1;
-        }
-        push("regex", value, start);
-        return;
-      }
-    }
-    throw unsupportedRouting("unterminated regular expression literal");
-  }
-
-  while (index < sourceText.length) {
-    const char = sourceText[index];
-    const next = sourceText[index + 1];
-    if (templateExpressions.length && char === "}") {
-      const expression = templateExpressions.at(-1);
-      if (expression.braceDepth === 0) {
-        const start = index;
-        index += 1;
-        push("punctuator", "}", start);
-        templateExpressions.pop();
-        readTemplate(false);
-        continue;
-      }
-      expression.braceDepth -= 1;
-    } else if (templateExpressions.length && char === "{") {
-      templateExpressions.at(-1).braceDepth += 1;
-    }
-    if (/\s/.test(char)) {
-      index += 1;
-      continue;
-    }
-    if (char === "/" && next === "/") {
-      index += 2;
-      while (index < sourceText.length && !/[\r\n]/.test(sourceText[index])) index += 1;
-      continue;
-    }
-    if (char === "/" && next === "*") {
-      const close = sourceText.indexOf("*/", index + 2);
-      if (close === -1) throw unsupportedRouting("unterminated block comment");
-      index = close + 2;
-      continue;
-    }
-    if (char === "'" || char === '"') {
-      readQuotedString(char);
-      continue;
-    }
-    if (char === "`") {
-      readTemplate();
-      continue;
-    }
-    if (char === "/" && regexCanStart()) {
-      readRegex();
-      continue;
-    }
-    if (/[A-Za-z_$]/.test(char)) {
-      const start = index;
-      index += 1;
-      while (/[A-Za-z0-9_$]/.test(sourceText[index] || "")) index += 1;
-      push("identifier", sourceText.slice(start, index), start);
-      continue;
-    }
-    if (/[0-9]/.test(char)) {
-      const start = index;
-      index += 1;
-      while (/[A-Za-z0-9_.]/.test(sourceText[index] || "")) index += 1;
-      push("number", sourceText.slice(start, index), start);
-      continue;
-    }
-    const start = index;
-    index += 1;
-    push("punctuator", char, start);
-  }
-
-  return tokens;
 }
 
-function parseCallArguments(tokens, openParenthesisIndex) {
-  const closingFor = { "(": ")", "[": "]", "{": "}" };
-  const stack = [")"];
-  const argumentsList = [];
-  let current = [];
-
-  for (let index = openParenthesisIndex + 1; index < tokens.length; index += 1) {
-    const token = tokens[index];
-    if (token.type === "punctuator" && closingFor[token.value]) {
-      stack.push(closingFor[token.value]);
-      current.push(token);
-      continue;
+function walkAst(node, visit, parent = null) {
+  if (!node || typeof node.type !== "string") return;
+  visit(node, parent);
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "loc" || key === "start" || key === "end") continue;
+    if (Array.isArray(value)) {
+      for (const child of value) walkAst(child, visit, node);
+    } else if (value && typeof value.type === "string") {
+      walkAst(value, visit, node);
     }
-    if (token.type === "punctuator" && token.value === stack.at(-1)) {
-      if (stack.length === 1) {
-        if (current.length || argumentsList.length) argumentsList.push(current);
-        return { arguments: argumentsList, endIndex: index };
-      }
-      stack.pop();
-      current.push(token);
-      continue;
-    }
-    if (token.type === "punctuator" && token.value === "," && stack.length === 1) {
-      argumentsList.push(current);
-      current = [];
-      continue;
-    }
-    current.push(token);
   }
-
-  throw unsupportedRouting("unterminated app call expression");
 }
 
-function literalStringArgument(argumentTokens) {
-  return argumentTokens?.length === 1 && argumentTokens[0].type === "string"
-    ? argumentTokens[0].value
-    : null;
+function isIdentifier(node, name) {
+  return node?.type === "Identifier" && node.name === name;
 }
 
-function argumentReferencesApi(argumentTokens = []) {
-  return argumentTokens.some((token) => {
-    if (token.type === "string" || token.type === "template") {
-      return token.value === "/api" || token.value.startsWith("/api/");
-    }
-    return token.type === "regex" && /api/i.test(token.value);
-  });
+function memberPropertyName(member) {
+  if (member?.type !== "MemberExpression") return null;
+  if (!member.computed && member.property.type === "Identifier") return member.property.name;
+  if (member.computed && member.property.type === "Literal" && typeof member.property.value === "string") {
+    return member.property.value;
+  }
+  return null;
 }
 
-function isFunctionArgument(argumentTokens = []) {
-  if (argumentTokens[0]?.type === "identifier" && argumentTokens[0].value === "function") return true;
-  return argumentTokens.some((token, index) => (
-    token.value === "=" && argumentTokens[index + 1]?.value === ">"
-  ));
+function plainStringLiteral(node) {
+  return node?.type === "Literal" && typeof node.value === "string" ? node.value : null;
 }
 
 function isApiPath(pathname) {
@@ -297,72 +92,80 @@ function isApiPath(pathname) {
 }
 
 function parseAppRoutes(sourceText = source) {
-  const tokens = tokenizeJavaScript(sourceText);
   const routes = [];
+  const program = parseProgram(sourceText);
 
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index];
-    const next = tokens[index + 1];
-    const afterNext = tokens[index + 2];
-
-    if (token.type === "identifier" && token.value === "app" && next?.value === "[") {
-      throw unsupportedRouting("computed app[...] access");
+  walkAst(program, (node, parent) => {
+    if (node.type === "VariableDeclarator" && isIdentifier(node.init, "app")) {
+      throw unsupportedRouting("an alias of app can hide API routes", node);
     }
-    if (
-      token.type === "identifier" && token.value === "express"
-      && next?.value === "." && afterNext?.type === "identifier" && afterNext.value === "Router"
-      && tokens[index + 3]?.value === "("
-    ) {
-      throw unsupportedRouting("express.Router() requires explicit API classification");
+    if (node.type === "AssignmentExpression" && isIdentifier(node.right, "app")) {
+      throw unsupportedRouting("an assignment alias of app can hide API routes", node);
     }
-    if (token.value === "=" && next?.type === "identifier" && next.value === "app") {
-      throw unsupportedRouting("an alias of app can hide API routes");
+    if (node.type === "MemberExpression" && isIdentifier(node.object, "app")) {
+      const method = memberPropertyName(node);
+      const directCall = parent?.type === "CallExpression" && parent.callee === node;
+      if (node.computed || node.optional) {
+        throw unsupportedRouting("computed or optional app route access", node);
+      }
+      if (ROUTER_METHODS.has(method) && !directCall) {
+        throw unsupportedRouting(`an alias of app.${method} can hide API routes`, node);
+      }
+    }
+    if (node.type !== "CallExpression" || node.callee.type !== "MemberExpression") return;
+
+    const callee = node.callee;
+    const method = memberPropertyName(callee);
+    const pathname = plainStringLiteral(node.arguments[0]);
+    const directApp = isIdentifier(callee.object, "app");
+    const optionalCall = Boolean(node.optional || callee.optional || parent?.type === "ChainExpression");
+
+    if (isIdentifier(callee.object, "express") && method === "Router") {
+      throw unsupportedRouting("express.Router() requires explicit API classification", node);
     }
 
-    if (
-      token.type !== "identifier" || next?.value !== "."
-      || afterNext?.type !== "identifier" || tokens[index + 3]?.value !== "("
-    ) continue;
+    if (directApp && (callee.computed || optionalCall)) {
+      throw unsupportedRouting("computed or optional app route access", node);
+    }
 
-    const receiver = token.value;
-    const method = afterNext.value;
-    const parsed = parseCallArguments(tokens, index + 3);
-    const firstArgument = parsed.arguments[0] || [];
-    const pathname = literalStringArgument(firstArgument);
-    const referencesApi = argumentReferencesApi(firstArgument);
-
-    if (receiver === "app" && HTTP_ROUTE_METHODS.has(method)) {
-      if (pathname !== null && isApiPath(pathname)) {
+    if (directApp && HTTP_ROUTE_METHODS.has(method)) {
+      if (pathname === null) {
+        throw unsupportedRouting(`dynamic pathname in app.${method}()`, node.arguments[0] || node);
+      }
+      if (isApiPath(pathname)) {
         routes.push({
           method: method.toUpperCase(),
           path: pathname,
-          arguments: parsed.arguments
+          arguments: node.arguments
         });
-      } else if (pathname === null && referencesApi) {
-        throw unsupportedRouting(`computed API pathname in app.${method}()`);
-      } else if (pathname === null && firstArgument[0]?.type !== "template") {
-        throw unsupportedRouting(`non-literal pathname in app.${method}()`);
       }
-    } else if (receiver === "app" && (method === "use" || method === "route")) {
-      if (
-        (pathname !== null && isApiPath(pathname))
-        || (!isFunctionArgument(firstArgument) && referencesApi)
-        || (method === "use" && pathname === null && parsed.arguments.length > 1)
-        || (method === "route" && pathname === null)
-      ) {
-        throw unsupportedRouting(`app.${method}() API mount`);
-      }
-    } else if (receiver === "app" && pathname !== null && isApiPath(pathname)) {
-      throw unsupportedRouting(`unsupported app.${method}() API method`);
-    } else if (
-      receiver !== "app"
-      && HTTP_ROUTE_METHODS.has(method)
-      && pathname !== null
-      && isApiPath(pathname)
-    ) {
-      throw unsupportedRouting(`${receiver}.${method}() may be an API router alias`);
+      return;
     }
-  }
+
+    if (directApp && method === "use") {
+      if (pathname !== null && isApiPath(pathname)) {
+        throw unsupportedRouting("app.use() API mount", node);
+      }
+      if (pathname === null && node.arguments.length > 1) {
+        throw unsupportedRouting("computed app.use() mount path", node);
+      }
+      return;
+    }
+
+    if (directApp && method === "route") {
+      if (pathname === null) throw unsupportedRouting("dynamic app.route() pathname", node);
+      if (isApiPath(pathname)) throw unsupportedRouting("app.route() API mount", node);
+      return;
+    }
+
+    if (directApp && pathname !== null && isApiPath(pathname)) {
+      throw unsupportedRouting(`unsupported app.${method || "<computed>"}() API method`, node);
+    }
+
+    if (!directApp && ROUTER_METHODS.has(method) && pathname !== null && isApiPath(pathname)) {
+      throw unsupportedRouting(`${method}() on a non-app receiver may hide an API router alias`, node);
+    }
+  });
 
   return routes;
 }
@@ -373,10 +176,8 @@ function declaredRoutes(sourceText = source) {
     .sort();
 }
 
-function argumentIdentifier(argumentTokens) {
-  return argumentTokens?.length === 1 && argumentTokens[0].type === "identifier"
-    ? argumentTokens[0].value
-    : null;
+function argumentIdentifier(argumentNode) {
+  return argumentNode?.type === "Identifier" ? argumentNode.name : null;
 }
 
 function routesByKey(sourceText = source) {
@@ -432,6 +233,11 @@ test("route discovery ignores regular expression contents after control flow", (
   assert.deepEqual(declaredRoutes(synthetic), []);
 });
 
+test("route discovery ignores regular expression contents after a closed block", () => {
+  const synthetic = String.raw`if (enabled) {} /app.get('\/api\/block-regex-fake', handler)/.test(value);`;
+  assert.deepEqual(declaredRoutes(synthetic), []);
+});
+
 test("middleware identity comes from the matched call arguments", () => {
   const synthetic = `
     app.get('/api/member/example', otherMiddleware, () => {
@@ -442,16 +248,26 @@ test("middleware identity comes from the matched call arguments", () => {
   assert.equal(argumentIdentifier(route?.arguments[1]), "otherMiddleware");
 });
 
-test("route discovery fails closed for unsupported API routing forms", () => {
+test("route discovery fails closed for unsupported API routing forms", async (t) => {
   for (const synthetic of [
     "app['get']('/api/computed', handler);",
     "const router = express.Router();",
     "app.use('/api', apiRouter);",
     "const prefix = '/api'; app.use(prefix, apiRouter);",
+    "app.route('/api/chained').get(handler);",
+    "app.options('/api/preflight', handler);",
     "router.get('/api/alias', handler);",
-    "const apiApp = app; apiApp.get('/api/direct-alias', handler);"
+    "const apiApp = app; apiApp.get('/api/direct-alias', handler);",
+    "wrapper.app.get('/api/nested-app', handler);",
+    "factory().get('/api/call-result', handler);",
+    "app?.get('/api/optional', handler);",
+    "app.get(`${prefix}/secret`, handler);",
+    "const register = app['get'].bind(app); register('/api/computed-alias', handler);",
+    "const register = app.get; register('/api/method-alias', handler);"
   ]) {
-    assert.throws(() => parseAppRoutes(synthetic), /Unsupported API routing syntax/, synthetic);
+    await t.test(synthetic, () => {
+      assert.throws(() => parseAppRoutes(synthetic), /Unsupported API routing syntax/);
+    });
   }
 });
 
