@@ -13,6 +13,7 @@ Scope:
 - Guarded canonical member pages and their page-specific scripts with the existing member-session helper, without changing authentication behavior reserved for Phase 0B.
 - Added an isolated real-HTTP server harness using temporary data/upload directories and deterministic child-process cleanup.
 - Preserved the Stripe raw-body webhook before JSON parsing and kept all work local-only with no deployment or external mutation.
+- Hardened the review gate with table-driven anonymous checks for every member-only page script plus explicit HEAD, malformed-encoding, and encoded-private-path HTTP coverage.
 
 Changed files:
 - `server.js`
@@ -26,6 +27,9 @@ Validation:
 - Initial focused regression run: `node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/homepage-contract.test.mjs` passed 40 of 41 tests; the only failure was the legacy homepage source contract that still looked for the removed Supabase path denylist. A migration note now records that the positive manifest replaces that legacy check without restoring denylist behavior.
 - Final focused regression run: `node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/homepage-contract.test.mjs` passed: 41 tests, 0 failures.
 - Full applicable suite: `node --test tests/*.test.mjs` passed: 41 tests, 0 failures.
+- Review follow-up focused run: `node --test tests/publication-boundary.test.mjs` passed: 5 tests, 0 failures. All 8 member-only scripts returned `302` or `404`, approved/denied HEAD requests respected the publication boundary, malformed encodings returned only `400` or `404`, and encoded direct-private paths returned `404`.
+- Review follow-up full suite: `node --test tests/*.test.mjs` passed: 43 tests, 0 failures. The added probes revealed no server boundary bug, so `server.js` required no follow-up change.
+- Review follow-up `git diff --check` and `git diff --cached --check` both passed with no whitespace errors; the cached file list contained only this update log and `tests/publication-boundary.test.mjs`.
 - `npm audit --audit-level=high` completed with exit code 1 and reported 6 pre-existing vulnerabilities: 1 low and 5 high in Multer and the Wrangler development dependency chain; no automatic dependency change was made in this task.
 - `git diff --check` passed.
 - `git diff --cached --check` passed with no whitespace errors.
