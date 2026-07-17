@@ -9,6 +9,8 @@ Rule: every meaningful code, asset, dependency, deployment, or documentation cha
 Scope:
 - Added the canonical positive allowlist contract for anonymous root files and safe static assets.
 - Defined pathname decoding, traversal/hidden-path/backslash/null-byte rejection, and repository-root containment for resolved public paths.
+- Hardened resolution after review: every in-root component must be non-symlinked, the final candidate must be a regular file, and the canonical candidate must remain contained by the canonical repository root.
+- Added table-driven coverage for every approved asset extension and representative denied HTML, archive, PDF, and Office extensions.
 - Kept this task local-only; Express and Cloudflare consumers remain separate later Phase 0A tasks.
 
 Changed files:
@@ -20,7 +22,11 @@ Validation:
 - RED: `node --test tests/publication-manifest.test.mjs` failed as expected with `Cannot find module '../security/publication-manifest.cjs'` before the manifest existed.
 - GREEN: `node --test tests/publication-manifest.test.mjs` passed: 4 tests, 0 failures.
 - Full applicable suite: `node --test tests/*.test.mjs` passed: 36 tests, 0 failures.
+- Review-fix RED: `node --test tests/publication-manifest.test.mjs` failed as expected because `resolvePublicPath` returned the lexical in-root path for a file symlink that targeted a temp directory outside the publication root.
+- Review-fix GREEN: `node --test tests/publication-manifest.test.mjs` passed: 6 tests, 0 failures, including file-symlink and directory-symlink escape rejection.
+- Final applicable suite: `node --test tests/*.test.mjs` passed: 38 tests, 0 failures.
 - `git diff --check` passed.
+- `git diff --cached --check` passed with no whitespace errors.
 
 Unresolved risks:
 - The manifest is not yet enforced by Express static serving or Cloudflare packaging; those integrations are explicitly owned by subsequent Phase 0A tasks.

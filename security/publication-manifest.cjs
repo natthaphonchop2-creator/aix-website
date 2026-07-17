@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 const path = require("node:path");
 
 const PUBLIC_ROOT_FILES = new Set([
@@ -52,6 +53,34 @@ function resolvePublicPath(root, pathname) {
   const absoluteRoot = path.resolve(root);
   const candidate = path.resolve(absoluteRoot, entry.relativePath);
   if (candidate !== absoluteRoot && !candidate.startsWith(`${absoluteRoot}${path.sep}`)) return null;
+
+  let canonicalRoot;
+  try {
+    canonicalRoot = fs.realpathSync(absoluteRoot);
+  } catch {
+    return null;
+  }
+
+  let current = absoluteRoot;
+  for (const part of entry.relativePath.split("/")) {
+    current = path.join(current, part);
+    let stats;
+    try {
+      stats = fs.lstatSync(current);
+    } catch {
+      return null;
+    }
+    if (stats.isSymbolicLink()) return null;
+    if (current === candidate && !stats.isFile()) return null;
+  }
+
+  let canonicalCandidate;
+  try {
+    canonicalCandidate = fs.realpathSync(candidate);
+  } catch {
+    return null;
+  }
+  if (canonicalCandidate !== canonicalRoot && !canonicalCandidate.startsWith(`${canonicalRoot}${path.sep}`)) return null;
   return candidate;
 }
 
