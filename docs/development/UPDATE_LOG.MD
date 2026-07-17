@@ -4,6 +4,41 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0A Task 4 manifest-driven Cloudflare package
+
+Scope:
+- Replaced broad root-level rsync packaging with a canonical-manifest builder that copies only approved existing regular root files and safe image/font assets.
+- Added fail-closed destination validation before deletion: the repository root, `cloudflare` parent, and exact `cloudflare/assets` destination must be non-symlinked directories whose canonical paths remain contained.
+- Made source traversal and prepared-tree scanning reject or skip symlinks, dotfiles, unsafe extensions, non-regular entries, missing root files, unlisted directories, and canonical escapes.
+- Removed private HTML mappings and the health exception from the Cloudflare Worker; login/register redirect to homepage auth modes while every private route family and `/api/*` returns `503`.
+- Expanded Worker-first patterns for admin, dashboard, tools-box, live, payment, course start/content/learn, login/register, and API routes.
+- Added `test` and `test:security` scripts, preserved all existing scripts, kept Acorn pinned exactly at `8.15.0`, and kept `cf:check` dry-run-only.
+- Regenerated the ignored `cloudflare/assets` tree only through the validated builder; generated output was not staged.
+
+Changed files:
+- `package.json`
+- `cloudflare/worker.js`
+- `wrangler.jsonc`
+- `scripts/prepare-cloudflare-assets.cjs`
+- `tests/cloudflare-publication.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Packaging RED: `node --test tests/cloudflare-publication.test.mjs` failed as expected with `Cannot find module '../scripts/prepare-cloudflare-assets.cjs'` before the builder existed.
+- Packaging GREEN: `node --test tests/cloudflare-publication.test.mjs` passed: 5 tests, 0 failures, including root-file and asset symlinks, a symlinked Cloudflare parent with an untouched outside sentinel, exact destination rejection, safe regeneration, and unsafe output scanning.
+- Worker/config RED: the same focused command ran 8 tests with 5 passing and 3 failing: `/login` returned asset status `200`, `/login/*` was absent from Worker-first patterns, and the root `test` script was undefined.
+- Final focused GREEN: `node --test tests/cloudflare-publication.test.mjs` passed: 8 tests, 0 failures.
+- Full applicable suite: `npm test` passed: 101 tests, 0 failures.
+- Dry-run package check: `npm run cf:check` exited 0, prepared 99 manifest-approved regular files, Wrangler `4.95.0` reported reading 106 files from the assets directory, and `--dry-run: exiting now` confirmed no deploy.
+- Final generated-tree scan with `assertSafePreparedTree` validated 99 regular files with 0 denied entries; filesystem checks found 99 files and 0 symlinks.
+- `git diff --check` passed with no whitespace errors.
+- `git diff --cached --check` passed with no whitespace errors.
+
+Unresolved risks:
+- Cloudflare remains a marketing/static surface by design; private pages and all APIs require the Node application origin and intentionally return `503` on the Worker.
+- `cloudflare/assets` is generated and ignored; its 99-file count is a working-tree snapshot and changes when manifest-approved source assets change.
+- The preserved `cf:deploy` command performs a real deployment if intentionally invoked, but this task ran only `cf:check` with Wrangler `--dry-run` and made no external change.
+
 ## 2026-07-18 - v1.0.1 Phase 0A Task 3 explicit API authorization matrix
 
 Scope:

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node server.js",
-    "cf:prepare": "mkdir -p cloudflare/assets && rsync -a --delete --delete-excluded --exclude '.git' --exclude '.gitignore' --exclude '.playwright-cli' --exclude '.DS_Store' --exclude '.assetsignore' --exclude 'cloudflare' --exclude 'node_modules' --exclude 'old aix-club' --exclude 'outputs' --exclude 'output/playwright' --exclude 'tests' --exclude 'videos' --exclude 'data.db*' --exclude 'uploads' --exclude 'server.js' --exclude 'postgres-worker.js' --exclude 'supabase' --exclude 'rewrite_admin.js' --exclude 'package.json' --exclude 'package-lock.json' --exclude 'wrangler.jsonc' --exclude '.env*' ./ cloudflare/assets/",
+    "test": "node --test tests/*.test.mjs",
+    "test:security": "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs",
+    "cf:prepare": "node scripts/prepare-cloudflare-assets.cjs",
     "cf:dev": "wrangler dev",
     "cf:check": "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"",
     "cf:deploy:dry-run": "npm run cf:check",
