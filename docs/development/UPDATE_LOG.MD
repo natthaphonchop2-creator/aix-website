@@ -4,6 +4,22 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0 emergency hardening design
+
+Scope:
+- Documented the owner-approved decision to lock down the AiX public website and back-office attack surface before visual redesign.
+- Defined a local-only emergency phase covering positive static publication, member/admin cookie sessions, removal of passwordless email-and-phone login, CSRF and origin controls, rate limits, protected media, upload validation, safe rendering, dependency updates, and production secret checks.
+- Recorded explicit non-goals, compatibility behavior, verification requirements, acceptance criteria, and the boundary that prohibits deployment or external mutation.
+
+Changed files:
+- `docs/superpowers/specs/2026-07-18-aix-phase-0-emergency-hardening-design.md`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Reviewed the specification for unresolved placeholders, contradictory scope, untestable acceptance criteria, accidental production authorization, retired-token acceptance, suspended-account behavior, cookie path coverage, and secret-strength requirements.
+- `git diff --check` passed.
+- No runtime source, dependency, data, customer export, credential, or deployment state was changed.
+
 ## 2026-06-11 - v1.0.1 cropped stack hero orbit
 
 Scope:
