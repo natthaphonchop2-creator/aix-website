@@ -4,6 +4,33 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - v1.0.1 Phase 0A Task 3 explicit API authorization matrix
+
+Scope:
+- Added one exhaustive literal `API_ROUTE_POLICIES` contract covering every current `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` declaration under `/api/` exactly once.
+- Locked member and admin route declarations to their existing authorization middleware and corrected member logout to require `requireMemberSession`.
+- Added real-HTTP assertions that anonymous config and public course projections omit protected fields.
+- Preserved the Stripe raw-body webhook order, Task 2 publication boundary, current session architecture, and local-only scope.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `tests/api-route-policy.test.mjs`
+- `server.js`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- RED: `node --test tests/api-route-policy.test.mjs` ran 3 tests with 2 passing and 1 failing. The exhaustive route equality and anonymous projections passed; the middleware contract failed specifically because `POST /api/auth/logout` did not declare `requireMemberSession`.
+- GREEN focused suite: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs` passed: 8 tests, 0 failures.
+- Full applicable suite: `node --test tests/*.test.mjs` passed: 46 tests, 0 failures.
+- `git diff --check` passed with no whitespace errors.
+- `git diff --cached --check` passed with no whitespace errors.
+
+Unresolved risks:
+- The matrix is a source-level regression contract; cookie-only sessions, retired bearer-token rejection, Origin/CSRF checks, and rate limits remain Phase 0B work.
+- The two legacy routes classified as `disabled` still retain their existing handlers until the separately scoped legacy-auth shutdown task changes them to intentional `410 Gone` responses.
+
 ## 2026-07-18 - Phase 0A Task 2 Express publication boundary
 
 Scope:

@@ -2410,7 +2410,7 @@ app.get('/api/auth/me', requireMemberSession, (req, res) => {
   res.json({ member: publicMember(req.member) });
 });
 
-app.post('/api/auth/logout', (req, res) => {
+app.post('/api/auth/logout', requireMemberSession, (req, res) => {
   clearSessionCookie(res);
   res.json({ ok: true });
 });
