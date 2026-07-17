@@ -4,7 +4,9 @@ import {
   lstat,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
+  rename,
   rm,
   symlink,
   writeFile
@@ -29,6 +31,14 @@ async function createSandbox(t) {
 
 async function assertMissing(filename) {
   await assert.rejects(lstat(filename), { code: "ENOENT" });
+}
+
+async function builderArtifacts(cloudflareDirectory) {
+  return (await readdir(cloudflareDirectory)).filter((name) =>
+    name === ".prepare-cloudflare-assets.lock"
+    || name.startsWith(".assets-stage-")
+    || name.startsWith(".assets-backup-")
+  );
 }
 
 test("copies approved regular files and excludes sensitive or executable files", async (t) => {
@@ -159,6 +169,119 @@ test("prepared-tree scan rejects unsafe files and destination or path symlinks",
   await assert.rejects(assertSafePreparedTree(destinationLink), /symlink/i);
 });
 
+test("keeps the known-good tree when staging copy or scan fails", async (t) => {
+  const { root } = await createSandbox(t);
+  const destination = join(root, "cloudflare", "assets");
+  await mkdir(destination, { recursive: true });
+  await writeFile(join(destination, "index.html"), "known good");
+  await writeFile(join(root, "index.html"), "candidate");
+
+  await assert.rejects(
+    prepareCloudflareAssets(root, destination, {
+      hooks: {
+        beforeStageValidation() {
+          throw new Error("injected staging scan failure");
+        }
+      }
+    }),
+    /injected staging scan failure/
+  );
+
+  assert.equal(await readFile(join(destination, "index.html"), "utf8"), "known good");
+  assert.deepEqual(await builderArtifacts(join(root, "cloudflare")), []);
+});
+
+test("rejects a Cloudflare parent changed to a symlink before replacement", async (t) => {
+  const { sandbox, root } = await createSandbox(t);
+  const cloudflareDirectory = join(root, "cloudflare");
+  const destination = join(cloudflareDirectory, "assets");
+  const movedCloudflare = join(root, "cloudflare-known-good");
+  const outside = join(sandbox, "outside");
+  await mkdir(destination, { recursive: true });
+  await mkdir(join(outside, "assets"), { recursive: true });
+  await writeFile(join(destination, "index.html"), "known good");
+  await writeFile(join(root, "index.html"), "candidate");
+  await writeFile(join(outside, "assets", "sentinel.txt"), "outside untouched");
+
+  await assert.rejects(
+    prepareCloudflareAssets(root, destination, {
+      hooks: {
+        async beforeReplace() {
+          await rename(cloudflareDirectory, movedCloudflare);
+          await symlink(outside, cloudflareDirectory, "dir");
+        }
+      }
+    }),
+    /changed|symlink|identity/i
+  );
+
+  assert.equal(await readFile(join(movedCloudflare, "assets", "index.html"), "utf8"), "known good");
+  assert.equal(await readFile(join(outside, "assets", "sentinel.txt"), "utf8"), "outside untouched");
+});
+
+test("exclusive builder lock rejects a concurrent build", async (t) => {
+  const { root } = await createSandbox(t);
+  const destination = join(root, "cloudflare", "assets");
+  await writeFile(join(root, "index.html"), "candidate");
+
+  let signalLocked;
+  let releaseFirst;
+  const locked = new Promise((resolve) => { signalLocked = resolve; });
+  const holdFirst = new Promise((resolve) => { releaseFirst = resolve; });
+  const firstBuild = prepareCloudflareAssets(root, destination, {
+    hooks: {
+      async afterLockAcquired() {
+        signalLocked();
+        await holdFirst;
+      }
+    }
+  });
+
+  await Promise.race([
+    locked,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("builder lock was not acquired")), 250))
+  ]);
+  await assert.rejects(prepareCloudflareAssets(root, destination), /already running|lock/i);
+  releaseFirst();
+  await firstBuild;
+  assert.deepEqual(await builderArtifacts(join(root, "cloudflare")), []);
+});
+
+test("rolls back the known-good tree when post-promotion validation fails", async (t) => {
+  const { root } = await createSandbox(t);
+  const destination = join(root, "cloudflare", "assets");
+  await mkdir(destination, { recursive: true });
+  await writeFile(join(destination, "index.html"), "known good");
+  await writeFile(join(root, "index.html"), "candidate");
+
+  await assert.rejects(
+    prepareCloudflareAssets(root, destination, {
+      hooks: {
+        afterPromotion() {
+          throw new Error("injected post-promotion failure");
+        }
+      }
+    }),
+    /injected post-promotion failure/
+  );
+
+  assert.equal(await readFile(join(destination, "index.html"), "utf8"), "known good");
+  assert.deepEqual(await builderArtifacts(join(root, "cloudflare")), []);
+});
+
+test("successful atomic regeneration leaves no stage backup or lock artifacts", async (t) => {
+  const { root } = await createSandbox(t);
+  const destination = join(root, "cloudflare", "assets");
+  await mkdir(destination, { recursive: true });
+  await writeFile(join(destination, "index.html"), "known good");
+  await writeFile(join(root, "index.html"), "candidate");
+
+  await prepareCloudflareAssets(root, destination);
+
+  assert.equal(await readFile(join(destination, "index.html"), "utf8"), "candidate");
+  assert.deepEqual(await builderArtifacts(join(root, "cloudflare")), []);
+});
+
 async function loadWorker() {
   const source = await readFile(join(process.cwd(), "cloudflare", "worker.js"), "utf8");
   const executable = source.replace(/\bexport default\b/, "return");
@@ -174,19 +297,24 @@ function createAssetBinding(status = 200) {
     requests,
     binding: {
       async fetch(request) {
-        requests.push(new URL(request.url).pathname);
+        requests.push(request.url);
         return new Response("asset", { status });
       }
     }
   };
 }
 
-test("Worker redirects auth routes and fails closed for every private or API family", async () => {
+test("Worker normalizes auth routes and fails closed for every private or API family", async () => {
   const { source, worker } = await loadWorker();
   const assets = createAssetBinding();
   const env = { ASSETS: assets.binding };
 
-  for (const [pathname, mode] of [["/login", "login"], ["/register/", "signup"]]) {
+  for (const [pathname, mode] of [
+    ["/login", "login"],
+    ["/login//", "login"],
+    ["/register/", "signup"],
+    ["/register//", "signup"]
+  ]) {
     const response = await worker.fetch(new Request(`https://preview.example${pathname}`), env);
     assert.equal(response.status, 302, pathname);
     assert.equal(
@@ -209,8 +337,13 @@ test("Worker redirects auth routes and fails closed for every private or API fam
     "/course/manus-ai/start",
     "/course/manus-ai/content",
     "/course/manus-ai/learn/lesson-1",
+    "/api",
+    "/api/",
     "/api/health",
-    "/api/not-available"
+    "/api/not-available",
+    "/%61dmin",
+    "/dashboard%2Fsettings",
+    "/api%2Fhealth"
   ]) {
     const response = await worker.fetch(new Request(`https://preview.example${pathname}`), env);
     assert.equal(response.status, 503, pathname);
@@ -221,10 +354,27 @@ test("Worker redirects auth routes and fails closed for every private or API fam
   assert.doesNotMatch(source, /HTML_ROUTES|pathname === ["']\/api\/health["']/);
 });
 
+test("Worker rejects malformed paths and passes marketing requests through unchanged", async () => {
+  const { worker } = await loadWorker();
+  const assets = createAssetBinding(200);
+  const env = { ASSETS: assets.binding };
+
+  for (const pathname of ["/%", "/%ZZ", "/%E0%A4%A"]) {
+    const response = await worker.fetch(new Request(`https://preview.example${pathname}`), env);
+    assert.equal(response.status, 400, pathname);
+  }
+
+  const marketingUrl = "https://preview.example/styles.css?v=manifest";
+  const response = await worker.fetch(new Request(marketingUrl), env);
+  assert.equal(response.status, 200);
+  assert.deepEqual(assets.requests, [marketingUrl]);
+});
+
 test("Wrangler sends every dynamic private family through the Worker first", async () => {
   const config = JSON.parse(await readFile(join(process.cwd(), "wrangler.jsonc"), "utf8"));
   const workerFirst = new Set(config.assets?.run_worker_first || []);
   for (const pattern of [
+    "/api",
     "/api/*",
     "/login",
     "/login/*",

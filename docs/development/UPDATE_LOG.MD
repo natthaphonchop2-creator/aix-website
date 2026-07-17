@@ -14,6 +14,10 @@ Scope:
 - Expanded Worker-first patterns for admin, dashboard, tools-box, live, payment, course start/content/learn, login/register, and API routes.
 - Added `test` and `test:security` scripts, preserved all existing scripts, kept Acorn pinned exactly at `8.15.0`, and kept `cf:check` dry-run-only.
 - Regenerated the ignored `cloudflare/assets` tree only through the validated builder; generated output was not staged.
+- Review follow-up replaced delete-first publication with an unpredictable sibling stage, pre-promotion scan, recoverable backup/promotion renames, post-promotion validation, and rollback to the known-good tree on failure.
+- Added an exclusive `wx` builder lock plus parent directory device/inode/canonical identity checks before every rename or removal; cleanup is restricted to invocation-owned stage/backup paths whose identities are revalidated.
+- Hardened source copying with `O_NOFOLLOW` and before/after file and directory identity/canonical checks, including deterministic coverage for staging failure, parent replacement, concurrent builders, rollback, and successful artifact cleanup.
+- Normalized every trailing slash in the Worker, made exact `/api` and all decoded `/api/*` paths fail closed, rejected malformed encodings, and preserved the original marketing `Request` when passing through to the asset binding.
 
 Changed files:
 - `package.json`
@@ -31,6 +35,12 @@ Validation:
 - Full applicable suite: `npm test` passed: 101 tests, 0 failures.
 - Dry-run package check: `npm run cf:check` exited 0, prepared 99 manifest-approved regular files, Wrangler `4.95.0` reported reading 106 files from the assets directory, and `--dry-run: exiting now` confirmed no deploy.
 - Final generated-tree scan with `assertSafePreparedTree` validated 99 regular files with 0 denied entries; filesystem checks found 99 files and 0 symlinks.
+- Review follow-up RED: `node --test tests/cloudflare-publication.test.mjs` ran 14 tests with 7 passing and 7 failing. The failures proved the old delete-first builder did not preserve the known-good tree on injected staging or post-promotion errors, did not reject parent replacement or concurrent builders, did not normalize repeated auth-route slashes, accepted malformed encodings, and lacked the exact `/api` Worker-first pattern.
+- Review follow-up focused GREEN: `node --test tests/cloudflare-publication.test.mjs` passed: 14 tests, 0 failures.
+- Review follow-up full suite: `npm test` passed: 107 tests, 0 failures.
+- Review follow-up dry-run: `npm run cf:check` exited 0, prepared 99 manifest-approved files, Wrangler `4.95.0` read 106 generated asset-directory files, and exited at `--dry-run` without deployment.
+- Review follow-up generated-tree checks: `assertSafePreparedTree` completed successfully; filesystem checks found 99 files, 0 symlinks, and no stage, backup, or lock artifacts.
+- Review follow-up `node --check scripts/prepare-cloudflare-assets.cjs` passed.
 - `git diff --check` passed with no whitespace errors.
 - `git diff --cached --check` passed with no whitespace errors.
 
@@ -38,6 +48,8 @@ Unresolved risks:
 - Cloudflare remains a marketing/static surface by design; private pages and all APIs require the Node application origin and intentionally return `503` on the Worker.
 - `cloudflare/assets` is generated and ignored; its 99-file count is a working-tree snapshot and changes when manifest-approved source assets change.
 - The preserved `cf:deploy` command performs a real deployment if intentionally invoked, but this task ran only `cf:check` with Wrangler `--dry-run` and made no external change.
+- Node exposes atomic single-path rename but no single-call directory exchange or directory-handle-relative rename/unlink primitive. The builder therefore uses a recoverable two-rename backup/promotion sequence, so there is a brief interval with no destination; rollback restores the verified known-good backup when validation fails.
+- The exclusive lock coordinates this builder, and identity/canonical revalidation makes detected parent/source changes fail safely. A malicious process running as the same local user could still mutate filesystem paths in the interval between a path check and the following Node path-based operation; eliminating that operating-system race is outside the Node API boundary used here.
 
 ## 2026-07-18 - v1.0.1 Phase 0A Task 3 explicit API authorization matrix
 

@@ -13,7 +13,16 @@ function json(body, init = {}) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const pathname = url.pathname.length > 1 ? url.pathname.replace(/\/$/, "") : url.pathname;
+    let pathname;
+    try {
+      pathname = decodeURIComponent(url.pathname);
+    } catch {
+      return json({ error: "Malformed request path." }, { status: 400 });
+    }
+    if (pathname.includes("\0") || pathname.includes("\\")) {
+      return json({ error: "Malformed request path." }, { status: 400 });
+    }
+    if (pathname.length > 1) pathname = pathname.replace(/\/+$/, "") || "/";
 
     if (pathname === "/login" || pathname === "/register") {
       const mode = pathname === "/login" ? "login" : "signup";
@@ -27,7 +36,7 @@ export default {
       );
     }
 
-    if (pathname.startsWith("/api/")) {
+    if (pathname === "/api" || pathname.startsWith("/api/")) {
       return json(
         { error: "API unavailable in static preview." },
         { status: 503 }
