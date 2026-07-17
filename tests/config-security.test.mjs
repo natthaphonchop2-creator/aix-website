@@ -9,6 +9,7 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const {
+  DEVELOPMENT_SIGNING_SECRETS,
   parseAllowedOrigins,
   validateSecurityConfig
 } = require("../security/config-security.cjs");
@@ -41,6 +42,58 @@ test("allows an exact HTTP development origin", () => {
   );
 });
 
+test("preserves valid IDN and IPv6 origin normalization", () => {
+  assert.deepEqual(
+    [...parseAllowedOrigins("https://bücher.example/, https://[2001:db8::1]:443/")],
+    ["https://xn--bcher-kva.example", "https://[2001:db8::1]"]
+  );
+});
+
+for (const value of [
+  "https://%2A.example.com",
+  "https://%2a.example.com",
+  "https://%2A%2Eexample.com",
+  "https://%2a%2eexample.com"
+]) {
+  test(`rejects a wildcard introduced by authority decoding: ${value}`, () => {
+    assert.throws(
+      () => parseAllowedOrigins(value),
+      (error) => {
+        assert.match(error.message, /security configuration.*APP_ORIGINS/i);
+        assert.equal(
+          error.message.includes(value),
+          false,
+          "error must not echo the configured origin"
+        );
+        return true;
+      }
+    );
+  });
+}
+
+for (const value of [
+  "https://user%40alias:pass@example.com",
+  "https://%75ser:%70ass@example.com",
+  "https://trusted.example%2f@evil.example",
+  "https://trusted.example%3f@evil.example",
+  "https://trusted.example%23@evil.example"
+]) {
+  test("rejects encoded credential or authority delimiters without echoing input", () => {
+    assert.throws(
+      () => parseAllowedOrigins(value),
+      (error) => {
+        assert.match(error.message, /security configuration.*APP_ORIGINS/i);
+        assert.equal(
+          error.message.includes(value),
+          false,
+          "error must not echo the configured origin"
+        );
+        return true;
+      }
+    );
+  });
+}
+
 for (const [name, value] of [
   ["malformed URL", "not-an-origin"],
   ["credentials", "https://user:password@example.com"],
@@ -67,6 +120,47 @@ test("accepts strong distinct production configuration", () => {
     [...validateSecurityConfig(strongProduction).allowedOrigins],
     ["https://www.aixclub.co"]
   );
+});
+
+test("rejects every exact purpose-specific development signing default in production", () => {
+  assert.ok(DEVELOPMENT_SIGNING_SECRETS, "development defaults must be exported from the validator module");
+  assert.deepEqual(
+    Object.keys(DEVELOPMENT_SIGNING_SECRETS).sort(),
+    ["AUTH_SECRET", "CSRF_SECRET", "SMS_OTP_SECRET"]
+  );
+  assert.equal(new Set(Object.values(DEVELOPMENT_SIGNING_SECRETS)).size, 3);
+
+  for (const name of ["AUTH_SECRET", "CSRF_SECRET", "SMS_OTP_SECRET"]) {
+    assert.throws(
+      () => validateSecurityConfig({
+        ...strongProduction,
+        [name]: DEVELOPMENT_SIGNING_SECRETS[name]
+      }),
+      new RegExp(`security configuration.*${name}`, "i"),
+      name
+    );
+  }
+});
+
+test("server consumes the centralized development signing defaults", async () => {
+  const serverSource = await readFile(join(process.cwd(), "server.js"), "utf8");
+  assert.equal(
+    serverSource.includes("DEVELOPMENT_SIGNING_SECRETS"),
+    true,
+    "server must import the centralized development defaults"
+  );
+  assert.equal(
+    serverSource.includes("function deriveDevelopmentSigningSecret"),
+    false,
+    "server must not duplicate the derivation helper"
+  );
+  for (const name of ["AUTH_SECRET", "CSRF_SECRET", "SMS_OTP_SECRET"]) {
+    assert.equal(
+      serverSource.includes(`DEVELOPMENT_SIGNING_SECRETS.${name}`),
+      true,
+      `server must consume ${name}`
+    );
+  }
 });
 
 test("measures signing-secret strength in UTF-8 bytes", () => {

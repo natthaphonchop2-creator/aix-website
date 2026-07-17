@@ -14,7 +14,10 @@ const Stripe = require('stripe');
 const multer = require('multer');
 const { Worker } = require('worker_threads');
 const { resolvePublicPath } = require('./security/publication-manifest.cjs');
-const { validateSecurityConfig } = require('./security/config-security.cjs');
+const {
+  DEVELOPMENT_SIGNING_SECRETS,
+  validateSecurityConfig
+} = require('./security/config-security.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -358,20 +361,16 @@ const SMS_OTP_RESEND_MS = Number(process.env.SMS_OTP_RESEND_MS || 60 * 1000);
 const SMS_OTP_MAX_ATTEMPTS = Number(process.env.SMS_OTP_MAX_ATTEMPTS || 5);
 const SMS_TOKEN_TTL_MS = Number(process.env.SMS_TOKEN_TTL_MS || 15 * 60 * 1000);
 
-function deriveDevelopmentSigningSecret(purpose) {
-  return crypto.createHash('sha256').update(`${__dirname}:${purpose}`).digest('hex');
-}
-
 const SMS_OTP_SECRET = IS_PRODUCTION
   ? process.env.SMS_OTP_SECRET
-  : (process.env.SMS_OTP_SECRET || deriveDevelopmentSigningSecret('aix-sms-otp'));
+  : (process.env.SMS_OTP_SECRET || DEVELOPMENT_SIGNING_SECRETS.SMS_OTP_SECRET);
 const AUTH_SESSION_TTL_MS = Number(process.env.AUTH_SESSION_TTL_MS || 7 * 24 * 60 * 60 * 1000);
 const AUTH_SECRET = IS_PRODUCTION
   ? process.env.AUTH_SECRET
-  : (process.env.AUTH_SECRET || deriveDevelopmentSigningSecret('aix-auth-session'));
+  : (process.env.AUTH_SECRET || DEVELOPMENT_SIGNING_SECRETS.AUTH_SECRET);
 const CSRF_SECRET = IS_PRODUCTION
   ? process.env.CSRF_SECRET
-  : (process.env.CSRF_SECRET || deriveDevelopmentSigningSecret('aix-csrf'));
+  : (process.env.CSRF_SECRET || DEVELOPMENT_SIGNING_SECRETS.CSRF_SECRET);
 const ADMIN_EMAIL = String(
   IS_PRODUCTION ? process.env.ADMIN_EMAIL : (process.env.ADMIN_EMAIL || 'admin@aix.club')
 ).trim();

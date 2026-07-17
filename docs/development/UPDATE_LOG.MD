@@ -12,6 +12,8 @@ Scope:
 - Normalized only valid exact origins and a single root trailing slash while rejecting malformed URLs, credentials, wildcards, opaque or unsupported schemes, backslashes, internal whitespace, repeated root slashes, and every configured path, query, or fragment, including dot-segment paths a URL parser would otherwise normalize away.
 - Wired validation immediately after local environment loading and before `DATA_DIR`, upload directory creation, database opening, or server listen.
 - Removed production random signing-secret fallbacks. Development/test fallbacks remain deterministic and retain independent derivation inputs for auth, CSRF, and SMS signing.
+- Review follow-up revalidates the canonical hostname/origin after URL parsing, closing percent-encoded wildcard forms while preserving IDN, IPv6, default-port, and root-slash normalization. Encoded credential and authority-delimiter probes continue to fail closed without echoing configured values.
+- Review follow-up centralizes the three purpose-specific development signing defaults in the validator module. The server consumes those exact values without duplicating the derivation algorithm or purpose strings, and production rejects each exact predictable fallback while unrelated strong values remain valid.
 - Expanded `.env.example` with the exact six-value production security contract and independent secret-generation guidance.
 - Added isolated unit and child-process regression coverage without loading local environment files or inheriting real local secrets.
 
@@ -36,6 +38,13 @@ Validation:
 - Dependency audit: `npm audit --audit-level=high` exited 1 with the unchanged 6 pre-existing advisories (1 low, 5 high) in Multer and the Wrangler development chain; no dependency or lockfile was changed and no automatic fix was applied.
 - `git diff --check` and `git diff --cached --check` passed; the cached file list contained exactly the five authorized Task 1 files.
 - Independent read-only self-review returned Approved with no concrete blocker.
+- Review follow-up RED: `node --test tests/config-security.test.mjs` ran 43 tests with 37 passing and 6 failing exactly at the four percent-encoded wildcard cases, the missing centralized defaults contract, and the server's duplicated local derivation.
+- Review follow-up focused GREEN: `node --test tests/config-security.test.mjs` passed 43 tests with 0 failures, including encoded wildcard and authority probes, error redaction, all three purpose-specific production-default rejections, and valid IDN/IPv6 normalization.
+- Review follow-up full suite: `npm test` passed 150 tests with 0 failures.
+- Review follow-up compatibility probe confirmed all three centralized development defaults exactly match the prior server derivation outputs; source search found the derivation helper and three purpose strings only in `security/config-security.cjs`.
+- Review follow-up syntax checks for `security/config-security.cjs`, `tests/config-security.test.mjs`, and `server.js` passed; `git diff --check` passed.
+- Review follow-up Cloudflare dry-run exited 0, again preparing 99 manifest-approved files and stopping at Wrangler `--dry-run`; the dependency audit remained unchanged at 6 advisories (1 low, 5 high), with no package or lockfile change and no automatic fix.
+- Independent read-only review of the follow-up returned no findings and separately confirmed canonical wildcard rejection, non-echoing authority errors, normalization compatibility, exact derivation compatibility, production default rejection, and removal of duplicated server derivation inputs.
 
 Unresolved risks:
 - Production deployment configuration must provision `CSRF_SECRET` and `APP_ORIGINS` in addition to the other required values before the next production start; this task did not inspect, print, or mutate live credentials or deployment state.

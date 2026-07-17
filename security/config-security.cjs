@@ -1,3 +1,6 @@
+const crypto = require("node:crypto");
+const path = require("node:path");
+
 const DEFAULT_VALUES = new Set([
   "admin1234",
   "change-me",
@@ -5,6 +8,30 @@ const DEFAULT_VALUES = new Set([
   "secret",
   "password"
 ]);
+
+const DEVELOPMENT_SECRET_PURPOSES = Object.freeze({
+  AUTH_SECRET: "aix-auth-session",
+  CSRF_SECRET: "aix-csrf",
+  SMS_OTP_SECRET: "aix-sms-otp"
+});
+
+const PROJECT_ROOT = path.resolve(__dirname, "..");
+
+function deriveDevelopmentSigningSecret(name) {
+  const purpose = DEVELOPMENT_SECRET_PURPOSES[name];
+  if (!purpose) throw new Error("Unknown development signing secret");
+  return crypto.createHash("sha256").update(`${PROJECT_ROOT}:${purpose}`).digest("hex");
+}
+
+const DEVELOPMENT_SIGNING_SECRETS = Object.freeze(
+  Object.fromEntries(
+    Object.keys(DEVELOPMENT_SECRET_PURPOSES).map((name) => [
+      name,
+      deriveDevelopmentSigningSecret(name)
+    ])
+  )
+);
+const DEFAULT_SIGNING_SECRETS = new Set(Object.values(DEVELOPMENT_SIGNING_SECRETS));
 
 function failOrigin(message) {
   throw new Error(`Invalid security configuration: APP_ORIGINS ${message}`);
@@ -42,6 +69,9 @@ function parseAllowedOrigins(value) {
     ) {
       failOrigin("must be a non-opaque HTTP or HTTPS origin");
     }
+    if (url.hostname.includes("*") || url.origin.includes("*")) {
+      failOrigin("cannot contain a wildcard");
+    }
     if (url.username || url.password) failOrigin("cannot contain credentials");
     origins.add(url.origin);
   }
@@ -63,6 +93,7 @@ function validateSecurityConfig(env = {}) {
       Buffer.byteLength(value, "utf8") < 32
       || !normalized
       || DEFAULT_VALUES.has(normalized)
+      || DEFAULT_SIGNING_SECRETS.has(value)
     ) {
       failProduction(`${name} is missing, default, or shorter than 32 UTF-8 bytes`);
     }
@@ -99,4 +130,8 @@ function validateSecurityConfig(env = {}) {
   return { allowedOrigins };
 }
 
-module.exports = { parseAllowedOrigins, validateSecurityConfig };
+module.exports = {
+  DEVELOPMENT_SIGNING_SECRETS,
+  parseAllowedOrigins,
+  validateSecurityConfig
+};
