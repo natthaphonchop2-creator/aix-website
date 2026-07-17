@@ -28,6 +28,7 @@ const API_ROUTE_POLICIES = {
   admin: [
     "GET /api/members", "GET /api/members/:id", "PUT /api/members/:id", "DELETE /api/members/:id",
     "GET /api/courses", "GET /api/courses/:id", "POST /api/courses", "PUT /api/courses/:id", "DELETE /api/courses/:id",
+    "GET /api/admin/session", "POST /api/admin/logout",
     "GET /api/admin/replays", "POST /api/admin/replays", "PUT /api/admin/replays/:id", "DELETE /api/admin/replays/:id",
     "GET /api/admin/resources", "POST /api/admin/resources", "PUT /api/admin/resources/:id", "DELETE /api/admin/resources/:id",
     "GET /api/admin/schedules", "POST /api/admin/schedules", "PUT /api/admin/schedules/:id", "DELETE /api/admin/schedules/:id",
@@ -429,13 +430,18 @@ test("anonymous config and course projections use exact public allowlists", asyn
     })
   });
   assert.equal(loginResponse.status, 200);
-  const { token } = await loginResponse.json();
-  assert.equal(typeof token, "string");
+  const loginBody = await loginResponse.json();
+  assert.equal(typeof loginBody.csrfToken, "string");
+  assert.equal("token" in loginBody, false);
+  const adminCookie = loginResponse.headers.getSetCookie()
+    .find((cookie) => cookie.startsWith("aix_admin_session="))
+    ?.split(";", 1)[0];
+  assert.match(adminCookie || "", /^aix_admin_session=/);
 
   const createResponse = await fetch(`${server.origin}/api/courses`, {
     method: "POST",
     headers: {
-      authorization: `Bearer ${token}`,
+      cookie: adminCookie,
       "content-type": "application/json"
     },
     body: JSON.stringify({

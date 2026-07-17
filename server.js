@@ -18,6 +18,12 @@ const {
   DEVELOPMENT_SIGNING_SECRETS,
   validateSecurityConfig
 } = require('./security/config-security.cjs');
+const {
+  ADMIN_SESSION_TTL_MS: ADMIN_SESSION_LIFETIME_MS,
+  SESSION_IDENTITY_MAX_LENGTH,
+  createSessionSecurity
+} = require('./security/session-security.cjs');
+const { assertLoginAllowed } = require('./security/account-policy.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -377,7 +383,14 @@ const ADMIN_EMAIL = String(
 const ADMIN_PASSWORD = String(
   IS_PRODUCTION ? process.env.ADMIN_PASSWORD : (process.env.ADMIN_PASSWORD || 'admin1234')
 );
-const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS || 8 * 60 * 60 * 1000);
+const ADMIN_SESSION_TTL_MS = ADMIN_SESSION_LIFETIME_MS;
+const SESSION_SECURITY = createSessionSecurity({
+  authSecret: AUTH_SECRET,
+  csrfSecret: CSRF_SECRET,
+  secure: IS_PRODUCTION,
+  memberTtlMs: AUTH_SESSION_TTL_MS,
+  adminTtlMs: ADMIN_SESSION_TTL_MS
+});
 const MEMBER_PRICE = Number(process.env.MEMBER_PRICE || 1999);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -425,6 +438,7 @@ const upload = multer({
 app.use(cors());
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
 app.use(express.json());
+app.use(rejectLegacyClientToken);
 app.use((req, res, next) => {
   if (req.path === '/' || req.path.endsWith('.html')) {
     res.setHeader('Cache-Control', 'no-store');
@@ -734,10 +748,6 @@ ensureColumn('leads', 'business', "TEXT DEFAULT ''");
 db.prepare(`
   UPDATE members
   SET
-    status = CASE
-      WHEN status IN ('suspended', 'cancelled') THEN status
-      ELSE 'active'
-    END,
     paymentStatus = CASE
       WHEN paymentStatus IN ('paid', 'unpaid') THEN paymentStatus
       WHEN status IN ('paid', 'active', 'verified') THEN 'paid'
@@ -756,6 +766,14 @@ db.prepare(`
       ELSE 'member'
     END
 `).run();
+
+const inaccessiblePasswordCount = Number(db.prepare(`
+  SELECT COUNT(*) AS count FROM members
+  WHERE COALESCE(passwordHash, '') = '' AND COALESCE(googleSub, '') = ''
+`).get()?.count || 0);
+if (inaccessiblePasswordCount > 0) {
+  console.warn(`[SECURITY] ${inaccessiblePasswordCount} member account(s) require a reviewed password-setup migration.`);
+}
 [
   ['courses', 'type', "TEXT DEFAULT ''"],
   ['courses', 'status', "TEXT DEFAULT ''"],
@@ -1115,83 +1133,46 @@ function verifyPassword(password, storedHash) {
   return safeTextCompare(candidate, hash);
 }
 
-function createSignedToken(payloadData, ttlMs) {
-  const now = Date.now();
-  const payload = Buffer.from(JSON.stringify({
-    ...payloadData,
-    exp: now + ttlMs,
-    iat: now
-  })).toString('base64url');
-  const signature = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('base64url');
-  return `${payload}.${signature}`;
-}
-
-function verifySignedToken(token) {
-  try {
-    const [payload, signature] = String(token || '').split('.');
-    if (!payload || !signature) return null;
-    const expected = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('base64url');
-    if (!safeTextCompare(signature, expected)) return null;
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-    if (Number(data.exp || 0) < Date.now()) return null;
-    return data;
-  } catch (error) {
-    return null;
+function rejectLegacyClientToken(req, res, next) {
+  if (/^\s*Bearer\s+/i.test(req.get('authorization') || '')) {
+    return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบใหม่' });
   }
+
+  const body = req.body;
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    for (const field of ['token', 'authToken', 'adminToken', 'sessionToken']) {
+      if (Object.prototype.hasOwnProperty.call(body, field)) {
+        return res.status(400).json({ error: 'ไม่รับ token จาก browser' });
+      }
+    }
+  }
+  next();
 }
 
-function createAuthToken(member) {
-  return createSignedToken({
-    sub: member.id,
-    email: member.email
-  }, AUTH_SESSION_TTL_MS);
+function requestHasCookie(req, name) {
+  return String(req.get('cookie') || '').split(';').some((part) => {
+    const trimmed = part.trim();
+    return trimmed === name || trimmed.startsWith(`${name}=`);
+  });
 }
 
-function verifyAuthToken(token) {
-  const data = verifySignedToken(token);
-  return data?.sub ? data : null;
-}
-
-function createAdminToken() {
-  return createSignedToken({
-    role: 'admin',
-    email: ADMIN_EMAIL
-  }, ADMIN_SESSION_TTL_MS);
-}
-
-function getBearerToken(req) {
-  const auth = req.get('authorization') || '';
-  if (auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
-  return '';
-}
-
-function getRequestToken(req) {
-  const bearer = getBearerToken(req);
-  if (bearer) return bearer;
-  const cookie = req.get('cookie') || '';
-  const match = cookie.match(/(?:^|;\s*)aix_session=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : '';
-}
-
-function setSessionCookie(res, token) {
-  const maxAge = Math.floor(AUTH_SESSION_TTL_MS / 1000);
-  res.setHeader('Set-Cookie', `aix_session=${encodeURIComponent(token)}; Max-Age=${maxAge}; Path=/; SameSite=Lax; HttpOnly`);
-}
-
-function clearSessionCookie(res) {
-  res.setHeader('Set-Cookie', 'aix_session=; Max-Age=0; Path=/; SameSite=Lax; HttpOnly');
+function expireRetiredMemberCookieIfPresent(req, res) {
+  if (requestHasCookie(req, 'aix_session')) SESSION_SECURITY.expireRetiredMemberCookie(res);
 }
 
 function requireMemberSession(req, res, next) {
-  const token = getRequestToken(req);
-  const data = verifyAuthToken(token);
+  expireRetiredMemberCookieIfPresent(req, res);
+  const data = SESSION_SECURITY.readMember(req);
   if (!data) return res.status(401).json({ error: 'Session หมดอายุ กรุณาเข้าสู่ระบบใหม่' });
 
   const member = db.prepare('SELECT * FROM members WHERE id = ?').get(data.sub);
-  if (!member || member.status === 'suspended') {
-    return res.status(401).json({ error: 'บัญชีนี้ไม่สามารถใช้งานได้' });
+  try {
+    assertLoginAllowed(member);
+  } catch (error) {
+    return res.status(error.status || 401).json({ error: error.message });
   }
 
+  req.authSession = data;
   req.member = member;
   next();
 }
@@ -1201,29 +1182,32 @@ function requireAdminSession(req, res, next) {
     return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า ADMIN_EMAIL หรือ ADMIN_PASSWORD บน server' });
   }
 
-  const data = verifySignedToken(getBearerToken(req));
-  if (!data || data.role !== 'admin' || data.email !== ADMIN_EMAIL) {
+  const data = SESSION_SECURITY.readAdmin(req);
+  if (!data || data.email !== ADMIN_EMAIL) {
     return res.status(401).json({ error: 'Admin session หมดอายุ กรุณาเข้าสู่ระบบใหม่' });
   }
 
+  req.authSession = data;
   next();
 }
 
-function hasValidMemberSession(req) {
-  const data = verifyAuthToken(getRequestToken(req));
+function hasValidMemberSession(req, res) {
+  if (res) expireRetiredMemberCookieIfPresent(req, res);
+  const data = SESSION_SECURITY.readMember(req);
   if (!data) return false;
-  const member = db.prepare('SELECT id, status FROM members WHERE id = ?').get(data.sub);
-  return Boolean(member && member.status !== 'suspended');
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(data.sub);
+  try {
+    assertLoginAllowed(member);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function issueMemberSession(res, member) {
-  const token = createAuthToken(member);
-  setSessionCookie(res, token);
-  return {
-    token,
-    expiresIn: Math.floor(AUTH_SESSION_TTL_MS / 1000),
-    member: publicMember(member)
-  };
+  assertLoginAllowed(member);
+  SESSION_SECURITY.expireRetiredMemberCookie(res);
+  return SESSION_SECURITY.issueMember(res, publicMember(member));
 }
 
 function createPhoneVerificationToken(phone, purpose = 'register') {
@@ -1882,7 +1866,7 @@ function requireValidMemberInput(input) {
   if (!firstName || !email || !phone) {
     return { error: 'กรุณากรอกข้อมูลสมัครสมาชิกให้ครบ' };
   }
-  if (!EMAIL_RE.test(email)) {
+  if (email.length > SESSION_IDENTITY_MAX_LENGTH || !EMAIL_RE.test(email)) {
     return { error: 'รูปแบบอีเมลไม่ถูกต้อง' };
   }
   if (!PHONE_RE.test(phone)) {
@@ -2064,7 +2048,7 @@ function upsertGoogleMember(profile) {
   if (member) {
     db.prepare(`
       UPDATE members
-      SET lastLoginAt = ?, updatedAt = ?, status = 'active', emailVerified = 1,
+      SET lastLoginAt = ?, updatedAt = ?, emailVerified = 1,
           googleSub = COALESCE(NULLIF(googleSub, ''), ?),
           authProvider = CASE WHEN authProvider IN ('', 'email') THEN 'google' ELSE authProvider END,
           displayName = COALESCE(NULLIF(displayName, ''), ?),
@@ -2128,9 +2112,10 @@ app.post('/api/auth/google', async (req, res) => {
   try {
     const profile = await verifyGoogleCredential(req.body.credential);
     const result = upsertGoogleMember(profile);
+    assertLoginAllowed(result.member);
     res.json({ ...issueMemberSession(res, result.member), profile, created: result.created });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
+    res.status(error.status || 400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
   }
 });
 
@@ -2138,9 +2123,10 @@ app.post('/api/auth/google-access-token', async (req, res) => {
   try {
     const profile = await verifyGoogleAccessToken(req.body.accessToken);
     const result = upsertGoogleMember(profile);
+    assertLoginAllowed(result.member);
     res.json({ ...issueMemberSession(res, result.member), profile, created: result.created });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
+    res.status(error.status || 400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
   }
 });
 
@@ -2385,42 +2371,47 @@ app.post('/api/members/register', async (req, res) => {
     );
 
     const member = db.prepare('SELECT * FROM members WHERE id = ?').get(id);
+    assertLoginAllowed(member);
     res.json(issueMemberSession(res, member));
   } catch (error) {
-    res.status(400).json({ error: error.message || 'ไม่สามารถสมัครสมาชิกได้' });
+    res.status(error.status || 400).json({ error: error.message || 'ไม่สามารถสมัครสมาชิกได้' });
   }
 });
 
 app.post('/api/members/login', (req, res) => {
   const email = normalizeEmail(req.body.email);
-  const phone = normalizePhone(req.body.phone);
   const password = String(req.body.password || '');
 
-  if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'รูปแบบอีเมลไม่ถูกต้อง' });
-
-  let member = null;
-  if (password) {
-    member = db.prepare('SELECT * FROM members WHERE email = ?').get(email);
-    if (!member || !verifyPassword(password, member.passwordHash)) {
-      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
-    }
-  } else {
-    if (!PHONE_RE.test(phone)) return res.status(400).json({ error: 'รูปแบบเบอร์โทรไม่ถูกต้อง' });
-    member = db.prepare('SELECT * FROM members WHERE email = ? AND phone = ?').get(email, phone);
-    if (!member) return res.status(404).json({ error: 'ไม่พบข้อมูลสมาชิกจากอีเมลและเบอร์โทรนี้' });
+  if (!EMAIL_RE.test(email) || !password) {
+    return res.status(400).json({ error: 'กรุณากรอกอีเมลและรหัสผ่าน' });
   }
 
-  db.prepare('UPDATE members SET lastLoginAt = ?, updatedAt = ? WHERE id = ?').run(new Date().toISOString(), new Date().toISOString(), member.id);
+  const member = db.prepare('SELECT * FROM members WHERE email = ?').get(email);
+  if (!member || !verifyPassword(password, member.passwordHash)) {
+    return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+  }
+  try {
+    assertLoginAllowed(member);
+  } catch (error) {
+    return res.status(error.status || 401).json({ error: error.message });
+  }
+
+  const now = new Date().toISOString();
+  db.prepare('UPDATE members SET lastLoginAt = ?, updatedAt = ? WHERE id = ?').run(now, now, member.id);
   const updated = db.prepare('SELECT * FROM members WHERE id = ?').get(member.id);
   res.json(issueMemberSession(res, updated));
 });
 
 app.get('/api/auth/me', requireMemberSession, (req, res) => {
-  res.json({ member: publicMember(req.member) });
+  res.json({
+    member: publicMember(req.member),
+    csrfToken: SESSION_SECURITY.csrfTokenFor(req.authSession)
+  });
 });
 
 app.post('/api/auth/logout', requireMemberSession, (req, res) => {
-  clearSessionCookie(res);
+  SESSION_SECURITY.clearMember(res);
+  SESSION_SECURITY.expireRetiredMemberCookie(res);
   res.json({ ok: true });
 });
 
@@ -2773,44 +2764,11 @@ app.post('/api/payments/confirm', requireMemberSession, (req, res) => {
 // AUTH API
 // ============================================================
 app.post('/api/auth/signup', (req, res) => {
-  const { name, email, password, tier } = req.body;
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบ' });
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password ต้องมีอย่างน้อย 6 ตัวอักษร' });
-  }
-
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-  if (existing) {
-    return res.status(409).json({ error: 'Email นี้ถูกใช้งานแล้ว' });
-  }
-
-  const hashed = crypto.createHash('sha256').update(password).digest('hex');
-  const result = db.prepare(
-    'INSERT INTO users (name, email, password, tier, enrolledCourses, joinedDate) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(name, email, hashed, tier || 'explorer', '[]', new Date().toISOString());
-
-  const user = db.prepare('SELECT id, name, email, tier, enrolledCourses, joinedDate FROM users WHERE id = ?').get(result.lastInsertRowid);
-  user.enrolledCourses = JSON.parse(user.enrolledCourses);
-  res.json({ user });
+  res.status(410).json({ error: 'เส้นทางนี้ยกเลิกแล้ว กรุณาใช้ระบบสมาชิก AiX' });
 });
 
 app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'กรุณากรอก Email และ Password' });
-  }
-
-  const hashed = crypto.createHash('sha256').update(password).digest('hex');
-  const user = db.prepare('SELECT id, name, email, tier, enrolledCourses, joinedDate FROM users WHERE email = ? AND password = ?').get(email, hashed);
-
-  if (!user) {
-    return res.status(401).json({ error: 'Email หรือ Password ไม่ถูกต้อง' });
-  }
-
-  user.enrolledCourses = JSON.parse(user.enrolledCourses);
-  res.json({ user });
+  res.status(410).json({ error: 'เส้นทางนี้ยกเลิกแล้ว กรุณาใช้ระบบสมาชิก AiX' });
 });
 
 function parseJsonField(value, fallback = []) {
@@ -4038,14 +3996,22 @@ app.post('/api/admin/login', (req, res) => {
 
   const { email, password } = req.body;
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    res.json({
-      success: true,
-      token: createAdminToken(),
-      expiresIn: Math.floor(ADMIN_SESSION_TTL_MS / 1000)
-    });
+    res.json(SESSION_SECURITY.issueAdmin(res, ADMIN_EMAIL));
   } else {
     res.status(401).json({ error: 'Email หรือ Password ไม่ถูกต้อง' });
   }
+});
+
+app.get('/api/admin/session', requireAdminSession, (req, res) => {
+  res.json({
+    success: true,
+    csrfToken: SESSION_SECURITY.csrfTokenFor(req.authSession)
+  });
+});
+
+app.post('/api/admin/logout', requireAdminSession, (req, res) => {
+  SESSION_SECURITY.clearAdmin(res);
+  res.json({ ok: true });
 });
 
 app.get('/admin', (req, res) => {
@@ -4057,7 +4023,7 @@ app.get('/admin.css', (req, res) => res.sendFile(path.join(__dirname, 'admin.css
 app.get('/admin.js', (req, res) => res.sendFile(path.join(__dirname, 'admin.js')));
 
 function requireMemberPage(req, res, next) {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+  if (!hasValidMemberSession(req, res)) return res.redirect('/index.html?auth=login');
   next();
 }
 
@@ -4089,12 +4055,12 @@ app.get('/live/:id', requireMemberPage, (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  if (hasValidMemberSession(req)) return res.redirect('/dashboard');
+  if (hasValidMemberSession(req, res)) return res.redirect('/dashboard');
   res.redirect('/index.html?auth=login');
 });
 
 app.get('/register', (req, res) => {
-  if (hasValidMemberSession(req)) return res.redirect('/dashboard');
+  if (hasValidMemberSession(req, res)) return res.redirect('/dashboard');
   res.redirect('/index.html?auth=signup');
 });
 

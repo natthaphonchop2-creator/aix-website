@@ -4,6 +4,54 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 2 isolated signed-cookie sessions
+
+Scope:
+- Replaced browser bearer transport and the shared `aix_session` path with separately signed `aix_member_session` and `aix_admin_session` host-only cookies. Member cookies use `HttpOnly`, `SameSite=Lax`, and the configured member lifetime; admin cookies use `HttpOnly`, `SameSite=Strict`, and an invariant eight-hour lifetime. Production cookies add `Secure`.
+- Added strict signed-session parsing and verification with exact payload shape and lifetime checks, version/kind isolation, safe-integer timestamps, per-session nonces, HMAC signatures, timing-safe comparison, duplicate-cookie rejection, malformed-input fail-closed behavior, and CSRF tokens bound to the complete signed session identity.
+- Added an active-only account policy. Every member-session issue/read path re-reads or checks the member and returns `401` unless `status === 'active'`; startup no longer normalizes pending or inactive records to active, and existing Google login no longer reactivates an account.
+- Removed the passwordless email-plus-phone member-login branch. Password login now requires both a valid email and password before status validation and session issuance.
+- Retired the operational legacy `/api/auth/signup` and `/api/auth/login` handlers with intentional `410 Gone` responses. Incoming browser bearer authorization and legacy top-level token fields are rejected after JSON parsing, while the Stripe webhook retains raw-body precedence.
+- Added cookie-only admin login plus `GET /api/admin/session` and `POST /api/admin/logout`; member `auth/me` and both login flows return a CSRF token but no bearer credential.
+- Kept `aix_session` only as a retirement target and expires it on member issue/logout and whenever it is presented to member session/page checks.
+- Added a read-only startup compatibility count for accounts with neither a password hash nor Google identity, warning operators without silently migrating or activating any account.
+- Expanded the exact API policy matrix and added unit, source-contract, and live HTTP regression coverage for cookie attributes, isolation, tampering, expiry, malformed cookies/claims, account statuses, issuance routes, legacy rejection, logout, and a session invalidated by later suspension.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `security/session-security.cjs`
+- `security/account-policy.cjs`
+- `tests/session-security.test.mjs`
+- `tests/api-route-policy.test.mjs`
+- `server.js`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Unit RED: `node --test tests/session-security.test.mjs` exited 1 with the expected `MODULE_NOT_FOUND` for `security/session-security.cjs` before either security module existed.
+- Initial unit GREEN: the focused session/account suite passed 9 tests with 0 failures after the two security modules were implemented.
+- Server/API RED: `node --test tests/session-security.test.mjs tests/api-route-policy.test.mjs` ran 62 tests with 56 passing and 6 failing at the intended missing route-policy, cookie transport, legacy shutdown, status-preservation, and retired-client contracts.
+- Server/API GREEN: the same focused command passed all 62 tests with 0 failures after server integration.
+- Final session suite: `node --test tests/session-security.test.mjs` passed 12 tests with 0 failures.
+- Security/publication suite: `node --test tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs tests/publication-manifest.test.mjs tests/session-security.test.mjs` passed 73 tests with 0 failures.
+- Full suite: `npm test` passed 162 tests with 0 failures.
+- Source audit found none of the nine retired token/session helper definitions or any member/admin response-token issuance; `aix_session` remains only in the explicit expiry check. Four member authentication routes issue through the active-policy-gated helper, OTP verification continues to issue only its purpose-bound phone proof, and admin login issues only the isolated admin cookie.
+- Read-only compatibility probe: the current local `data.db` contains 2 member records with neither `passwordHash` nor `googleSub`; no record was modified, and production operators will receive the startup review warning for the corresponding deployment database.
+- Syntax: `node --check` passed for both security modules, both changed test files, and `server.js`.
+- Cloudflare dry-run: `npm run cf:check` exited 0, prepared 99 manifest-approved files, Wrangler `4.95.0` read 106 generated asset-directory files, and stopped at `--dry-run` without deployment.
+- Dependency audit: `npm audit --audit-level=high` exited 1 with the unchanged 6 pre-existing advisories (1 low, 5 high) in Multer and the Wrangler development chain; no dependency or lockfile was changed and no automatic fix was applied.
+- `git diff --check` passed with no whitespace errors.
+- Independent review found no Critical or Important issue and one Minor oversized-identity edge case. First follow-up RED ran the exact identity-shape test with 0 passing and 1 failing (`Missing expected exception`); first GREEN passed 1 of 1 after issuance and verification shared one exported 512-character bound. Follow-up review then showed registration still inserted the oversized identity before issuance rejected it. A live RED ran 1 test with 0 passing and 1 failing because the account remained queryable; final GREEN passed 1 of 1 after member-input validation rejected it before duplicate lookup or INSERT.
+
+Unresolved risks:
+- The current browser scripts still send bearer credentials and will intentionally receive re-authentication errors until the separately scoped Phase 0B Task 4 client migration switches them to cookie credentials and CSRF headers.
+- CSRF token creation/validation is available now, but Origin/CSRF enforcement and authentication/OTP rate limits remain the separately scoped Phase 0B Task 3 work.
+- Accounts reported by the startup compatibility count require an operator-reviewed password-setup or identity-linking migration; this task deliberately performs no automatic credential or account-status mutation.
+- Google provider verification was covered through source contracts and existing test boundaries, not a live call to the external Google service.
+- PostgreSQL compatibility still uses the existing synchronous wrapper whose multi-statement login/upsert flows are not wrapped in a real transaction; this task did not change database or provider architecture.
+- The 5 pre-existing high dependency advisories remain assigned to the separate dependency-hardening task.
+
 ## 2026-07-18 - Phase 0B Task 1 fail-closed security configuration
 
 Scope:
