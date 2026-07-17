@@ -4,6 +4,28 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0 implementation plan pack
+
+Scope:
+- Converted the approved emergency-hardening design into three ordered, independently testable implementation plans.
+- Plan 0A covers the positive public-file manifest, Express/private-page boundary, API authorization matrix, and manifest-driven Cloudflare package.
+- Plan 0B covers fail-closed production configuration, member/admin cookie sessions, retired-token denial, suspended-account preservation, Origin/CSRF controls, rate limits, and the shared browser session client.
+- Plan 0C covers upload validation and cleanup, protected media delivery, premium tools protection, safe DOM rendering, security headers, patched dependencies, and the final browser/security gate.
+- Kept every implementation and validation step local-only; production rollout and external incident-response actions still require separate approval.
+
+Changed files:
+- `docs/superpowers/plans/2026-07-18-aix-phase-0a-publication-boundary.md`
+- `docs/superpowers/plans/2026-07-18-aix-phase-0b-auth-session-security.md`
+- `docs/superpowers/plans/2026-07-18-aix-phase-0c-protected-content-hardening.md`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Confirmed all three plans use the required agentic-worker header, checkbox steps, exact file paths, test-first cycles, expected command results, and focused commit boundaries.
+- Checked every approved design section against at least one implementation task and corrected cross-plan interface names for sessions, CSRF, rate limits, media delivery, browser clients, and safe DOM rendering.
+- Placeholder scan found no `TBD`, `TODO`, `FIXME`, `implement later`, or unresolved fill-in instructions.
+- `git diff --check` passed.
+- No runtime source, dependency, lockfile, credential, database, upload, customer export, Cloudflare output, or production state was changed.
+
 ## 2026-07-18 - Phase 0 emergency hardening design
 
 Scope:
