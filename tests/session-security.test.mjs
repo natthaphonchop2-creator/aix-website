@@ -3,11 +3,14 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { join } from "node:path";
 import { startTestServer } from "./helpers/server-harness.mjs";
 
 const require = createRequire(import.meta.url);
+const BetterSqliteDatabase = require("better-sqlite3");
 const {
   ADMIN_SESSION_TTL_MS,
+  assertSessionIdentity,
   createSessionSecurity
 } = require("../security/session-security.cjs");
 const { assertLoginAllowed } = require("../security/account-policy.cjs");
@@ -86,6 +89,14 @@ function assertNoBearerCredential(body) {
   assert.doesNotMatch(JSON.stringify(body), /Bearer\s/i);
 }
 
+function assertSourceOrder(source, earlier, later, label) {
+  const earlierIndex = source.indexOf(earlier);
+  const laterIndex = source.indexOf(later);
+  assert.ok(earlierIndex >= 0, `${label}: missing ${earlier}`);
+  assert.ok(laterIndex >= 0, `${label}: missing ${later}`);
+  assert.ok(earlierIndex < laterIndex, `${label}: ${earlier} must precede ${later}`);
+}
+
 test("member and admin cookies use isolated production attributes and exact lifetimes", () => {
   const security = sessions();
   const memberRes = responseRecorder();
@@ -153,6 +164,32 @@ test("admin lifetime cannot drift from exactly eight hours", () => {
     () => sessions({ adminTtlMs: ADMIN_SESSION_TTL_MS - 1 }),
     /eight hours|8 hours|admin.*ttl/i
   );
+});
+
+test("session identity preflight rejects imported oversized identities before a mutation callback", () => {
+  const valid = { sub: "member_1", email: "member@example.com" };
+  assert.deepEqual(assertSessionIdentity(valid), valid);
+
+  let mutationCalls = 0;
+  const mutateAfterPreflight = (member) => {
+    assertLoginAllowed(member);
+    assertSessionIdentity({ sub: member.id, email: member.email });
+    mutationCalls += 1;
+  };
+
+  for (const member of [
+    { id: "m".repeat(513), email: "imported-id@example.com", status: "active" },
+    { id: "imported_email", email: `${"e".repeat(501)}@example.com`, status: "active" }
+  ]) {
+    assert.throws(
+      () => mutateAfterPreflight(member),
+      (error) => error?.status === 400
+        && error?.code === "INVALID_SESSION_IDENTITY"
+        && !error.message.includes(member.id)
+        && !error.message.includes(member.email)
+    );
+  }
+  assert.equal(mutationCalls, 0);
 });
 
 test("member and admin sessions are valid only for their own cookie and kind", () => {
@@ -231,7 +268,7 @@ test("verification requires an exact payload shape and finite internally consist
       email: `${"a".repeat(501)}@example.com`,
       status: "active"
     }),
-    /invalid member session/i
+    (error) => error?.status === 400 && error?.code === "INVALID_SESSION_IDENTITY"
   );
 
   const invalidClaims = [
@@ -327,19 +364,38 @@ test("server removes legacy token helpers and wires cookie-only middleware after
 });
 
 test("server audits every issuance path and never reactivates an existing account", () => {
+  const eligibilityHelper = serverSource.match(/function assertMemberSessionEligible[\s\S]*?\n}\n/)?.[0] || "";
+  assert.match(eligibilityHelper, /assertLoginAllowed\(member\)/);
+  assert.match(eligibilityHelper, /assertSessionIdentity\(\{ sub: member\.id, email: member\.email }\)/);
+
   const issueHelper = serverSource.match(/function issueMemberSession[\s\S]*?\n}\n/)?.[0] || "";
-  assert.match(issueHelper, /assertLoginAllowed\(member\)[\s\S]*SESSION_SECURITY\.issueMember/);
+  assertSourceOrder(issueHelper, "assertMemberSessionEligible(member)", "SESSION_SECURITY.issueMember", "member issuer");
 
   const googleUpsert = serverSource.match(/function upsertGoogleMember[\s\S]*?\n}\n\napp\.get\('\/api\/config'/)?.[0] || "";
   const existingGoogleUpdate = googleUpsert.match(/if \(member\)[\s\S]*?created: false[^\n]*\n\s*}/)?.[0] || "";
   assert.ok(existingGoogleUpdate, "existing Google-member update must remain directly auditable");
   assert.doesNotMatch(existingGoogleUpdate, /status\s*=\s*['"]active['"]/);
+  assertSourceOrder(existingGoogleUpdate, "assertMemberSessionEligible(member)", "UPDATE members", "existing Google member");
+
+  const newGoogleInsert = googleUpsert.slice(googleUpsert.indexOf("const id = createMemberId()"));
+  assertSourceOrder(newGoogleInsert, "assertMemberSessionEligible(candidateMember)", "INSERT INTO members", "new Google member");
+  assertSourceOrder(googleUpsert, "const email = normalizeEmail(profile.email)", "assertMemberSessionEligible(candidateMember)", "new Google email");
+  assertSourceOrder(newGoogleInsert, "const id = createMemberId()", "assertMemberSessionEligible(candidateMember)", "new Google subject");
+  assert.match(newGoogleInsert, /const candidateMember = \{ id, email, status: ['"]active['"] }/);
   assert.doesNotMatch(serverSource, /status\s*=\s*CASE\s+WHEN status IN \(['"]suspended/);
 
   const loginRoute = serverSource.match(/app\.post\('\/api\/members\/login'[\s\S]*?\n}\);/)?.[0] || "";
   assert.match(loginRoute, /verifyPassword/);
   assert.doesNotMatch(loginRoute, /req\.body\.phone|email\s*=\s*\?\s+AND\s+phone/);
-  assert.match(loginRoute, /assertLoginAllowed\(member\)/);
+  assertSourceOrder(loginRoute, "assertMemberSessionEligible(member)", "UPDATE members SET lastLoginAt", "password login");
+
+  const registrationRoute = serverSource.match(/app\.post\('\/api\/members\/register'[\s\S]*?\n}\);/)?.[0] || "";
+  assertSourceOrder(registrationRoute, "assertMemberSessionEligible(candidateMember)", "const existing", "member registration duplicate read");
+  assertSourceOrder(registrationRoute, "assertMemberSessionEligible(candidateMember)", "INSERT INTO members", "member registration insert");
+
+  const logoutRoute = serverSource.match(/app\.post\('\/api\/auth\/logout'[\s\S]*?\n}\);/)?.[0] || "";
+  assert.equal((logoutRoute.match(/expireRetiredMemberCookieOnce\(res\)/g) || []).length, 1);
+  assert.doesNotMatch(logoutRoute, /SESSION_SECURITY\.expireRetiredMemberCookie/);
 
   for (const route of ["signup", "login"]) {
     assert.match(
@@ -360,6 +416,36 @@ function responseCookie(response, name) {
   return response.headers.getSetCookie()
     .find((cookie) => cookie.startsWith(`${name}=`))
     ?.split(";", 1)[0] || "";
+}
+
+function importedPasswordHash(password) {
+  const salt = "0123456789abcdef0123456789abcdef";
+  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+function withTestDatabase(dataDir, callback) {
+  const database = new BetterSqliteDatabase(join(dataDir, "data.db"));
+  try {
+    return callback(database);
+  } finally {
+    database.close();
+  }
+}
+
+function insertImportedMember(dataDir, member) {
+  withTestDatabase(dataDir, (database) => {
+    database.prepare(`
+      INSERT INTO members (id, firstName, email, phone, status, passwordHash, updatedAt, lastLoginAt)
+      VALUES (?, 'Imported', ?, ?, 'active', ?, 'before-login', '')
+    `).run(member.id, member.email, member.phone, importedPasswordHash(member.password));
+  });
+}
+
+function importedMemberTimestamps(dataDir, email) {
+  return withTestDatabase(dataDir, (database) => database
+    .prepare("SELECT updatedAt, lastLoginAt FROM members WHERE email = ?")
+    .get(email));
 }
 
 test("live server uses isolated cookies, rejects retired clients, and blocks suspended sessions", async (t) => {
@@ -412,6 +498,38 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
   assert.equal(adminSession.status, 200);
   assert.equal(typeof (await adminSession.json()).csrfToken, "string");
 
+  const importedMembers = [
+    {
+      id: "m".repeat(513),
+      email: "imported-oversized-id@example.com",
+      phone: "0870000001",
+      password: "correct-password"
+    },
+    {
+      id: "imported_oversized_email",
+      email: `${"b".repeat(501)}@example.com`,
+      phone: "0870000002",
+      password: "correct-password"
+    }
+  ];
+  for (const member of importedMembers) {
+    insertImportedMember(server.dataDir, member);
+    const login = await fetch(`${server.origin}/api/members/login`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: member.email, password: member.password })
+    });
+    assert.equal(login.status, 400, member.email);
+    const loginBody = await login.json();
+    assert.equal(loginBody.error, "ข้อมูลสำหรับ Session ไม่ถูกต้อง");
+    assert.equal(JSON.stringify(loginBody).includes(member.id), false);
+    assert.equal(JSON.stringify(loginBody).includes(member.email), false);
+    assert.deepEqual({ ...importedMemberTimestamps(server.dataDir, member.email) }, {
+      updatedAt: "before-login",
+      lastLoginAt: ""
+    });
+  }
+
   const oversizedEmail = `${"a".repeat(501)}@example.com`;
   const oversizedRegistration = await fetch(`${server.origin}/api/members/register`, {
     method: "POST",
@@ -461,6 +579,20 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
   });
   assert.equal(memberSession.status, 200);
   assert.equal(typeof (await memberSession.json()).csrfToken, "string");
+
+  const memberLogout = await fetch(`${server.origin}/api/auth/logout`, {
+    method: "POST",
+    headers: { cookie: `${memberCookie}; aix_session=retired-session` }
+  });
+  assert.equal(memberLogout.status, 200);
+  assert.equal(
+    memberLogout.headers.getSetCookie().filter((cookie) => cookie.startsWith("aix_session=")).length,
+    1
+  );
+  assert.equal(
+    memberLogout.headers.getSetCookie().filter((cookie) => cookie.startsWith("aix_member_session=")).length,
+    1
+  );
 
   const passwordless = await fetch(`${server.origin}/api/members/login`, {
     method: "POST",

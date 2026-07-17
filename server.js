@@ -21,6 +21,7 @@ const {
 const {
   ADMIN_SESSION_TTL_MS: ADMIN_SESSION_LIFETIME_MS,
   SESSION_IDENTITY_MAX_LENGTH,
+  assertSessionIdentity,
   createSessionSecurity
 } = require('./security/session-security.cjs');
 const { assertLoginAllowed } = require('./security/account-policy.cjs');
@@ -1156,8 +1157,16 @@ function requestHasCookie(req, name) {
   });
 }
 
+const RETIRED_MEMBER_COOKIE_EXPIRED = Symbol('retired-member-cookie-expired');
+
+function expireRetiredMemberCookieOnce(res) {
+  if (res[RETIRED_MEMBER_COOKIE_EXPIRED]) return;
+  res[RETIRED_MEMBER_COOKIE_EXPIRED] = true;
+  SESSION_SECURITY.expireRetiredMemberCookie(res);
+}
+
 function expireRetiredMemberCookieIfPresent(req, res) {
-  if (requestHasCookie(req, 'aix_session')) SESSION_SECURITY.expireRetiredMemberCookie(res);
+  if (requestHasCookie(req, 'aix_session')) expireRetiredMemberCookieOnce(res);
 }
 
 function requireMemberSession(req, res, next) {
@@ -1204,9 +1213,15 @@ function hasValidMemberSession(req, res) {
   }
 }
 
-function issueMemberSession(res, member) {
+function assertMemberSessionEligible(member) {
   assertLoginAllowed(member);
-  SESSION_SECURITY.expireRetiredMemberCookie(res);
+  assertSessionIdentity({ sub: member.id, email: member.email });
+  return member;
+}
+
+function issueMemberSession(res, member) {
+  assertMemberSessionEligible(member);
+  expireRetiredMemberCookieOnce(res);
   return SESSION_SECURITY.issueMember(res, publicMember(member));
 }
 
@@ -2042,10 +2057,13 @@ async function verifyGoogleAccessToken(accessToken) {
 }
 
 function upsertGoogleMember(profile) {
-  const member = db.prepare('SELECT * FROM members WHERE googleSub = ? OR email = ?').get(profile.sub, profile.email);
-  const now = new Date().toISOString();
+  const googleSub = String(profile.sub || '');
+  const email = normalizeEmail(profile.email);
+  const member = db.prepare('SELECT * FROM members WHERE googleSub = ? OR email = ?').get(googleSub, email);
 
   if (member) {
+    assertMemberSessionEligible(member);
+    const now = new Date().toISOString();
     db.prepare(`
       UPDATE members
       SET lastLoginAt = ?, updatedAt = ?, emailVerified = 1,
@@ -2055,11 +2073,14 @@ function upsertGoogleMember(profile) {
           picture = COALESCE(NULLIF(picture, ''), ?),
           avatarUrl = COALESCE(NULLIF(avatarUrl, ''), ?)
       WHERE id = ?
-    `).run(now, now, profile.sub, profile.name, profile.picture, profile.picture, member.id);
+    `).run(now, now, googleSub, profile.name, profile.picture, profile.picture, member.id);
     return { member: db.prepare('SELECT * FROM members WHERE id = ?').get(member.id), created: false };
   }
 
   const id = createMemberId();
+  const candidateMember = { id, email, status: 'active' };
+  assertMemberSessionEligible(candidateMember);
+  const now = new Date().toISOString();
   const names = splitDisplayName(profile.name);
   db.prepare(`
     INSERT INTO members (
@@ -2073,10 +2094,10 @@ function upsertGoogleMember(profile) {
     id,
     profile.given_name || names.firstName,
     profile.family_name || names.lastName,
-    profile.name || profile.email,
-    profile.email,
+    profile.name || email,
+    email,
     `auth_google_${profile.sub}`,
-    profile.sub,
+    googleSub,
     profile.picture,
     profile.picture,
     now,
@@ -2112,7 +2133,7 @@ app.post('/api/auth/google', async (req, res) => {
   try {
     const profile = await verifyGoogleCredential(req.body.credential);
     const result = upsertGoogleMember(profile);
-    assertLoginAllowed(result.member);
+    assertMemberSessionEligible(result.member);
     res.json({ ...issueMemberSession(res, result.member), profile, created: result.created });
   } catch (error) {
     res.status(error.status || 400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
@@ -2123,7 +2144,7 @@ app.post('/api/auth/google-access-token', async (req, res) => {
   try {
     const profile = await verifyGoogleAccessToken(req.body.accessToken);
     const result = upsertGoogleMember(profile);
-    assertLoginAllowed(result.member);
+    assertMemberSessionEligible(result.member);
     res.json({ ...issueMemberSession(res, result.member), profile, created: result.created });
   } catch (error) {
     res.status(error.status || 400).json({ error: error.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้' });
@@ -2322,6 +2343,9 @@ app.post('/api/members/register', async (req, res) => {
     const valid = requireValidMemberInput(input);
     if (valid.error) return res.status(400).json({ error: valid.error });
 
+    const id = createMemberId();
+    const candidateMember = { id, email: valid.email, status: 'active' };
+    assertMemberSessionEligible(candidateMember);
     const existing = valid.phone
       ? db.prepare('SELECT * FROM members WHERE email = ? OR phone = ?').get(valid.email, valid.phone)
       : db.prepare('SELECT * FROM members WHERE email = ?').get(valid.email);
@@ -2329,7 +2353,6 @@ app.post('/api/members/register', async (req, res) => {
       return res.status(409).json({ error: 'อีเมลหรือเบอร์โทรนี้มีบัญชีสมาชิกอยู่แล้ว' });
     }
 
-    const id = createMemberId();
     const now = new Date().toISOString();
     const displayName = String(input.displayName || `${valid.firstName} ${valid.lastName}`.trim()).trim();
     const passwordHash = googleProfile ? '' : createPasswordHash(valid.password);
@@ -2371,7 +2394,7 @@ app.post('/api/members/register', async (req, res) => {
     );
 
     const member = db.prepare('SELECT * FROM members WHERE id = ?').get(id);
-    assertLoginAllowed(member);
+    assertMemberSessionEligible(member);
     res.json(issueMemberSession(res, member));
   } catch (error) {
     res.status(error.status || 400).json({ error: error.message || 'ไม่สามารถสมัครสมาชิกได้' });
@@ -2391,9 +2414,9 @@ app.post('/api/members/login', (req, res) => {
     return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
   }
   try {
-    assertLoginAllowed(member);
+    assertMemberSessionEligible(member);
   } catch (error) {
-    return res.status(error.status || 401).json({ error: error.message });
+    return res.status(error.status || 400).json({ error: error.message });
   }
 
   const now = new Date().toISOString();
@@ -2411,7 +2434,7 @@ app.get('/api/auth/me', requireMemberSession, (req, res) => {
 
 app.post('/api/auth/logout', requireMemberSession, (req, res) => {
   SESSION_SECURITY.clearMember(res);
-  SESSION_SECURITY.expireRetiredMemberCookie(res);
+  expireRetiredMemberCookieOnce(res);
   res.json({ ok: true });
 });
 

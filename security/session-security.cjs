@@ -29,6 +29,18 @@ function validIdentityField(value) {
   return typeof value === "string" && value.length > 0 && value.length <= SESSION_IDENTITY_MAX_LENGTH;
 }
 
+function assertSessionIdentity(identity) {
+  const sub = identity?.sub;
+  const email = identity?.email;
+  if (!validIdentityField(sub) || !validIdentityField(email)) {
+    const error = new Error("ข้อมูลสำหรับ Session ไม่ถูกต้อง");
+    error.status = 400;
+    error.code = "INVALID_SESSION_IDENTITY";
+    throw error;
+  }
+  return { sub, email };
+}
+
 function strictBase64Url(value) {
   if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/.test(value)) return null;
   try {
@@ -194,15 +206,12 @@ function createSessionSecurity(options = {}) {
   }
 
   function issue(res, kind, sub, email, ttlMs, sameSite) {
+    const checkedIdentity = assertSessionIdentity({ sub, email });
     const identity = {
       kind,
-      sub: String(sub || ""),
-      email: String(email || ""),
+      ...checkedIdentity,
       nonce: nonce()
     };
-    if (!validIdentityField(identity.sub) || !validIdentityField(identity.email)) {
-      throw new Error(`Cannot issue an invalid ${kind} session`);
-    }
     const token = sign(identity, ttlMs);
     const signedClaims = decodeIssuedClaims(token);
     appendCookie(res, kind === "member" ? MEMBER_COOKIE : ADMIN_COOKIE, token, ttlMs, sameSite);
@@ -283,5 +292,6 @@ module.exports = {
   RETIRED_MEMBER_COOKIE,
   ADMIN_SESSION_TTL_MS,
   SESSION_IDENTITY_MAX_LENGTH,
+  assertSessionIdentity,
   createSessionSecurity
 };

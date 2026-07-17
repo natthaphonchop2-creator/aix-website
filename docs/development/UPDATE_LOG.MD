@@ -4,6 +4,46 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 2 formal review follow-up
+
+Scope:
+- Exported pure `assertSessionIdentity(identity)` from the session-security module. Issuance and verification now share the exact string-type, non-empty, and 512-character subject/email contract; rejected identities receive a generic client-safe `400` without echoing either field.
+- Added one server preflight that composes active-account policy with the shared session-identity contract and runs before every member-session issuance path.
+- Reordered existing Google-member handling so account status and stored member identity are checked before `lastLoginAt`, identity linking, email verification, auth-provider, or profile updates. New Google members normalize the exact stored email and generate the exact stored ID before preflight and INSERT.
+- Reordered member registration to preflight its generated ID and normalized email before duplicate lookup and INSERT, while retaining the no-orphan oversized-email regression.
+- Reordered password login to preflight active imported/legacy rows before updating `lastLoginAt` or `updatedAt`; invalid stored IDs/emails return `400` instead of mutating and later surfacing an uncaught `500`.
+- Made retired `aix_session` expiry idempotent per response. A logout request carrying both current and retired cookies now emits one member-cookie clear and exactly one retired-cookie clear.
+- Added pure callback-order, source-order, direct temporary-database, client-safe error, and exact `Set-Cookie` count regressions without adding a Google provider bypass or making any external provider call.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `security/session-security.cjs`
+- `tests/session-security.test.mjs`
+- `server.js`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Identity/order RED: `node --test tests/session-security.test.mjs` ran 13 tests with 10 passing and 3 failing because the pure preflight and server ordering helper were absent and an active imported oversized-ID login returned `500` after writing timestamps instead of a deliberate pre-write `400`.
+- Identity/order GREEN and cookie RED: after preflight ordering was implemented, the session suite reached the logout header assertion with 12 tests passing and 1 failing because it observed 2 retired-cookie clears instead of 1.
+- Cookie source RED: `node --test --test-name-pattern "server audits every issuance path" tests/session-security.test.mjs` ran 1 test with 0 passing and 1 failing because the logout route had no response-idempotent expiry call.
+- Session GREEN: `node --test tests/session-security.test.mjs` passed 13 tests with 0 failures. The live temporary SQLite proof covers active imported rows with an oversized ID and oversized email, confirms `400` with a non-echoing message, and verifies both `updatedAt` and `lastLoginAt` remain unchanged.
+- Mutation-order source proof requires the composed status/identity preflight before the existing Google UPDATE, new Google INSERT, registration duplicate read and INSERT, password-login timestamp UPDATE, and final session issue call.
+- Security/publication suite: `node --test tests/session-security.test.mjs tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs tests/publication-manifest.test.mjs` passed 74 tests with 0 failures.
+- Initial full regression caught one compatibility failure: 162 of 163 tests passed because an existing homepage source contract expected the original ``auth_google_${profile.sub}`` synthetic-phone expression. That behavior-equivalent expression was restored without weakening normalized session email or preflight ordering.
+- Final full suite: `npm test` passed 163 tests with 0 failures.
+- Syntax: `node --check` passed for `security/session-security.cjs`, `tests/session-security.test.mjs`, and `server.js`; `git diff --check` passed.
+- Cloudflare dry-run: `npm run cf:check` exited 0, prepared 99 manifest-approved files, Wrangler `4.95.0` read 106 generated asset-directory files, and stopped at `--dry-run` without deployment.
+- Dependency audit: `npm audit --audit-level=high` exited 1 with the unchanged 6 pre-existing advisories (1 low, 5 high) in Multer and the Wrangler development chain; no dependency or lockfile changed and no automatic fix was applied.
+- Independent read-only follow-up review returned Approved with no Critical, Important, or Minor finding and separately confirmed all pre-write ordering, safe `400` behavior, and one retired-cookie clear per response.
+
+Unresolved risks:
+- Google mutation ordering is proven structurally without a production test bypass; this follow-up made no external Google request.
+- Browser cookie/CSRF client migration remains Phase 0B Task 4; Origin/CSRF enforcement and authentication/OTP rate limits remain Phase 0B Task 3.
+- The existing PostgreSQL compatibility wrapper still lacks a real multi-statement transaction; this follow-up prevents known rejected identity/status cases from reaching writes but does not change database architecture.
+- The 5 pre-existing high dependency advisories remain assigned to dependency hardening.
+
 ## 2026-07-18 - Phase 0B Task 2 isolated signed-cookie sessions
 
 Scope:
