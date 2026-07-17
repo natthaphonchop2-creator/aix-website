@@ -4,6 +4,38 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0A Task 2 Express publication boundary
+
+Scope:
+- Replaced unrestricted repository-root static serving with the canonical positive publication manifest from Phase 0A Task 1.
+- Removed the public `/uploads` mount and made unknown, sensitive, traversal, and direct private-page requests fail closed with `404`.
+- Added explicit public routes for the admin login shell and its exact CSS/JavaScript dependencies; `/admin.html` now canonicalizes to `/admin` with `308`.
+- Guarded canonical member pages and their page-specific scripts with the existing member-session helper, without changing authentication behavior reserved for Phase 0B.
+- Added an isolated real-HTTP server harness using temporary data/upload directories and deterministic child-process cleanup.
+- Preserved the Stripe raw-body webhook before JSON parsing and kept all work local-only with no deployment or external mutation.
+
+Changed files:
+- `server.js`
+- `tests/helpers/server-harness.mjs`
+- `tests/publication-boundary.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- RED: `node --test tests/publication-boundary.test.mjs` failed as expected: 0 passed, 3 failed. The real server returned `200` for `/Agent.MD`, returned `200` for anonymous `/tools-box`, and returned an HTML response for an unknown API route.
+- GREEN: `node --test tests/publication-boundary.test.mjs` passed: 3 tests, 0 failures.
+- Initial focused regression run: `node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/homepage-contract.test.mjs` passed 40 of 41 tests; the only failure was the legacy homepage source contract that still looked for the removed Supabase path denylist. A migration note now records that the positive manifest replaces that legacy check without restoring denylist behavior.
+- Final focused regression run: `node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/homepage-contract.test.mjs` passed: 41 tests, 0 failures.
+- Full applicable suite: `node --test tests/*.test.mjs` passed: 41 tests, 0 failures.
+- `npm audit --audit-level=high` completed with exit code 1 and reported 6 pre-existing vulnerabilities: 1 low and 5 high in Multer and the Wrangler development dependency chain; no automatic dependency change was made in this task.
+- `git diff --check` passed.
+- `git diff --cached --check` passed with no whitespace errors.
+
+Unresolved risks:
+- Member and admin cookie/session replacement, retired bearer-token rejection, Origin/CSRF enforcement, and rate limits remain Phase 0B work.
+- Direct `/uploads/...` URLs are intentionally unavailable; authenticated identifier-based replay/resource delivery remains Phase 0C work.
+- Cloudflare packaging does not consume the publication manifest yet and remains a later Phase 0A task.
+- The 5 high dependency advisories remain open for the targeted dependency-hardening task; this task did not run `npm audit fix`.
+
 ## 2026-07-18 - Phase 0A Task 1 canonical public publication manifest
 
 Scope:

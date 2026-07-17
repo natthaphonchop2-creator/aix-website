@@ -13,6 +13,7 @@ const vm = require('vm');
 const Stripe = require('stripe');
 const multer = require('multer');
 const { Worker } = require('worker_threads');
+const { resolvePublicPath } = require('./security/publication-manifest.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -324,6 +325,7 @@ function createDatabase(filename) {
 }
 
 function loadLocalEnv() {
+  if (process.env.AIX_SKIP_LOCAL_ENV === '1') return;
   ['.env', '.env.local'].forEach((filename) => {
     const envPath = path.join(__dirname, filename);
     if (!fs.existsSync(envPath)) return;
@@ -420,38 +422,16 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use((req, res, next) => {
-  const blockedStaticFiles = new Set([
-    '.env',
-    '.env.local',
-    '.env.production',
-    '.env.development',
-    '.gitignore',
-    'server.js',
-    'package.json',
-    'package-lock.json',
-    'render.yaml',
-    'postgres-worker.js',
-    'wrangler.jsonc',
-    'rewrite_admin.js',
-    'data.db',
-    'data.db-shm',
-    'data.db-wal'
-  ]);
-  const requestedFile = path.basename(req.path);
-  const pathParts = req.path.split('/').filter(Boolean);
-  if (
-    blockedStaticFiles.has(requestedFile)
-    || requestedFile.startsWith('.env')
-    || pathParts.includes('.git')
-    || pathParts.includes('supabase')
-  ) {
-    return res.sendStatus(404);
-  }
-  next();
-});
-app.use('/uploads', express.static(UPLOAD_ROOT));
-app.use(express.static(path.join(__dirname)));
+
+function serveApprovedPublicFile(req, res, next) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  // The positive manifest replaces legacy checks such as pathParts.includes('supabase').
+  const filename = resolvePublicPath(__dirname, req.path);
+  if (!filename || !fs.existsSync(filename) || !fs.statSync(filename).isFile()) return next();
+  return res.sendFile(filename, { dotfiles: 'deny' });
+}
+
+app.use(serveApprovedPublicFile);
 
 app.get('/api/health', (req, res) => {
   res.json({
@@ -4025,16 +4005,41 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-app.get('/dashboard', (req, res) => {
+app.get('/admin.html', (req, res) => res.redirect(308, '/admin'));
+app.get('/admin.css', (req, res) => res.sendFile(path.join(__dirname, 'admin.css')));
+app.get('/admin.js', (req, res) => res.sendFile(path.join(__dirname, 'admin.js')));
+
+function requireMemberPage(req, res, next) {
   if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+  next();
+}
+
+const MEMBER_PAGE_ASSETS = [
+  'dashboard.js',
+  'tools-box.js',
+  'live-class.js',
+  'payment.js',
+  'payment-success.js',
+  'course-start.js',
+  'course-content.js',
+  'course-learn.js'
+];
+
+for (const filename of MEMBER_PAGE_ASSETS) {
+  app.get(`/${filename}`, requireMemberPage, (req, res) => {
+    res.sendFile(path.join(__dirname, filename));
+  });
+}
+
+app.get('/dashboard', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-app.get('/tools-box', (req, res) => {
+app.get('/tools-box', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'tools-box.html'));
 });
 
-app.get('/live/:id', (req, res) => {
+app.get('/live/:id', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'live-class.html'));
 });
 
@@ -4048,40 +4053,39 @@ app.get('/register', (req, res) => {
   res.redirect('/index.html?auth=signup');
 });
 
-app.get('/payment', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+app.get('/payment', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'payment.html'));
 });
 
-app.get('/payment/success', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+app.get('/payment/success', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'payment-success.html'));
 });
 
-app.get('/payment/cancel', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+app.get('/payment/cancel', requireMemberPage, (req, res) => {
   res.redirect('/payment?cancelled=1');
 });
 
-app.get('/course/:id/start', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+app.get('/course/:id/start', requireMemberPage, (req, res) => {
   res.sendFile(path.join(__dirname, 'course-start.html'));
 });
 
-app.get('/course/:id/content', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+app.get('/course/:id/content', requireMemberPage, (req, res) => {
   if (req.query.ready !== '1') {
     return res.redirect(`/course/${encodeURIComponent(req.params.id)}/start`);
   }
   res.sendFile(path.join(__dirname, 'course-content.html'));
 });
 
-app.get('/course/:id/learn', (req, res) => {
-  if (!hasValidMemberSession(req)) return res.redirect('/index.html?auth=login');
+app.get('/course/:id/learn', requireMemberPage, (req, res) => {
   if (req.query.ready !== '1') {
     return res.redirect(`/course/${encodeURIComponent(req.params.id)}/start`);
   }
   res.sendFile(path.join(__dirname, 'course-learn.html'));
+});
+
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
+  res.sendStatus(404);
 });
 
 // ============================================================
