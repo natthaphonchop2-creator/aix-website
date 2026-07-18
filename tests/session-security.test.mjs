@@ -355,7 +355,7 @@ test("server removes legacy token helpers and wires cookie-only middleware after
   assert.match(serverSource, /require\(['"]\.\/security\/account-policy\.cjs['"]\)/);
   assert.match(serverSource, /const SESSION_SECURITY = createSessionSecurity\(/);
   const webhookIndex = serverSource.indexOf("app.post('/api/stripe/webhook'");
-  const jsonIndex = serverSource.indexOf("app.use(express.json())");
+  const jsonIndex = serverSource.indexOf("app.use(express.json({ limit: '1mb' }))");
   const retiredTokenIndex = serverSource.indexOf("app.use(rejectLegacyClientToken)");
   assert.ok(webhookIndex >= 0 && webhookIndex < jsonIndex, "Stripe webhook must retain raw-body precedence");
   assert.ok(jsonIndex < retiredTokenIndex, "legacy token rejection must run after JSON parsing");
@@ -418,6 +418,10 @@ function responseCookie(response, name) {
     ?.split(";", 1)[0] || "";
 }
 
+function mutationHeaders(server, extra = {}) {
+  return { origin: server.origin, ...extra };
+}
+
 function importedPasswordHash(password) {
   const salt = "0123456789abcdef0123456789abcdef";
   const hash = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -455,7 +459,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
   for (const pathname of ["/api/auth/signup", "/api/auth/login"]) {
     const response = await fetch(`${server.origin}${pathname}`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: mutationHeaders(server, { "content-type": "application/json" }),
       body: "{}"
     });
     assert.equal(response.status, 410, pathname);
@@ -468,7 +472,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const bodyToken = await fetch(`${server.origin}/api/admin/login`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mutationHeaders(server, { "content-type": "application/json" }),
     body: JSON.stringify({
       email: "owner@example.com",
       password: "correct-horse-battery-staple",
@@ -479,7 +483,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const adminLogin = await fetch(`${server.origin}/api/admin/login`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mutationHeaders(server, { "content-type": "application/json" }),
     body: JSON.stringify({
       email: "owner@example.com",
       password: "correct-horse-battery-staple"
@@ -516,7 +520,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
     insertImportedMember(server.dataDir, member);
     const login = await fetch(`${server.origin}/api/members/login`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: mutationHeaders(server, { "content-type": "application/json" }),
       body: JSON.stringify({ email: member.email, password: member.password })
     });
     assert.equal(login.status, 400, member.email);
@@ -533,7 +537,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
   const oversizedEmail = `${"a".repeat(501)}@example.com`;
   const oversizedRegistration = await fetch(`${server.origin}/api/members/register`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mutationHeaders(server, { "content-type": "application/json" }),
     body: JSON.stringify({
       firstName: "Oversized",
       lastName: "Identity",
@@ -556,7 +560,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const registration = await fetch(`${server.origin}/api/members/register`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mutationHeaders(server, { "content-type": "application/json" }),
     body: JSON.stringify({
       firstName: "Session",
       lastName: "Member",
@@ -582,7 +586,10 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const memberLogout = await fetch(`${server.origin}/api/auth/logout`, {
     method: "POST",
-    headers: { cookie: `${memberCookie}; aix_session=retired-session` }
+    headers: mutationHeaders(server, {
+      cookie: `${memberCookie}; aix_session=retired-session`,
+      "x-csrf-token": registrationBody.csrfToken
+    })
   });
   assert.equal(memberLogout.status, 200);
   assert.equal(
@@ -596,14 +603,18 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const passwordless = await fetch(`${server.origin}/api/members/login`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mutationHeaders(server, { "content-type": "application/json" }),
     body: JSON.stringify({ email: "session-member@example.com", phone: "0812345678" })
   });
   assert.equal(passwordless.status, 400);
 
   const suspend = await fetch(`${server.origin}/api/members/${encodeURIComponent(registrationBody.member.id)}`, {
     method: "PUT",
-    headers: { cookie: adminCookie, "content-type": "application/json" },
+    headers: mutationHeaders(server, {
+      cookie: adminCookie,
+      "content-type": "application/json",
+      "x-csrf-token": adminBody.csrfToken
+    }),
     body: JSON.stringify({ status: "suspended" })
   });
   assert.equal(suspend.status, 200);
@@ -615,7 +626,7 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const suspendedLogin = await fetch(`${server.origin}/api/members/login`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: mutationHeaders(server, { "content-type": "application/json" }),
     body: JSON.stringify({ email: "session-member@example.com", password: "correct-password" })
   });
   assert.equal(suspendedLogin.status, 401);
@@ -631,7 +642,10 @@ test("live server uses isolated cookies, rejects retired clients, and blocks sus
 
   const adminLogout = await fetch(`${server.origin}/api/admin/logout`, {
     method: "POST",
-    headers: { cookie: adminCookie }
+    headers: mutationHeaders(server, {
+      cookie: adminCookie,
+      "x-csrf-token": adminBody.csrfToken
+    })
   });
   assert.equal(adminLogout.status, 200);
   assert.match(

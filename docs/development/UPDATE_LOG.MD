@@ -4,6 +4,56 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 3 Origin, CSRF, CORS, and authentication limits
+
+Scope:
+- Added a standalone HTTP-security module that accepts only an absent or exact configured CORS Origin, enables credentialed CORS, rejects every unsafe `POST`/`PUT`/`PATCH`/`DELETE` without an exact approved Origin, and requires a session-bound `X-CSRF-Token` after successful member/admin authentication. `GET`, `HEAD`, and `OPTIONS` remain neutral.
+- Preserved the single Stripe webhook as an explicit exemption before global JSON parsing and Origin enforcement so its signed raw body remains intact. The middleware order is credentialed exact-Origin CORS, Stripe raw webhook, 1 MB JSON parsing, retired-token rejection, then the global mutation-Origin gate.
+- Set production Express `trust proxy` to exactly `1`, matching the approved one-proxy topology, while leaving nonproduction proxy behavior unchanged.
+- Installed exact `express-rate-limit@8.6.0` without `--force`. Pure-IP limiters retain the package's default IPv4/IPv6-safe key generator and proxy/IP diagnostics; identity fallbacks call `ipKeyGenerator` explicitly. Valid canonical email/phone values are stored only as fixed-length SHA-256 keys, malformed or oversized identities fall back to a prefixed safe IP key, and raw attacker-controlled identity text is never retained by the rate-limit store.
+- Applied independent member-login limits of 10 attempts per IP per 15 minutes and 5 attempts per canonical email per 15 minutes; admin login is 5 attempts per IP per 15 minutes.
+- Applied shared OTP limits of 5 attempts per canonical phone per 10 minutes and 20 attempts per IP per hour across all four public and authenticated send/verify routes. Authenticated OTP routes retain `requireMemberSession` first, so authentication and session CSRF succeed before the shared limiter reads the stored-member phone fallback.
+- Added unit, source-contract, isolated limiter-server, and real child-server coverage for exact/missing/malformed Origins, credentialed CORS, all safe/unsafe methods, session-bound CSRF, cross-session rejection, limiter thresholds and standard headers, canonical identity equivalence, invalid-identity fallback, all four OTP declarations, no nonexistent password-reset route, production proxy configuration, absence of limiter validation warnings, and a locally signed inert Stripe webhook with no Origin.
+- Migrated only affected server-side fixtures to send the real Origin and CSRF values returned by login/registration. Expanded the named `test:security` command to include the Phase 0B config, session, and HTTP suites and updated its exact package-script contract.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `security/http-security.cjs`
+- `tests/http-security.test.mjs`
+- `server.js`
+- `package.json`
+- `package-lock.json`
+- `tests/session-security.test.mjs`
+- `tests/api-route-policy.test.mjs`
+- `tests/cloudflare-publication.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Module RED: `node --test tests/http-security.test.mjs` exited 1 with the expected `MODULE_NOT_FOUND` for `security/http-security.cjs` before implementation.
+- Initial module GREEN: the focused HTTP-security suite passed 9 tests with 0 failures after the module and isolated limiter proofs were implemented.
+- Server-integration RED: the expanded HTTP suite ran 18 tests with 10 passing and 8 failing at the intentionally missing server wiring: wildcard CORS, absent global Origin rejection, absent session CSRF, and missing admin/member/OTP thresholds.
+- Server-integration GREEN: `node --test tests/http-security.test.mjs` passed 18 tests with 0 failures after server wiring. Its child-process output contained no `ValidationError` or `ERR_ERL_` limiter warning.
+- Existing-fixture RED: `node --test tests/session-security.test.mjs tests/api-route-policy.test.mjs` ran 63 tests with 60 passing and 3 failing because existing mutation fixtures omitted the newly required Origin/CSRF values and one source assertion expected the prior unbounded `express.json()` call.
+- Focused security/API/publication GREEN: `node --test tests/http-security.test.mjs tests/session-security.test.mjs tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs tests/publication-manifest.test.mjs` passed 96 tests with 0 failures.
+- Named security suite: `npm run test:security` passed 153 tests with 0 failures after adding the config/session/HTTP suites to the existing Phase 0A security command and updating its exact contract.
+- Final HTTP suite after strengthening all-method/all-OTP-route and review-hardening proofs: `node --test tests/http-security.test.mjs` passed 22 tests with 0 failures.
+- Full regression: `npm test` passed 185 tests with 0 failures. An intermediate run exposed only the stale exact `test:security` script contract (180 of 181 then-current tests passed); the authorized contract migration restored the suite without weakening the named security command.
+- Syntax: `node --check` passed for `security/http-security.cjs`, `tests/http-security.test.mjs`, `tests/session-security.test.mjs`, `tests/api-route-policy.test.mjs`, `tests/cloudflare-publication.test.mjs`, and `server.js`; `git diff --check` passed.
+- Exact dependency proof: `npm ls express-rate-limit --depth=0` resolved `express-rate-limit@8.6.0` at the project root.
+- Cloudflare dry-run: `npm run cf:check` exited 0, prepared 99 manifest-approved files, Wrangler `4.95.0` read 106 generated asset-directory files, and stopped at `--dry-run` without deployment.
+- Dependency audit: `npm audit --audit-level=high` exited 1 with 6 advisories (1 low, 5 high): Multer plus the Wrangler development chain (`esbuild`, `undici`, and `ws`). No automatic fix was applied; the exact rate-limit dependency introduced no reported advisory.
+- Independent review found correct middleware/Origin/CORS/CSRF/Stripe behavior, plus one raw oversized-email MemoryStore risk and two hardening gaps in pure-IP diagnostics and optional-interface compatibility. Review RED: `node --test --test-name-pattern "original interface|pure IP limiters|fixed-length SHA-256|bounds canonical email" tests/http-security.test.mjs` ran 4 tests with 0 passing and 4 failing. Review GREEN: the same command passed 4 of 4 after bounded canonical acceptance, SHA-256 identity keys, default pure-IP key generation, and safe optional canonicalizer defaults were implemented. The review's cross-route OTP availability observation is retained as an explicit tradeoff because one shared budget across all four OTP routes is a binding Task 3 requirement. Independent read-only follow-up returned Approved with no remaining actionable finding and reconfirmed the review regressions, focused suite, and diff check.
+
+Unresolved risks:
+- Browser cookie/CSRF migration remains Phase 0B Task 4. Existing browser mutations that still use retired bearer transport will not satisfy the new session cookie and CSRF contract until that separately scoped migration lands.
+- The default rate-limit stores are intentionally process-local memory. Counters reset on restart and are not shared across horizontally scaled instances; production multi-instance operation needs an approved shared store.
+- The intentionally shared canonical-phone/IP OTP budgets let anonymous registration traffic consume the same phone budget later used by an authenticated phone/payment route. This limits total abuse per phone as specified, but creates a targeted short-lived availability tradeoff that should be revisited only if the product contract permits purpose-scoped budgets.
+- `trust proxy = 1` is correct only for the approved single-proxy deployment topology. Any proxy-chain change requires an explicit review before deployment.
+- Production startup requires the exact frontend origins in `APP_ORIGINS`; requests from any unlisted origin fail closed by design.
+- The 5 high dependency advisories remain assigned to dependency hardening.
+
 ## 2026-07-18 - Phase 0B Task 2 formal review follow-up
 
 Scope:

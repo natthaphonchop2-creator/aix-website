@@ -423,7 +423,7 @@ test("anonymous config and course projections use exact public allowlists", asyn
 
   const loginResponse = await fetch(`${server.origin}/api/admin/login`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { origin: server.origin, "content-type": "application/json" },
     body: JSON.stringify({
       email: "owner@example.com",
       password: "correct-horse-battery-staple"
@@ -442,6 +442,8 @@ test("anonymous config and course projections use exact public allowlists", asyn
     method: "POST",
     headers: {
       cookie: adminCookie,
+      origin: server.origin,
+      "x-csrf-token": loginBody.csrfToken,
       "content-type": "application/json"
     },
     body: JSON.stringify({

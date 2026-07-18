@@ -406,7 +406,7 @@ test("package scripts use the manifest builder and preserve the dry-run boundary
   assert.equal(packageJson.scripts.test, "node --test tests/*.test.mjs");
   assert.equal(
     packageJson.scripts["test:security"],
-    "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs"
+    "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs"
   );
   assert.equal(packageJson.scripts["cf:prepare"], "node scripts/prepare-cloudflare-assets.cjs");
   assert.equal(packageJson.scripts["cf:check"], "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"");

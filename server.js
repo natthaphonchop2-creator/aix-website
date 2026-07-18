@@ -25,6 +25,7 @@ const {
   createSessionSecurity
 } = require('./security/session-security.cjs');
 const { assertLoginAllowed } = require('./security/account-policy.cjs');
+const { createHttpSecurity } = require('./security/http-security.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -358,6 +359,7 @@ loadLocalEnv();
 const SECURITY_CONFIG = validateSecurityConfig(process.env);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const app = express();
+if (IS_PRODUCTION) app.set('trust proxy', 1);
 const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = path.resolve(process.env.DATA_DIR || __dirname);
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
@@ -391,6 +393,21 @@ const SESSION_SECURITY = createSessionSecurity({
   secure: IS_PRODUCTION,
   memberTtlMs: AUTH_SESSION_TTL_MS,
   adminTtlMs: ADMIN_SESSION_TTL_MS
+});
+const HTTP_ALLOWED_ORIGINS = SECURITY_CONFIG.allowedOrigins.size
+  ? SECURITY_CONFIG.allowedOrigins
+  : new Set([`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]);
+const HTTP_SECURITY = createHttpSecurity({
+  allowedOrigins: HTTP_ALLOWED_ORIGINS,
+  validCsrf: (session, token) => SESSION_SECURITY.validCsrf(session, token),
+  canonicalEmail(value) {
+    const email = normalizeEmail(value);
+    return email.length <= SESSION_IDENTITY_MAX_LENGTH && EMAIL_RE.test(email) ? email : '';
+  },
+  canonicalPhone(value) {
+    const phone = normalizePhone(value);
+    return PHONE_RE.test(phone) ? phone : '';
+  }
 });
 const MEMBER_PRICE = Number(process.env.MEMBER_PRICE || 1999);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
@@ -436,10 +453,11 @@ const upload = multer({
 });
 
 // ---- Middleware ----
-app.use(cors());
+app.use(cors(HTTP_SECURITY.corsOptions));
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(rejectLegacyClientToken);
+app.use(HTTP_SECURITY.requireMutationOrigin);
 app.use((req, res, next) => {
   if (req.path === '/' || req.path.endsWith('.html')) {
     res.setHeader('Cache-Control', 'no-store');
@@ -1183,7 +1201,7 @@ function requireMemberSession(req, res, next) {
 
   req.authSession = data;
   req.member = member;
-  next();
+  return HTTP_SECURITY.requireSessionCsrf(req, res, next);
 }
 
 function requireAdminSession(req, res, next) {
@@ -1197,7 +1215,7 @@ function requireAdminSession(req, res, next) {
   }
 
   req.authSession = data;
-  next();
+  return HTTP_SECURITY.requireSessionCsrf(req, res, next);
 }
 
 function hasValidMemberSession(req, res) {
@@ -2226,7 +2244,7 @@ app.delete('/api/members/:id', requireAdminSession, (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/members/otp/send', async (req, res) => {
+app.post('/api/members/otp/send', HTTP_SECURITY.otpIp, HTTP_SECURITY.otpPhone, async (req, res) => {
   try {
     const phone = normalizePhone(req.body.phone);
     const email = normalizeEmail(req.body.email);
@@ -2254,7 +2272,7 @@ app.post('/api/members/otp/send', async (req, res) => {
   }
 });
 
-app.post('/api/members/otp/verify', (req, res) => {
+app.post('/api/members/otp/verify', HTTP_SECURITY.otpIp, HTTP_SECURITY.otpPhone, (req, res) => {
   const phone = normalizePhone(req.body.phone);
   const code = String(req.body.code || '').trim();
 
@@ -2272,7 +2290,7 @@ app.post('/api/members/otp/verify', (req, res) => {
   }
 });
 
-app.post('/api/member/phone/otp/send', requireMemberSession, async (req, res) => {
+app.post('/api/member/phone/otp/send', requireMemberSession, HTTP_SECURITY.otpIp, HTTP_SECURITY.otpPhone, async (req, res) => {
   try {
     const phone = normalizePhone(req.body.phone || req.member.phone);
     if (!PHONE_RE.test(phone)) {
@@ -2298,7 +2316,7 @@ app.post('/api/member/phone/otp/send', requireMemberSession, async (req, res) =>
   }
 });
 
-app.post('/api/member/phone/otp/verify', requireMemberSession, (req, res) => {
+app.post('/api/member/phone/otp/verify', requireMemberSession, HTTP_SECURITY.otpIp, HTTP_SECURITY.otpPhone, (req, res) => {
   const phone = normalizePhone(req.body.phone || req.member.phone);
   const code = String(req.body.code || '').trim();
 
@@ -2401,7 +2419,7 @@ app.post('/api/members/register', async (req, res) => {
   }
 });
 
-app.post('/api/members/login', (req, res) => {
+app.post('/api/members/login', HTTP_SECURITY.memberLoginIp, HTTP_SECURITY.memberLoginIdentity, (req, res) => {
   const email = normalizeEmail(req.body.email);
   const password = String(req.body.password || '');
 
@@ -4012,7 +4030,7 @@ app.get('/api/stats', requireAdminSession, (req, res) => {
 // ============================================================
 // ADMIN AUTH (simple)
 // ============================================================
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', HTTP_SECURITY.adminLoginIp, (req, res) => {
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
     return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า ADMIN_EMAIL หรือ ADMIN_PASSWORD บน server' });
   }
