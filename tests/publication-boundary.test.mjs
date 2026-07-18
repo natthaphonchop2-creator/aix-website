@@ -37,6 +37,7 @@ test("serves approved public files and hides repository internals", async (t) =>
     "/customer_exports/example.md",
     "/docs/Client%20Proposal.pdf",
     "/tmp/log.txt",
+    "/content/tools-library.cjs",
     "/dashboard.html",
     "/tools-box.html",
     "/course-content.html",
@@ -99,7 +100,7 @@ test("applies the publication boundary to HEAD requests", async (t) => {
     assert.equal(await response.text(), "", `${pathname} HEAD response must not have a body`);
   }
 
-  for (const pathname of ["/Agent.MD", "/dashboard.html", "/uploads/replays/example.mp4"]) {
+  for (const pathname of ["/Agent.MD", "/dashboard.html", "/uploads/replays/example.mp4", "/content/tools-library.cjs"]) {
     const response = await fetch(`${server.origin}${pathname}`, {
       method: "HEAD",
       redirect: "manual"
@@ -122,7 +123,8 @@ test("fails closed for malformed encoding and encoded private paths", async (t) 
     "/%64ashboard.html",
     "/dashboard%2ehtml",
     "/%74ools-box.html",
-    "/course-content%2ehtml"
+    "/course-content%2ehtml",
+    "/content%2Ftools-library.cjs"
   ]) {
     const response = await fetch(`${server.origin}${pathname}`, { redirect: "manual" });
     assert.equal(response.status, 404, `${pathname}: ${response.status}`);

@@ -48,6 +48,8 @@ test("copies approved regular files and excludes sensitive or executable files",
   await writeFile(join(root, "styles.css"), "style");
   await writeFile(join(root, "server.js"), "secret");
   await writeFile(join(root, "dashboard.html"), "private");
+  await mkdir(join(root, "content"));
+  await writeFile(join(root, "content", "tools-library.cjs"), "premium");
   await writeFile(join(root, "assets", "logo.png"), "image");
   await writeFile(join(root, "assets", "vendor", "bad.js"), "code");
   await writeFile(join(root, "assets", "proposal.pdf"), "document");
@@ -61,6 +63,7 @@ test("copies approved regular files and excludes sensitive or executable files",
   assert.equal(await readFile(join(destination, "assets", "logo.png"), "utf8"), "image");
   await assertMissing(join(destination, "server.js"));
   await assertMissing(join(destination, "dashboard.html"));
+  await assertMissing(join(destination, "content"));
   await assertMissing(join(destination, "assets", "vendor", "bad.js"));
   await assertMissing(join(destination, "assets", "proposal.pdf"));
   await assertMissing(join(destination, "assets", ".hidden.png"));
@@ -156,6 +159,12 @@ test("prepared-tree scan rejects unsafe files and destination or path symlinks",
   await writeFile(unsafeFile, "unsafe");
   await assert.rejects(assertSafePreparedTree(destination), /Unlisted Cloudflare asset/);
   await rm(unsafeFile);
+
+  const privateContent = join(destination, "content");
+  await mkdir(privateContent);
+  await writeFile(join(privateContent, "tools-library.cjs"), "premium");
+  await assert.rejects(assertSafePreparedTree(destination), /Unlisted Cloudflare asset/);
+  await rm(privateContent, { recursive: true });
 
   const outsideFile = join(sandbox, "outside.png");
   const pathLink = join(destination, "assets", "link.png");
@@ -406,7 +415,7 @@ test("package scripts use the manifest builder and preserve the dry-run boundary
   assert.equal(packageJson.scripts.test, "node --test tests/*.test.mjs");
   assert.equal(
     packageJson.scripts["test:security"],
-    "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs tests/protected-media.test.mjs"
+    "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs tests/protected-media.test.mjs tests/tools-protection.test.mjs"
   );
   assert.equal(packageJson.scripts["cf:prepare"], "node scripts/prepare-cloudflare-assets.cjs");
   assert.equal(packageJson.scripts["cf:check"], "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"");

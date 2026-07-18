@@ -34,6 +34,7 @@ const {
   validateStagedUpload
 } = require('./security/upload-policy.cjs');
 const { streamMedia } = require('./security/media-delivery.cjs');
+const { getToolsLibrary } = require('./content/tools-library.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -2578,6 +2579,21 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
       expiresAt: member.expiresAt
     }
   });
+});
+
+app.get('/api/member/tools', requireMemberSession, (req, res) => {
+  const access = memberAccess(req.member);
+  res.setHeader('Cache-Control', 'private, no-store');
+  if (!access.active) {
+    return res.status(402).json({
+      error: access.expired ? 'สมาชิกหมดอายุแล้ว กรุณาต่ออายุเพื่อเปิด Tools Box' : 'กรุณาชำระเงินเพื่อเปิด Tools Box',
+      paymentRequired: true,
+      expired: access.expired,
+      expiresAt: access.expiresAt
+    });
+  }
+
+  return res.json(getToolsLibrary());
 });
 
 app.get('/api/member/schedules/:id', requireMemberSession, (req, res) => {

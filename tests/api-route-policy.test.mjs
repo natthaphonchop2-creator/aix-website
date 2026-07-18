@@ -16,7 +16,7 @@ const API_ROUTE_POLICIES = {
   ],
   signedWebhook: ["POST /api/stripe/webhook"],
   member: [
-    "GET /api/auth/me", "POST /api/auth/logout", "GET /api/member/dashboard",
+    "GET /api/auth/me", "POST /api/auth/logout", "GET /api/member/dashboard", "GET /api/member/tools",
     "GET /api/member/schedules/:id", "GET /api/member/notifications",
     "POST /api/member/notifications/:id/read", "POST /api/member/progress",
     "GET /api/member/payments", "POST /api/member/phone/otp/send",

@@ -320,26 +320,28 @@ test("inner pages keep dashboard and member UI readable in light and dark themes
   assert.match(css, /\.dark :where\(#detailRoot, \.dashboard-page, \.tools-box-page, \.live-class-page, \.course-gate-page, \.learn-shell\)\s*\n\s*:where\(input, textarea, select,[\s\S]*?#learnAiInput\)\s*\{[\s\S]*?background:\s*rgba\(10,\s*10,\s*10,\s*0\.92\) !important;/);
 });
 
-test("tools box exposes downloadable and copyable skill and prompt libraries", () => {
+test("tools box exposes protected downloadable and copyable skill and prompt libraries", () => {
   assert.match(toolsBoxHtml, /id="toolsSkillLibrary"/);
   assert.match(toolsBoxHtml, /id="toolsPromptLibrary"/);
   assert.match(toolsBoxHtml, /Skill Set ที่แจกให้ใช้/);
   assert.match(toolsBoxHtml, /Prompt พร้อมใช้/);
-  assert.match(toolsBoxHtml, /tools-box\.js\?v=tools-box-action-library-v1/);
-  assert.match(toolsBoxScript, /const SKILL_PACKS = \[/);
-  assert.match(toolsBoxScript, /const PROMPT_PACKS = \[/);
-  assert.match(toolsBoxScript, /AI Work Intake Skill/);
-  assert.match(toolsBoxScript, /Prompt QA Skill/);
-  assert.match(toolsBoxScript, /หา Use Case AI ในธุรกิจ/);
-  assert.match(toolsBoxScript, /สร้าง FAQ จากแชทลูกค้า/);
+  assert.match(toolsBoxHtml, /tools-box\.js\?v=tools-box-protected-library-v2/);
+  assert.match(toolsBoxScript, /let skillPacks = \[\];/);
+  assert.match(toolsBoxScript, /let promptPacks = \[\];/);
+  assert.doesNotMatch(toolsBoxScript, /const SKILL_PACKS|const PROMPT_PACKS/);
+  assert.doesNotMatch(toolsBoxScript, /AI Work Intake Skill|Prompt QA Skill|หา Use Case AI ในธุรกิจ|สร้าง FAQ จากแชทลูกค้า/);
+  assert.match(toolsBoxScript, /apiRequest\("\/api\/member\/tools"\)/);
+  assert.match(toolsBoxScript, /Array\.isArray\(library\?\.skills\)/);
+  assert.match(toolsBoxScript, /Array\.isArray\(library\?\.prompts\)/);
+  assert.match(toolsBoxScript, /clearPremiumLibrary/);
   assert.match(toolsBoxScript, /navigator\.clipboard\?\.writeText/);
   assert.match(toolsBoxScript, /document\.execCommand\("copy"\)/);
   assert.match(toolsBoxScript, /new Blob\(\[content\], \{ type: "text\/markdown;charset=utf-8" \}\)/);
   assert.match(toolsBoxScript, /anchor\.download = fileName/);
   assert.match(toolsBoxScript, /data-tools-action="copy"/);
   assert.match(toolsBoxScript, /data-tools-action="download"/);
-  assert.match(toolsBoxScript, /renderActionCards\(toolsSkillLibrary, SKILL_PACKS, \{ kind: "skill", locked: !active \}\)/);
-  assert.match(toolsBoxScript, /renderActionCards\(toolsPromptLibrary, PROMPT_PACKS, \{ kind: "prompt", locked: !active \}\)/);
+  assert.match(toolsBoxScript, /renderActionCards\(toolsSkillLibrary, skillPacks, \{ kind: "skill" \}\)/);
+  assert.match(toolsBoxScript, /renderActionCards\(toolsPromptLibrary, promptPacks, \{ kind: "prompt" \}\)/);
   assert.match(css, /\.tools-action-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*280px\),\s*1fr\)\);/);
   assert.match(css, /\.tools-action-card\s*\{[\s\S]*?overflow:\s*hidden;[\s\S]*?border-radius:\s*var\(--radius\);/);
   assert.match(css, /\.tools-action-buttons\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);

@@ -4,6 +4,48 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0C Task 3 protected premium Tools Box library
+
+Scope:
+- Moved the complete six-skill and six-prompt premium library out of the anonymously downloadable `tools-box.js` bundle into the server-only `content/tools-library.cjs` module. The 19,057-byte record block is unchanged byte-for-byte; the module returns a fresh structured clone for every request.
+- Added cookie-authenticated `GET /api/member/tools`. The route reuses `requireMemberSession`, requires current active paid access, rejects anonymous, retired Bearer, unpaid, expired, suspended, and deleted-member states without returning library records, and sends authorized responses with `Cache-Control: private, no-store`.
+- Changed the Tools Box client to begin with empty libraries and request premium data only after `/api/member/dashboard` confirms active access. Both arrays are validated together before rendering; missing, empty, partial, malformed, `402`, `500`, and render-error outcomes clear both libraries without a partial result.
+- Added lifecycle generations and logout single-flight handling. Older dashboard/tools success or failure cannot overwrite a newer access state; a `402` between dashboard and tools locks the UI and removes member resources; logout immediately clears premium content, blocks pending responses and duplicate logout calls, and never restores premium content after a failed logout.
+- Preserved copy/download behavior for authorized records while stale buttons become inert as soon as the library is cleared. Bumped the Tools Box script cache key.
+- Added explicit Node publication checks for direct, encoded, `GET`, and `HEAD` requests to the server-only module. Added Cloudflare builder and prepared-tree checks that exclude or reject `content/`, and wired the deterministic Tools protection suite into the exact named security script.
+
+Version:
+- `1.0.1` unchanged. No dependency or lockfile changed.
+
+Changed files:
+- `content/tools-library.cjs`
+- `tests/tools-protection.test.mjs`
+- `server.js`
+- `tools-box.js`
+- `tools-box.html`
+- `tests/api-route-policy.test.mjs`
+- `tests/homepage-contract.test.mjs`
+- `tests/publication-boundary.test.mjs`
+- `tests/cloudflare-publication.test.mjs`
+- `package.json`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Initial cross-boundary RED: the selected five-suite run executed 108 tests, passed 98, and failed 10 because the premium records were still public, the server-only module/API did not exist, the route policy was absent, the client rendered locked records, and the cache/publication contracts still described the public bundle.
+- Exact move proof: the original contiguous record block is 19,057 bytes with SHA-256 `48db26bced5dfb9d6b48ebfe4de24b9e248c3a24b392aced7e0f462904120445`; the strict-mode module wrapper is 19,234 bytes with SHA-256 `c5398809527b5648cd988779deb022e8ec5a1f36deec4b9c0bf0d57237a230e0`.
+- Focused Tools protection suite: `node --test tests/tools-protection.test.mjs` passed 8 tests with 0 failures, covering the full denied-state matrix, independent clones, malformed payloads, access-loss `402`, stale dashboard/tools success and failure, bootstrap races, real copy/download dispatch, stale buttons, logout clearing, and duplicate logout single-flight.
+- Cross-boundary focused suite: `node --test tests/tools-protection.test.mjs tests/api-route-policy.test.mjs tests/homepage-contract.test.mjs tests/publication-boundary.test.mjs tests/cloudflare-publication.test.mjs` passed 109 tests with 0 failures.
+- Named security suite: `npm run test:security` passed 221 tests with 0 failures.
+- Full regression: `npm test` passed 253 tests with 0 failures.
+- Cloudflare publication dry-run: `npm run cf:check` prepared 100 manifest-approved assets, read 107 files, and exited successfully at `wrangler deploy --dry-run`; no deployment occurred.
+- Production dependency audit: `npm audit --omit=dev --audit-level=high` exited 0 with `found 0 vulnerabilities`.
+- Independent local review found and resolved an active-UI/resource residue after a tools `402` and a duplicate-logout race; final review status is recorded in the Task 3 report.
+- Cloudflare output scan confirms no `content/` directory or premium marker is present in the prepared public tree.
+- No dependency change, audit fix, deploy, push, pull request, external provider call, or production query was performed. Pre-existing untracked user files remained outside the task scope.
+
+Unresolved risks:
+- Premium content intentionally exists in an authorized member's browser after delivery and can be copied or downloaded. A later server-side expiry cannot retract data already delivered; the next dashboard/tools request, logout, or navigation enforces the newer state. `private, no-store` prevents intended shared/storage caching but cannot prevent an authorized user from retaining content.
+
 ## 2026-07-18 - Phase 0C Task 2 review follow-up: hide unfeatured course resources
 
 Scope:
