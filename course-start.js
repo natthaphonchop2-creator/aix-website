@@ -1,5 +1,17 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
 
 const courseGateIntro = document.getElementById("courseGateIntro");
 const courseGateForm = document.getElementById("courseGateForm");
@@ -27,31 +39,11 @@ function courseContentUrl(id) {
   return `/course/${encodeURIComponent(id)}/content?ready=1`;
 }
 
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-async function apiRequest(path) {
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    headers: token() ? { Authorization: `Bearer ${token()}` } : {}
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    const err = new Error(error.error || "ไม่สามารถเข้าเรียนได้");
-    err.status = response.status;
-    throw err;
-  }
-  return response.json();
-}
-
 async function initCourseGate() {
   courseId = getCourseId();
-  if (!token()) {
-    window.location.replace("/index.html?auth=login");
-    return;
-  }
 
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest(`/api/courses/${encodeURIComponent(courseId)}/content`);
     const title = data.course?.title || "คอร์ส AiX Club";
     document.title = `ความมุ่งมั่นของฉัน | ${title}`;
@@ -59,7 +51,16 @@ async function initCourseGate() {
     closeGateLink.href = "/dashboard#courses";
     document.body.classList.add("course-gate-ready");
   } catch (error) {
-    window.location.replace(error.status === 402 ? "/payment" : "/index.html?auth=login");
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
+    if (error.status === 402) {
+      window.location.replace("/payment");
+      return;
+    }
+    showToast(error.message || "ไม่สามารถเปิดคอร์สได้");
   }
 }
 

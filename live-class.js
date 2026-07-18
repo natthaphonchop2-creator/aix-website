@@ -1,5 +1,17 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
 
 const liveStatusBadge = document.getElementById("liveStatusBadge");
 const liveTitle = document.getElementById("liveTitle");
@@ -18,30 +30,12 @@ const toast = document.getElementById("toast");
 let toastTimer = null;
 let activeSchedule = null;
 
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
 function showToast(message) {
   if (!toast) return;
   window.clearTimeout(toastTimer);
   toast.textContent = message;
   toast.classList.add("show");
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3200);
-}
-
-async function apiRequest(path) {
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: `Bearer ${token()}` } : {})
-    }
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || "ไม่สามารถโหลดห้องเรียนสดได้");
-  }
-  return response.json();
 }
 
 function scheduleIdFromPath() {
@@ -136,19 +130,25 @@ function renderLiveRoom(data) {
 
 async function loadLiveRoom() {
   const scheduleId = scheduleIdFromPath();
-  if (!token()) {
-    window.location.replace("/index.html?auth=login");
-    return;
-  }
   if (!scheduleId) {
     window.location.replace("/dashboard#schedule");
     return;
   }
 
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest(`/api/member/schedules/${encodeURIComponent(scheduleId)}`);
     renderLiveRoom(data);
   } catch (error) {
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
+    if (error.status === 402) {
+      window.location.replace("/payment");
+      return;
+    }
     showToast(error.message);
     liveStatusBadge.classList.add("is-ended");
     liveStatusBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>เปิดห้องเรียนสดไม่ได้</span>`;

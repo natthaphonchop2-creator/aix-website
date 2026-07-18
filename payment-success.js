@@ -1,6 +1,17 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
-const SESSION_KEY = "aix_member_session";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
 
 const resultIcon = document.getElementById("paymentResultIcon");
 const resultTitle = document.getElementById("paymentResultTitle");
@@ -18,26 +29,6 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3200);
 }
 
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
-      ...(options.headers || {})
-    }
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || "ไม่สามารถตรวจสอบการชำระเงินได้");
-  }
-  return response.json();
-}
-
 function renderResult(state, title, copy) {
   resultIcon.className = `result-icon ${state}`;
   resultIcon.innerHTML = state === "success"
@@ -50,11 +41,6 @@ function renderResult(state, title, copy) {
 }
 
 async function verifyPayment() {
-  if (!token()) {
-    window.location.replace("/index.html?auth=login");
-    return;
-  }
-
   const sessionId = new URLSearchParams(window.location.search).get("session_id");
   if (!sessionId) {
     renderResult("error", "ไม่พบ Session ID", "กรุณากลับไปเริ่มชำระเงินใหม่อีกครั้ง");
@@ -62,8 +48,8 @@ async function verifyPayment() {
   }
 
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest(`/api/payments/stripe/session/${encodeURIComponent(sessionId)}`);
-    if (data.member) localStorage.setItem(SESSION_KEY, JSON.stringify(data.member));
 
     if (data.paymentStatus === "paid") {
       renderResult("success", "ชำระเงินสำเร็จ", "ระบบปลดล็อกคอร์สให้แล้ว คุณสามารถเข้าเรียนจาก Dashboard ได้ทันที");
@@ -79,6 +65,11 @@ async function verifyPayment() {
 
     renderResult("pending", "รอการยืนยันจาก Stripe", "หากเป็น PromptPay ระบบจะอัปเดตอัตโนมัติหลัง Stripe ยืนยันการชำระเงิน");
   } catch (error) {
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
     renderResult("error", "ตรวจสอบการชำระเงินไม่สำเร็จ", error.message || "กรุณาลองใหม่อีกครั้ง");
   }
 }

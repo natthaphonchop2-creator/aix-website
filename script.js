@@ -138,13 +138,10 @@ const state = {
   smsProvider: "dev"
 };
 
-const API_ORIGIN = window.location.protocol === "file:" ? "http://localhost:3000" : window.location.origin;
 const STORAGE_KEYS = {
-  members: "aix_members",
-  session: "aix_member_session",
-  token: "aix_member_token",
   theme: "aix-theme"
 };
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^0\d{9}$/;
 
@@ -202,32 +199,12 @@ function isValidPhone(phone) {
   return PHONE_RE.test(normalizePhone(phone));
 }
 
-function apiUrl(path) {
-  return `${API_ORIGIN}${path}`;
-}
-
 async function apiRequest(path, options = {}) {
-  const token = localStorage.getItem(STORAGE_KEYS.token);
   const shouldBypassCache = path === "/api/config" || path.startsWith("/api/platform/courses");
   const requestPath = shouldBypassCache ? `${path}${path.includes("?") ? "&" : "?"}_=${Date.now()}` : path;
-  const requestOptions = {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {})
-    }
-  };
+  const requestOptions = { ...options };
   if (shouldBypassCache) requestOptions.cache = "no-store";
-
-  const response = await fetch(apiUrl(requestPath), requestOptions);
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || "ไม่สามารถเชื่อมต่อระบบได้");
-  }
-
-  return response.json();
+  return memberApi.request(requestPath, requestOptions);
 }
 
 function normalizeCourseCard(course) {
@@ -259,46 +236,6 @@ async function loadCoursesFromDatabase() {
   } catch (error) {
     // Static course data remains available when the local server is not running.
   }
-}
-
-function getLocalMembers() {
-  try {
-    const members = JSON.parse(localStorage.getItem(STORAGE_KEYS.members) || "[]");
-    const cleanMembers = members.filter((member) => !/@aix\.test$/.test(String(member.email || "")));
-    if (cleanMembers.length !== members.length) setLocalMembers(cleanMembers);
-    return cleanMembers;
-  } catch (error) {
-    return [];
-  }
-}
-
-function setLocalMembers(members) {
-  localStorage.setItem(STORAGE_KEYS.members, JSON.stringify(members));
-}
-
-function saveLocalMember(payload) {
-  const members = getLocalMembers();
-  const email = normalizeEmail(payload.email);
-  const phone = normalizePhone(payload.phone);
-  const duplicate = members.find((member) => normalizeEmail(member.email) === email || normalizePhone(member.phone) === phone);
-
-  if (duplicate) {
-    throw new Error("อีเมลหรือเบอร์โทรนี้มีบัญชีสมาชิกอยู่แล้ว");
-  }
-
-  const member = {
-    id: `local_member_${Date.now()}`,
-    ...payload,
-    email,
-    phone,
-    status: "active",
-    paymentStatus: "unpaid",
-    authProvider: payload.googleCredential ? "google" : "email",
-    createdAt: new Date().toISOString()
-  };
-  members.unshift(member);
-  setLocalMembers(members);
-  return member;
 }
 
 function describedByValues(input) {
@@ -553,7 +490,8 @@ async function registerMember(payload) {
       method: "POST",
       body: JSON.stringify(payload)
     });
-    return { member: result.member, token: result.token, source: "server" };
+    memberApi.adopt(result);
+    return result;
   } catch (error) {
     if (/Failed to fetch|NetworkError/i.test(error.message)) {
       throw new Error("ระบบสมัครสมาชิกต้องเปิดผ่าน http://localhost:3000 เพื่อส่งรหัส SMS");
@@ -573,6 +511,7 @@ async function findMember(email, password) {
       method: "POST",
       body: JSON.stringify(payload)
     });
+    memberApi.adopt(result);
     return result;
   } catch (error) {
     if (/Failed to fetch|NetworkError/i.test(error.message)) {
@@ -582,15 +521,8 @@ async function findMember(email, password) {
   }
 }
 
-function setMember(member, token = null) {
-  state.member = member;
-  if (member) {
-    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(member));
-    if (token) localStorage.setItem(STORAGE_KEYS.token, token);
-  } else {
-    localStorage.removeItem(STORAGE_KEYS.session);
-    localStorage.removeItem(STORAGE_KEYS.token);
-  }
+function setMember(member) {
+  state.member = member || null;
   updateMemberUi();
 }
 
@@ -680,7 +612,9 @@ function updateMemberUi() {
 }
 
 async function logoutMember() {
+  if (!memberApi.csrfToken) await memberApi.bootstrap().catch(() => null);
   await apiRequest("/api/auth/logout", { method: "POST" }).catch(() => {});
+  memberApi.clear();
   state.googleCredential = "";
   state.googleProfile = null;
   setMember(null);
@@ -690,17 +624,11 @@ async function logoutMember() {
 
 async function restoreSession() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.session) || "null");
-    const token = localStorage.getItem(STORAGE_KEYS.token);
-    if (!saved || !token || /@aix\.test$/.test(String(saved.email || ""))) {
-      setMember(null);
-      return;
-    }
-    setMember(saved);
-    const result = await apiRequest("/api/auth/me");
+    const result = await memberApi.bootstrap();
+    if (memberApi.csrfToken !== result.csrfToken) return;
     setMember(result.member);
   } catch (error) {
-    setMember(null);
+    if (!memberApi.csrfToken) setMember(null);
   }
 }
 
@@ -1122,9 +1050,10 @@ async function handleGoogleCredential(response) {
       method: "POST",
       body: JSON.stringify({ credential, mode })
     });
+    memberApi.adopt(result);
 
     if (result.member) {
-      setMember(result.member, result.token);
+      setMember(result.member);
       closeAuthModal();
       window.location.href = "dashboard.html";
       return;
@@ -1159,9 +1088,10 @@ async function handleGoogleAccessToken(response) {
       method: "POST",
       body: JSON.stringify({ accessToken, mode })
     });
+    memberApi.adopt(result);
 
     if (result.member) {
-      setMember(result.member, result.token);
+      setMember(result.member);
       closeAuthModal();
       window.location.href = "dashboard.html";
       return;
@@ -1666,9 +1596,9 @@ memberForm?.addEventListener("submit", async (event) => {
     googleCredential: state.googleCredential
   };
 
-  try {
-    const result = await registerMember(payload);
-    setMember(result.member, result.token);
+    try {
+      const result = await registerMember(payload);
+      setMember(result.member);
     closeAuthModal();
     memberForm.reset();
     memberForm.elements.email.readOnly = false;
@@ -1730,7 +1660,7 @@ loginForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  setMember(result.member, result.token);
+  setMember(result.member);
   closeAuthModal();
   window.location.href = "/dashboard";
 });

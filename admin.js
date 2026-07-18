@@ -4,8 +4,7 @@
    ============================================================ */
 
 const ADMIN_API_ORIGIN = window.location.origin;
-const ADMIN_AUTH_KEY = 'aixAdminAuth';
-const ADMIN_TOKEN_KEY = 'aixAdminToken';
+const adminApi = window.AiXApi.createClient({ sessionPath: '/api/admin/session' });
 
 // ---- Initialize Shared Data (same as main site) ----
 (function initSharedData() {
@@ -34,38 +33,39 @@ const ADMIN_TOKEN_KEY = 'aixAdminToken';
 })();
 
 // ---- Auth ----
-let adminLoggedIn = Boolean(localStorage.getItem(ADMIN_TOKEN_KEY));
-
-function getAdminToken() {
-  return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
-}
+let adminLoggedIn = false;
+const adminEmail = document.getElementById('adminEmail');
+const adminPassword = document.getElementById('adminPassword');
 
 function showAdminLogin() {
   document.getElementById('adminLayout')?.style.setProperty('display', 'none');
   document.getElementById('loginPage')?.style.setProperty('display', '');
 }
 
-function clearAdminSession() {
-  localStorage.removeItem(ADMIN_AUTH_KEY);
-  localStorage.removeItem(ADMIN_TOKEN_KEY);
-  adminLoggedIn = false;
-}
-
-function adminRequestHeaders(headers = {}) {
-  const next = new Headers(headers);
-  const token = getAdminToken();
-  if (token) next.set('Authorization', `Bearer ${token}`);
-  return next;
+function showAdminLayout() {
+  document.getElementById('loginPage')?.style.setProperty('display', 'none');
+  document.getElementById('adminLayout')?.style.setProperty('display', 'flex');
 }
 
 async function adminFetch(url, options = {}) {
-  const res = await fetch(url, {
-    ...options,
-    headers: adminRequestHeaders(options.headers)
-  });
+  const method = String(options.method || 'GET').trim().toUpperCase();
+  try {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && !adminApi.csrfToken) {
+      await adminApi.bootstrap();
+      adminLoggedIn = true;
+    }
+  } catch (error) {
+    adminApi.clear();
+    adminLoggedIn = false;
+    showAdminLogin();
+    throw error;
+  }
+
+  const res = await adminApi.raw(url, options);
 
   if (res.status === 401 || res.status === 403) {
-    clearAdminSession();
+    adminApi.clear();
+    adminLoggedIn = false;
     showAdminLogin();
     throw new Error('Admin session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
   }
@@ -74,48 +74,47 @@ async function adminFetch(url, options = {}) {
 }
 
 async function adminLogin() {
-  const email = document.getElementById('adminEmail').value.trim();
-  const pw = document.getElementById('adminPassword').value;
-
   try {
-     const res = await fetch(`${ADMIN_API_ORIGIN}/api/admin/login`, { 
-         method: 'POST', 
-         headers: {'Content-Type': 'application/json'},
-         body: JSON.stringify({ email, password: pw })
-     });
-     const data = await res.json().catch(() => ({}));
-     if (res.ok && data.token) {
-         localStorage.setItem(ADMIN_AUTH_KEY, 'true');
-         localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
-         adminLoggedIn = true;
-         document.getElementById('loginPage').style.display = 'none';
-         document.getElementById('adminLayout').style.display = 'flex';
-         initDashboard();
-     } else {
-         throw new Error(data.error || 'Invalid');
-     }
+    const data = await adminApi.request('/api/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: adminEmail.value.trim(), password: adminPassword.value })
+    });
+    adminApi.adopt(data);
+    adminLoggedIn = true;
+    showAdminLayout();
+    await initDashboard();
   } catch(e) {
-     document.getElementById('loginError').classList.add('show');
-     setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
+    document.getElementById('loginError').classList.add('show');
+    setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
   }
 }
 
-function adminLogout() {
-  clearAdminSession();
-  location.reload();
+async function adminLogout() {
+  if (!adminApi.csrfToken) await adminApi.bootstrap().catch(() => null);
+  await adminApi.request('/api/admin/logout', { method: 'POST' }).catch(() => null);
+  adminApi.clear();
+  adminLoggedIn = false;
+  showAdminLogin();
 }
 
-// Auto-login check
-if (adminLoggedIn) {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('adminLayout').style.display = 'flex';
-  window.addEventListener('DOMContentLoaded', () => setTimeout(initDashboard, 100));
-} else {
-  // Handle enter key on login
-  document.getElementById('adminPassword').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') adminLogin();
-  });
+async function restoreAdminSession() {
+  try {
+    const result = await adminApi.bootstrap();
+    if (adminApi.csrfToken !== result.csrfToken) return;
+    adminLoggedIn = true;
+    showAdminLayout();
+    await initDashboard();
+  } catch (error) {
+    if (adminApi.csrfToken) return;
+    adminApi.clear();
+    adminLoggedIn = false;
+    showAdminLogin();
+  }
 }
+
+adminPassword?.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') adminLogin();
+});
 
 // ---- Section Navigation ----
 const sectionTitles = {
@@ -1202,7 +1201,5 @@ async function confirmDelete() {
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-  if (adminLoggedIn) {
-    initDashboard();
-  }
+  restoreAdminSession();
 });

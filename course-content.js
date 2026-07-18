@@ -1,5 +1,18 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
+
 const classroomNavLinks = Array.from(document.querySelectorAll("[data-classroom-nav]"));
 const classroomMobileMenu = document.getElementById("classroomMobileMenu");
 const classroomMobilePanel = document.getElementById("classroomMobilePanel");
@@ -7,20 +20,6 @@ const classroomMobilePanel = document.getElementById("classroomMobilePanel");
 function getCourseId() {
   const pathMatch = window.location.pathname.match(/\/course\/([^/]+)\/content/);
   return pathMatch ? decodeURIComponent(pathMatch[1]) : new URLSearchParams(window.location.search).get("id");
-}
-
-async function apiRequest(path) {
-  const token = localStorage.getItem(TOKEN_KEY);
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    const err = new Error(error.error || "ไม่สามารถเข้าเรียนได้");
-    err.status = response.status;
-    throw err;
-  }
-  return response.json();
 }
 
 function escapeHtml(value = "") {
@@ -173,15 +172,22 @@ function setupClassroomNav() {
 
 async function initContent() {
   const id = getCourseId();
-  if (!localStorage.getItem(TOKEN_KEY)) {
-    window.location.replace("/index.html?auth=login");
-    return;
-  }
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest(`/api/courses/${encodeURIComponent(id)}/content`);
     renderContent(data);
   } catch (error) {
-    window.location.replace(error.status === 402 ? "/payment" : "/index.html?auth=login");
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
+    if (error.status === 402) {
+      window.location.replace("/payment");
+      return;
+    }
+    document.getElementById("courseTitle").textContent = error.message || "ไม่สามารถเปิดคอร์สได้";
+    document.body.classList.add("classroom-ready");
   }
 }
 

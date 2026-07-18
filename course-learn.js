@@ -1,5 +1,18 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
+
 const PROGRESS_KEY = "aix_learning_progress_v1";
 
 const learnCourseName = document.getElementById("learnCourseName");
@@ -58,28 +71,6 @@ function getCourseId() {
 
 function clampIndex(index, total) {
   return Math.min(Math.max(Number(index) || 0, 0), Math.max(total - 1, 0));
-}
-
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    ...options,
-    headers: {
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
-      ...(options.headers || {})
-    }
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    const err = new Error(error.error || "ไม่สามารถเข้าเรียนได้");
-    err.status = response.status;
-    throw err;
-  }
-  return response.json();
 }
 
 function escapeHtml(value = "") {
@@ -148,6 +139,7 @@ function saveLearningProgress(module) {
 async function syncLearningProgress(progress) {
   if (!progress?.courseId) return;
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest("/api/member/progress", {
       method: "POST",
       body: JSON.stringify({
@@ -499,6 +491,7 @@ function detectTeacherMode(question) {
 async function requestAiTeacher(question, mode) {
   const module = state.modules[state.activeIndex];
   const challenge = lessonChallenge(module, state.activeIndex);
+  await bootstrapMemberSession();
   const response = await apiRequest(`/api/courses/${encodeURIComponent(state.course.id)}/teacher-chat`, {
     method: "POST",
     body: JSON.stringify({
@@ -578,7 +571,6 @@ function renderActiveModule() {
 }
 
 function setActiveModule(index) {
-  if (learnAiInput && state.course) localStorage.setItem(editorKey(), learnAiInput.value);
   state.activeIndex = clampIndex(index, state.modules.length);
   renderActiveModule();
 }
@@ -596,16 +588,13 @@ function setTab(tab) {
 async function initLearnPage() {
   const courseId = getCourseId();
   const params = new URLSearchParams(window.location.search);
-  if (!token()) {
-    window.location.replace("/index.html?auth=login");
-    return;
-  }
   if (params.get("ready") !== "1") {
     window.location.replace(`/course/${encodeURIComponent(courseId)}/start`);
     return;
   }
 
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest(`/api/courses/${encodeURIComponent(courseId)}/content`);
     state = {
       course: data.course,
@@ -623,7 +612,16 @@ async function initLearnPage() {
     renderActiveModule();
     document.body.classList.add("learn-ready");
   } catch (error) {
-    window.location.replace(error.status === 402 ? "/payment" : "/index.html?auth=login");
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
+    if (error.status === 402) {
+      window.location.replace("/payment");
+      return;
+    }
+    showToast(error.message || "ไม่สามารถเปิดบทเรียนได้");
   }
 }
 

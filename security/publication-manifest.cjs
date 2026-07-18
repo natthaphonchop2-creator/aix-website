@@ -5,6 +5,7 @@ const PUBLIC_ROOT_FILES = new Set([
   "index.html",
   "class-detail.html",
   "styles.css",
+  "aix-api-client.js",
   "script.js",
   "class-detail.js",
   "site-footer.js",

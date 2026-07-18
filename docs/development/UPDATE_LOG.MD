@@ -4,6 +4,87 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 4 shared cookie and CSRF browser client
+
+Scope:
+- Added `aix-api-client.js` as the single browser request boundary. Every request target is canonicalized and rejected before `fetch` unless it is exact same-origin HTTP(S); `fetch` receives the validated absolute URL rather than a document-base-relative string. Caller-supplied `Authorization`, `X-CSRF-Token`, credential modes, and redirect modes cannot override the client. Fetch credentials are always `same-origin` and redirects fail closed, preventing CSRF leakage through either a malicious `<base>` element or cross-origin `307`/`308` redirect.
+- Kept each CSRF token in one page-client closure only. Clients expose `request`, raw `Response` access for Admin, session `bootstrap`, explicit auth-response `adopt`, deliberate `clear`, and a read-only token getter. Failed bootstrap and logout clear the in-memory token, separately created member/admin/page clients do not share token state, and a private epoch prevents a stale startup bootstrap from clearing or overwriting a newer login/logout token. Homepage and Admin restore flows also ignore stale success/failure UI results.
+- Added response handling for JSON, `+json`, text, empty bodies, malformed JSON, and `204`/`205`; normalized failures expose only a numeric status plus a client-safe message and do not echo raw response text, request bodies, or rejected URLs.
+- Preserved browser-owned body semantics: `FormData` retains a generated multipart boundary, `URLSearchParams` and `Blob` are not mislabeled, valid JSON strings receive `application/json`, and explicit non-auth content types remain intact.
+- Removed browser bearer headers and persistent auth/session state from the homepage, published Class Detail, Dashboard, Tools Box, Live Class, Payment, Payment Success, Course Start, Course Content, Course Learn, and Admin scripts. Startup now bootstraps `/api/auth/me` or `/api/admin/session`; login/register/Google results are adopted before authenticated UI/navigation, and authenticated mutations wait for a bootstrapped CSRF token. Class Detail was explicitly added to scope after the active-runtime scan found it was the only residual published bearer path.
+- Retired exactly `aix_member_token`, `aix_member_session`, `aixAdminToken`, `aixAdminAuth`, and the unused legacy local account database `aix_members`. Cleanup tolerates blocked `localStorage` and never removes theme, progress, notes, lab, commitment, or Admin seed data.
+- Loaded the shared client immediately before each of the eleven page scripts, added it to the publication manifest, and added the behavioral/source contract to the named security suite and its exact package-script assertion. A canonical active-runtime scan covers the 25 served JS/HTML files from the public manifest and explicit member/Admin routes.
+
+Browser migration matrix:
+
+| Surface | Bootstrap/adoption | Authenticated unsafe requests | Preserved non-auth storage |
+| --- | --- | --- | --- |
+| Homepage | `/api/auth/me`; member/password/Google responses adopted | Member logout | `aix-theme` |
+| Class Detail | Optional `/api/auth/me` for member-aware CTA; anonymous fallback on `401` | None | None |
+| Dashboard | `/api/auth/me` before dashboard render | Notification read, logout | `aix_learning_progress_v1` |
+| Tools Box | `/api/auth/me`, with `401` rendered anonymously | Logout | None |
+| Live Class | `/api/auth/me` before room lookup | None | `aix_live_notes_*` |
+| Payment | `/api/auth/me` before payment UI | Stripe checkout, phone OTP send/verify | None |
+| Payment Success | `/api/auth/me` before Stripe-session lookup | None | None |
+| Course Start | `/api/auth/me` before content lookup | None | `aix_course_commitment_*` |
+| Course Content | `/api/auth/me` before content lookup | None | None |
+| Course Learn | `/api/auth/me` before render and initial progress sync | Progress sync, AI teacher | `aix_learning_progress_v1`, `aix_lesson_notes_*`, `aix_lesson_lab_*` |
+| Admin | `/api/admin/session`; login response adopted | Course/replay/resource/schedule/lead/member/package CRUD, notify, logout | `aixCourses`, `aixPackages`, `aixLeads` |
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `aix-api-client.js`
+- `tests/client-auth-contract.test.mjs`
+- `security/publication-manifest.cjs`
+- `index.html`
+- `class-detail.html`
+- `dashboard.html`
+- `tools-box.html`
+- `live-class.html`
+- `payment.html`
+- `payment-success.html`
+- `course-start.html`
+- `course-content.html`
+- `course-learn.html`
+- `admin.html`
+- `script.js`
+- `class-detail.js`
+- `dashboard.js`
+- `tools-box.js`
+- `live-class.js`
+- `payment.js`
+- `payment-success.js`
+- `course-start.js`
+- `course-content.js`
+- `course-learn.js`
+- `admin.js`
+- `package.json`
+- `tests/cloudflare-publication.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Contract RED: `node --test tests/client-auth-contract.test.mjs` ran 13 tests with 0 passing and 13 failing at the intentionally missing shared client, missing page loaders, raw bearer fetches, persistent auth storage, missing bootstrap/adopt/clear ordering, and publication/security-suite omissions.
+- Review redirect RED/GREEN: the focused same-origin request test first failed 0 of 1 because caller `redirect: "follow"` survived; it passed 1 of 1 after the shared client forced `redirect: "error"` after caller options. A two-server browser probe initially received the CSRF token at a cross-origin `307` sink and then confirmed the fixed sink received no token.
+- Review canonical-URL and race RED/GREEN: the selected tests ran with the stale-bootstrap regression passing and the canonical-target assertion failing 1 of 2 because `fetch` received the original relative string. Both passed after `fetch` received `target.href`; a Chrome probe with a cross-origin `<base href>` confirmed the token reached only the validated origin. The standalone deferred stale-bootstrap test first failed 0 of 1, then passed after epoch guarding. Homepage/Admin stale-restore source contracts first failed 0 of 2, then passed after UI lifecycle guards.
+- Expanded-scope RED/GREEN: the Class Detail loader/source selection failed 0 of 2 on its missing shared loader and raw bearer fetch, then passed 2 of 2 after migration.
+- Focused GREEN: `node --test tests/client-auth-contract.test.mjs tests/homepage-contract.test.mjs tests/publication-manifest.test.mjs` passed 54 tests with 0 failures; the client contract itself passed 16 of 16.
+- Named security suite: `npm run test:security` passed 169 tests with 0 failures, including the new client contract plus publication, route-policy, config, session, Origin/CSRF, and rate-limit regressions.
+- Full regression: `npm test` passed 201 tests with 0 failures.
+- Syntax: `node --check` passed for the shared client, all eleven migrated page scripts, both changed test files, and the publication manifest.
+- Cloudflare dry-run: `npm run cf:check` exited 0, prepared 100 manifest-approved files, Wrangler `4.95.0` read 107 generated asset-directory files, and stopped at `--dry-run` without deployment.
+- Dependency audit: `npm audit --audit-level=high` exited 1 with the known 6 advisories (1 low, 5 high) in Multer and the Wrangler development chain. No dependency or lockfile changed, no automatic fix was applied, and this browser migration introduced no dependency.
+- Active-runtime scan: the 25 JS/HTML files selected from the canonical publication manifest plus explicit member/Admin routes contain no retired auth key, browser Authorization/Bearer construction, or auth local/session storage outside the shared cleanup inventory. The broad root scan found only an unreferenced inactive rewrite utility plus legitimate server-to-provider Authorization headers; neither is browser runtime.
+- `git diff --check` passed; pre-existing untracked user assets remained outside the task scope.
+- Independent read-only review: Approved with no remaining Critical, Important, or Minor finding after the redirect, canonical URL, stale bootstrap, and residual Class Detail findings were fixed and re-probed.
+
+Unresolved risks:
+- CSRF is intentionally memory-only. A refresh or separate tab must bootstrap its own fresh token before an authenticated mutation; no token is recovered from browser storage.
+- Cloudflare static preview continues to fail closed for private page/API families. Member and Admin cookie flows require the approved dynamic backend path and exact configured application Origin.
+- The tracked but unreferenced `rewrite_admin.js` one-off rewrite utility still contains obsolete Admin auth text. It is not published, imported, package-invoked, or part of active browser runtime; it must not be run without separate cleanup/review.
+- The 5 known high dependency advisories remain assigned to dependency hardening.
+
 ## 2026-07-18 - Phase 0B Task 3 Origin, CSRF, CORS, and authentication limits
 
 Scope:

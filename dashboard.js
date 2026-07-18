@@ -1,6 +1,17 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
-const SESSION_KEY = "aix_member_session";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
 
 const memberAvatar = document.getElementById("memberAvatar");
 const memberName = document.getElementById("memberName");
@@ -38,30 +49,6 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3200);
-}
-
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
-      ...(options.headers || {})
-    }
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || "Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
-  }
-  return response.json();
-}
-
-function requireToken() {
-  if (!token()) window.location.replace("/index.html?auth=login");
 }
 
 function courseStartUrl(courseId) {
@@ -490,7 +477,6 @@ function scheduleStatus(startsAt, endsAt) {
 function renderDashboard(data) {
   const { member, payment, courses, resources = [], schedule = [], notifications = [], payments = [], progress = [] } = data;
   mergeServerProgress(progress);
-  localStorage.setItem(SESSION_KEY, JSON.stringify(member));
 
   memberAvatar.src = member.avatarUrl || "AiX%20logo/iconblack.png";
   memberName.textContent = member.displayName || member.name || "AiX Member";
@@ -541,14 +527,17 @@ function renderDashboard(data) {
 }
 
 async function loadDashboard() {
-  requireToken();
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest("/api/member/dashboard");
     renderDashboard(data);
   } catch (error) {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(SESSION_KEY);
-    window.location.replace("/index.html?auth=login");
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
+    showToast(error.message || "ไม่สามารถโหลด Dashboard ได้");
   }
 }
 
@@ -558,6 +547,7 @@ payBtn?.addEventListener("click", () => {
 
 async function markNotificationRead(id) {
   try {
+    await bootstrapMemberSession();
     await apiRequest(`/api/member/notifications/${encodeURIComponent(id)}/read`, { method: "POST" });
     const data = await apiRequest("/api/member/dashboard");
     renderDashboard(data);
@@ -567,9 +557,13 @@ async function markNotificationRead(id) {
 }
 
 async function logout() {
-  await apiRequest("/api/auth/logout", { method: "POST" }).catch(() => {});
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(SESSION_KEY);
+  try {
+    await bootstrapMemberSession();
+    await apiRequest("/api/auth/logout", { method: "POST" });
+  } catch (error) {
+    // Clearing the in-memory session is still required when the server is unavailable.
+  }
+  memberApi.clear();
   window.location.replace("/index.html");
 }
 

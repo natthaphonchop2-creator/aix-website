@@ -1,6 +1,17 @@
-const API_ORIGIN = window.location.origin;
-const TOKEN_KEY = "aix_member_token";
-const SESSION_KEY = "aix_member_session";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
+
+let memberSessionPromise = null;
+
+function bootstrapMemberSession() {
+  if (!memberSessionPromise) {
+    memberSessionPromise = memberApi.bootstrap().catch((error) => {
+      memberSessionPromise = null;
+      throw error;
+    });
+  }
+  return memberSessionPromise;
+}
 
 const paymentMember = document.getElementById("paymentMember");
 const paymentAmount = document.getElementById("paymentAmount");
@@ -25,26 +36,6 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3200);
-}
-
-function token() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
-      ...(options.headers || {})
-    }
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || "ไม่สามารถเชื่อมต่อระบบได้");
-  }
-  return response.json();
 }
 
 function selectedPaymentMethod() {
@@ -86,13 +77,9 @@ function setOtpBusy(sending = false, verifying = false) {
 }
 
 async function loadPayment() {
-  if (!token()) {
-    window.location.replace("/index.html?auth=login");
-    return;
-  }
   try {
+    await bootstrapMemberSession();
     const data = await apiRequest("/api/member/dashboard");
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data.member));
     if (data.member.paymentStatus === "paid") {
       window.location.replace("/dashboard");
       return;
@@ -134,9 +121,12 @@ async function loadPayment() {
       firstAvailable?.closest(".payment-method")?.classList.add("active");
     }
   } catch (error) {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(SESSION_KEY);
-    window.location.replace("/index.html?auth=login");
+    if (error.status === 401) {
+      memberApi.clear();
+      window.location.replace("/index.html?auth=login");
+      return;
+    }
+    showToast(error.message || "ไม่สามารถโหลดข้อมูลชำระเงินได้");
   }
 }
 
@@ -162,6 +152,7 @@ confirmPaymentBtn?.addEventListener("click", async () => {
   confirmPaymentBtn.disabled = true;
   confirmPaymentBtn.textContent = "กำลังเปิด Stripe...";
   try {
+    await bootstrapMemberSession();
     const result = await apiRequest("/api/payments/stripe/checkout", {
       method: "POST",
       body: JSON.stringify({ paymentMethod: selectedPaymentMethod() })
@@ -192,6 +183,7 @@ paymentSendOtpBtn?.addEventListener("click", async () => {
   }
   try {
     setOtpBusy(true, false);
+    await bootstrapMemberSession();
     const result = await apiRequest("/api/member/phone/otp/send", {
       method: "POST",
       body: JSON.stringify({ phone })
@@ -221,13 +213,13 @@ paymentVerifyOtpBtn?.addEventListener("click", async () => {
   }
   try {
     setOtpBusy(false, true);
+    await bootstrapMemberSession();
     const result = await apiRequest("/api/member/phone/otp/verify", {
       method: "POST",
       body: JSON.stringify({ phone, code })
     });
     if (result.member) {
       currentMember = result.member;
-      localStorage.setItem(SESSION_KEY, JSON.stringify(result.member));
     }
     phoneVerified = true;
     setPaymentOtpStatus("ยืนยันเบอร์โทรเรียบร้อย", "verified");

@@ -200,8 +200,8 @@ const detailCourses = {
 };
 
 const fallbackCourse = detailCourses["manus-ai"];
-const API_ORIGIN = window.location.protocol === "file:" ? "http://localhost:3000" : window.location.origin;
-const AUTH_TOKEN_KEY = "aix_member_token";
+const memberApi = window.AiXApi.createClient({ sessionPath: "/api/auth/me" });
+const apiRequest = (path, options = {}) => memberApi.request(path, options);
 let currentMember = null;
 
 const aiBrandCatalog = {
@@ -228,21 +228,13 @@ function renderBrandLogo(name, compact = false) {
   `;
 }
 
-async function apiRequest(path) {
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
-  const response = await fetch(`${API_ORIGIN}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}
-  });
-  if (!response.ok) throw new Error("api unavailable");
-  return response.json();
-}
-
 async function restoreMemberSession() {
   try {
-    const result = await apiRequest("/api/auth/me");
+    const result = await memberApi.bootstrap();
+    if (memberApi.csrfToken !== result.csrfToken) return;
     currentMember = result.member;
   } catch (error) {
-    currentMember = null;
+    if (!memberApi.csrfToken) currentMember = null;
   }
 }
 
@@ -282,9 +274,7 @@ function getCourse() {
 async function loadCourseFromDatabase() {
   const id = getCourseId();
   try {
-    const response = await fetch(`${API_ORIGIN}/api/platform/courses/${encodeURIComponent(id)}?_=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error("course api unavailable");
-    return await response.json();
+    return await apiRequest(`/api/platform/courses/${encodeURIComponent(id)}?_=${Date.now()}`, { cache: "no-store" });
   } catch (error) {
     return getCourse();
   }
