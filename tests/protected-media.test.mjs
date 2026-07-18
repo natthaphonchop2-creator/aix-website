@@ -477,6 +477,65 @@ test("media authorization is cookie-only and enforces access, visibility, and co
   })).status, 200);
 });
 
+test("member dashboard hides unfeatured-course resources while preserving global and featured resources", async (t) => {
+  const server = await startTestServer();
+  t.after(() => server.stop());
+  const member = await paidMember(server, "dashboard-exposure@example.com");
+  const admin = await adminSession(server);
+  const featuredCourseId = firstCourseId(server);
+
+  withDatabase(server, (database) => database.prepare(
+    "INSERT INTO courses (id, name, featured) VALUES ('dashboard_hidden_course', 'Dashboard Hidden Course', 0)"
+  ).run());
+
+  await insertResource(server, {
+    id: "dashboard_global_resource",
+    filename: "dashboard-global.pdf"
+  });
+  await insertResource(server, {
+    id: "dashboard_featured_resource",
+    courseId: featuredCourseId,
+    filePath: "",
+    write: false,
+    url: "https://example.com/dashboard-featured.pdf"
+  });
+  await insertResource(server, {
+    id: "dashboard_hidden_local_resource",
+    courseId: "dashboard_hidden_course",
+    filename: "dashboard-hidden-local.pdf"
+  });
+  await insertResource(server, {
+    id: "dashboard_hidden_external_resource",
+    courseId: "dashboard_hidden_course",
+    filePath: "",
+    write: false,
+    url: "https://example.com/dashboard-hidden-external.pdf"
+  });
+
+  const dashboardResponse = await fetch(`${server.origin}/api/member/dashboard`, {
+    headers: { Cookie: member.cookie }
+  });
+  assert.equal(dashboardResponse.status, 200);
+  const dashboard = await dashboardResponse.json();
+  const memberResourceIds = new Set(dashboard.resources.map((resource) => resource.id));
+  assert.equal(memberResourceIds.has("dashboard_global_resource"), true);
+  assert.equal(memberResourceIds.has("dashboard_featured_resource"), true);
+  assert.equal(memberResourceIds.has("dashboard_hidden_local_resource"), false);
+  assert.equal(memberResourceIds.has("dashboard_hidden_external_resource"), false);
+
+  const adminResponse = await fetch(`${server.origin}/api/admin/resources`, {
+    headers: { Cookie: admin.cookie }
+  });
+  assert.equal(adminResponse.status, 200);
+  const adminResources = await adminResponse.json();
+  const hiddenLocal = adminResources.find((resource) => resource.id === "dashboard_hidden_local_resource");
+  const hiddenExternal = adminResources.find((resource) => resource.id === "dashboard_hidden_external_resource");
+  assert.ok(hiddenLocal);
+  assert.equal(hiddenLocal.url, "/api/media/resources/dashboard_hidden_local_resource");
+  assert.ok(hiddenExternal);
+  assert.equal(hiddenExternal.url, "https://example.com/dashboard-hidden-external.pdf");
+});
+
 test("GET and HEAD media delivery implement the complete range and zero-size contract", async (t) => {
   const server = await startTestServer();
   t.after(() => server.stop());

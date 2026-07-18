@@ -4,6 +4,34 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0C Task 2 review follow-up: hide unfeatured course resources
+
+Scope:
+- Fixed the formal Task 2 review finding in `/api/member/dashboard`: an active member now receives global member resources (`courseId = ''`) plus resources joined to a currently featured course, matching protected-media delivery semantics. Resources assigned to an unfeatured or missing course are omitted before their metadata or external URL is projected.
+- Kept the Admin resource inventory unchanged so an authenticated Admin can still manage and preview both local uploads and external links assigned to unfeatured courses.
+- Added an isolated integration regression covering an unfeatured local upload and external URL, Admin visibility for both, and preservation of explicit global and featured-course resources.
+
+Version:
+- `1.0.1` unchanged. No dependency or lockfile changed.
+
+Changed files:
+- `server.js`
+- `tests/protected-media.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Focused RED: `node --test --test-name-pattern='member dashboard hides unfeatured-course resources' tests/protected-media.test.mjs` failed 0 of 1 at the hidden-local assertion because the dashboard returned the unfeatured resource (`true !== false`).
+- Focused GREEN: the same command passed 1 test with 0 failures after the dashboard query-only fix.
+- Protected-media suite: `node --test tests/protected-media.test.mjs` passed 15 tests with 0 failures.
+- Named security suite: `npm run test:security` passed 213 tests with 0 failures.
+- Full regression: `npm test` passed 245 tests with 0 failures.
+- Cloudflare publication dry-run: `npm run cf:check` prepared 100 manifest-approved assets, read 107 files, and exited successfully at `wrangler deploy --dry-run`; no deployment occurred.
+- Production dependency audit: `npm audit --omit=dev` exited 0 with `found 0 vulnerabilities`.
+- No dependency change, audit fix, deploy, push, pull request, external provider call, or production query was performed. Pre-existing untracked user files remained outside the task scope.
+
+Unresolved risks:
+- No new residual risk was introduced. The protected-media architecture and operating assumptions recorded in the main Task 2 entry remain unchanged.
+
 ## 2026-07-18 - Phase 0C Task 2 protected member media and opaque upload projections
 
 Scope:

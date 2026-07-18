@@ -2529,9 +2529,10 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
     : [];
   const resources = access.active
     ? db.prepare(`
-        SELECT * FROM member_resources
-        WHERE visibility = 'members'
-        ORDER BY sortOrder ASC, createdAt DESC
+        SELECT r.* FROM member_resources r
+        LEFT JOIN courses c ON c.id = r.courseId AND c.featured = 1
+        WHERE r.visibility = 'members' AND (r.courseId = '' OR c.id IS NOT NULL)
+        ORDER BY r.sortOrder ASC, r.createdAt DESC
       `).all().map(memberResource)
     : [];
   const schedule = access.active ? getUpcomingSchedules().slice(0, 8) : [];
