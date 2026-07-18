@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/*.test.mjs",
-    "test:security": "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs",
+    "test:security": "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs",
     "cf:prepare": "node scripts/prepare-cloudflare-assets.cjs",
     "cf:dev": "wrangler dev",
     "cf:check": "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"",

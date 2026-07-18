@@ -4,6 +4,45 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 5 real authentication integration and abuse proof
+
+Scope:
+- Added real child-server integration coverage for member registration with explicit consent, password login, passwordless-login denial, cookie-only authentication, session-bound CSRF, and the recursive absence of `token`, `authToken`, `adminToken`, `sessionToken`, `accessToken`, `refreshToken`, `idToken`, `jwt`, and `bearerToken` response fields at every object/array depth. Test-mode member and Admin cookies are checked for exact lifetime/order, `HttpOnly`, `Path=/`, expected `SameSite`, no `Domain`, and no `Secure`.
+- Proved that a retired `Authorization: Bearer` header is rejected both alone and when paired with a valid `aix_member_session`; the retired `aix_session` cookie is denied and expired; and a browser token field in a login body is rejected. No bearer-like response credential is accepted as a substitute for the HttpOnly session cookie.
+- Exercised the complete member logout denial matrix over HTTP: missing Origin, missing CSRF, wrong CSRF, another session's CSRF, and `https://evil.invalid` each return `403`. The member session remains valid after every denied attempt; the exact Origin plus matching session CSRF returns `200` with exactly two ordered host-only expiration headers for `aix_member_session` and the retired `aix_session`.
+- Verified the retired `/api/auth/signup` and `/api/auth/login` endpoints return `410`, and a fresh Admin limiter returns five `401` responses followed by a sixth `429` with draft-8 `RateLimit`/`RateLimit-Policy` values, no legacy `X-RateLimit-*` headers, and no `ERR_ERL_` diagnostic.
+- Exercised suspension through the real flow: register a member, perform a real Admin password login, restore the Admin session and CSRF, update that member to `suspended`, then prove both the existing member cookie and a correct password login return `401`. The test harness uses only its isolated local database and loopback server; no Google, SMS, Stripe, Supabase, production, or other provider request is made.
+- Added the integration suite to the exact named `test:security` command and updated the package-script publication contract. No `server.js` or API route-policy change was needed because the new behavioral tests found no implementation defect.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `tests/auth-integration.test.mjs`
+- `package.json`
+- `tests/cloudflare-publication.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Initial behavioral run: `node --test tests/auth-integration.test.mjs` passed 4 tests with 0 failures on the existing server implementation. This was a valid no-defect result rather than an invented server failure.
+- Script-contract RED: the selected `cloudflare-publication` package-script test failed 0 of 1 with `ERR_ASSERTION` because the actual `test:security` string ended at `tests/client-auth-contract.test.mjs` while the expected string also included `tests/auth-integration.test.mjs`.
+- Minimal GREEN: after appending only the new integration path to `package.json`, the integration suite passed 4 of 4 and the selected package-script contract passed 1 of 1. The later valid-cookie-plus-bearer and cross-Origin/session-preservation additions also passed 4 of 4 immediately, confirming no `server.js` fix was justified.
+- Independent-review regression RED: after adding a nested response-field guard proof, `node --test tests/auth-integration.test.mjs` ran 5 tests with 4 passing and 1 failing at `Missing expected exception (AssertionError): token`; this demonstrated that the original top-level-only helper could pass vacuously. The exact retired-cookie and logout-cookie-set checks already passed against the intended two-cookie server behavior.
+- Review GREEN: the response guard now recursively inspects every object and array and reports the full response path; the focused integration suite passed 5 of 5. Logout assertions compare the complete ordered `Set-Cookie` arrays, so missing, duplicate, reordered, or extra cookies/attributes fail.
+- Focused authentication gate: `node --test tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/api-route-policy.test.mjs` passed 155 tests with 0 failures.
+- Named security suite: `npm run test:security` passed 180 tests with 0 failures.
+- Full regression: `npm test` passed 212 tests with 0 failures.
+- Syntax and diff: `node --check` passed for both changed test files, and `git diff --check` passed.
+- Local compatibility snapshot: the required read-only `node --no-warnings` SQLite command printed only `{"inaccessiblePasswordAccounts":2}`. No local row was mutated or identified. Fresh integration fixtures use isolated temporary test databases and are not reported as the repository compatibility count.
+- Dependency audit: `npm audit --audit-level=high` exited 1 with the known 6 advisories (1 low, 5 high) in Multer and the Wrangler development chain. No dependency, lockfile, or automatic audit fix was applied.
+- No external provider call, production query, deployment, or other external-state mutation was performed. Pre-existing untracked user files remained outside the task scope.
+- Independent read-only review: the first pass found the top-level-only bearer-field guard and permissive logout cookie-set check as two Important issues. After the focused RED/GREEN fixes, the follow-up verdict was Approved with no remaining Critical, Important, or Minor finding; `server.js` and `tests/api-route-policy.test.mjs` remained unchanged.
+
+Unresolved risks:
+- The two locally counted members without either a password hash or Google subject remain a compatibility/recovery follow-up; this task intentionally did not inspect identifiers or alter account records.
+- The 5 known high dependency advisories remain assigned to dependency hardening.
+- This gate proves the local Node/SQLite authentication path. Production deployment and production-data validation were not authorized or performed.
+
 ## 2026-07-18 - Phase 0B Task 4 formal review logout follow-up
 
 Scope:
