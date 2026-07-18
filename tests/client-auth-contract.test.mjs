@@ -292,6 +292,162 @@ test("a stale bootstrap cannot clear or overwrite a later login token", async ()
   }
 });
 
+test("logout retries one CSRF rejection with a refreshed session token before clearing", async () => {
+  const observed = [];
+  const responses = [
+    makeResponse({ status: 403, body: JSON.stringify({ error: "stale csrf" }) }),
+    makeResponse({ body: JSON.stringify({ member: { id: "m1" }, csrfToken: "fresh-logout-token" }) }),
+    makeResponse({ status: 204, type: "", body: "" })
+  ];
+  const { window } = await loadClient({
+    fetchImpl: async (path, options) => {
+      observed.push({ path, options });
+      return responses.shift();
+    }
+  });
+  const client = window.AiXApi.createClient({ sessionPath: MEMBER_SESSION_PATH });
+  client.adopt({ csrfToken: "stale-logout-token" });
+
+  assert.equal(await client.logout("/api/auth/logout"), true);
+  assert.equal(client.csrfToken, "");
+  assert.deepEqual(observed.map(({ path, options }) => [new URL(path).pathname, options.method]), [
+    ["/api/auth/logout", "POST"],
+    [MEMBER_SESSION_PATH, "GET"],
+    ["/api/auth/logout", "POST"]
+  ]);
+  assert.equal(observed[0].options.headers.get("X-CSRF-Token"), "stale-logout-token");
+  assert.equal(observed[2].options.headers.get("X-CSRF-Token"), "fresh-logout-token");
+});
+
+test("logout keeps authenticated client state on network, server, and repeated CSRF failures", async () => {
+  for (const failure of [
+    { name: "network", responses: [new Error("offline")], expectedStatus: 0, expectedToken: "keep-token" },
+    { name: "server", responses: [makeResponse({ status: 503 })], expectedStatus: 503, expectedToken: "keep-token" },
+    {
+      name: "repeated csrf",
+      responses: [
+        makeResponse({ status: 403 }),
+        makeResponse({ body: JSON.stringify({ member: { id: "m1" }, csrfToken: "refreshed-token" }) }),
+        makeResponse({ status: 403 })
+      ],
+      expectedStatus: 403,
+      expectedToken: "refreshed-token"
+    }
+  ]) {
+    const responses = [...failure.responses];
+    const { window } = await loadClient({
+      fetchImpl: async () => {
+        const response = responses.shift();
+        if (response instanceof Error) throw response;
+        return response;
+      }
+    });
+    const client = window.AiXApi.createClient({ sessionPath: MEMBER_SESSION_PATH });
+    client.adopt({ csrfToken: "keep-token" });
+
+    await assert.rejects(() => client.logout("/api/auth/logout"), (error) => {
+      assert.equal(error.status, failure.expectedStatus, failure.name);
+      return true;
+    });
+    assert.equal(client.csrfToken, failure.expectedToken, failure.name);
+  }
+});
+
+test("logout treats confirmed 401 as terminal but rejects a stale logout refresh", async () => {
+  for (const setup of [
+    {
+      name: "logout endpoint",
+      token: "active-token",
+      responses: [makeResponse({ status: 401 })],
+      expectedPaths: ["/api/auth/logout"]
+    },
+    {
+      name: "session bootstrap",
+      token: "",
+      responses: [makeResponse({ status: 401 })],
+      expectedPaths: [MEMBER_SESSION_PATH]
+    }
+  ]) {
+    const responses = [...setup.responses];
+    const paths = [];
+    const { window } = await loadClient({
+      fetchImpl: async (path) => {
+        paths.push(new URL(path).pathname);
+        return responses.shift();
+      }
+    });
+    const client = window.AiXApi.createClient({ sessionPath: MEMBER_SESSION_PATH });
+    if (setup.token) client.adopt({ csrfToken: setup.token });
+    assert.equal(await client.logout("/api/auth/logout"), true, setup.name);
+    assert.equal(client.csrfToken, "", setup.name);
+    assert.deepEqual(paths, setup.expectedPaths, setup.name);
+  }
+
+  let resolveRefresh;
+  let signalRefresh;
+  const refreshStarted = new Promise((resolve) => { signalRefresh = resolve; });
+  let logoutCalls = 0;
+  const { window } = await loadClient({
+    fetchImpl: async (path) => {
+      const pathname = new URL(path).pathname;
+      if (pathname === "/api/auth/logout") {
+        logoutCalls += 1;
+        return makeResponse({ status: 403 });
+      }
+      signalRefresh();
+      return new Promise((resolve) => { resolveRefresh = resolve; });
+    }
+  });
+  const client = window.AiXApi.createClient({ sessionPath: MEMBER_SESSION_PATH });
+  client.adopt({ csrfToken: "old-session-token" });
+  const pendingLogout = client.logout("/api/auth/logout");
+  await refreshStarted;
+  client.adopt({ csrfToken: "new-login-token" });
+  resolveRefresh(makeResponse({ body: JSON.stringify({ member: { id: "old" }, csrfToken: "old-refresh-token" }) }));
+  await assert.rejects(() => pendingLogout, (error) => {
+    assert.equal(error.status, 409);
+    return true;
+  });
+  assert.equal(client.csrfToken, "new-login-token");
+  assert.equal(logoutCalls, 1, "stale logout must not retry against a newer login lifecycle");
+});
+
+test("logout checks its epoch again before a retry can target a concurrent login", async () => {
+  let logoutCalls = 0;
+  const sentTokens = [];
+  const { window } = await loadClient({
+    fetchImpl: async (path, options) => {
+      const pathname = new URL(path).pathname;
+      if (pathname === MEMBER_SESSION_PATH) {
+        return makeResponse({ body: JSON.stringify({ member: { id: "old" }, csrfToken: "refreshed-old-token" }) });
+      }
+      logoutCalls += 1;
+      sentTokens.push(options.headers.get("X-CSRF-Token"));
+      return logoutCalls === 1 ? makeResponse({ status: 403 }) : makeResponse({ status: 204, type: "", body: "" });
+    }
+  });
+  const client = window.AiXApi.createClient({ sessionPath: MEMBER_SESSION_PATH });
+  client.adopt({ csrfToken: "old-session-token" });
+
+  const pendingLogout = client.logout("/api/auth/logout");
+  const concurrentLogin = (async () => {
+    for (let turns = 0; turns < 100 && client.csrfToken !== "refreshed-old-token"; turns += 1) {
+      await Promise.resolve();
+    }
+    assert.equal(client.csrfToken, "refreshed-old-token", "logout refresh must complete before the concurrent login");
+    client.adopt({ csrfToken: "new-login-token" });
+  })();
+
+  await concurrentLogin;
+  await assert.rejects(() => pendingLogout, (error) => {
+    assert.equal(error.status, 409);
+    return true;
+  });
+  assert.equal(logoutCalls, 1, "retry must stop before fetch when its epoch is stale");
+  assert.deepEqual(sentTokens, ["old-session-token"]);
+  assert.equal(client.csrfToken, "new-login-token");
+});
+
 test("request adopts CSRF only from successful responses", async () => {
   const responses = [
     makeResponse({ body: JSON.stringify({ ok: true, csrfToken: "login-token" }) }),
@@ -457,7 +613,7 @@ test("the complete active browser runtime has no legacy auth implementation outs
   }
 });
 
-test("homepage auth lifecycle adopts server sessions and clears CSRF on logout", async () => {
+test("homepage auth lifecycle adopts server sessions and confirms logout before guest UI", async () => {
   const source = await readFile(join(ROOT, "script.js"), "utf8");
   const setMember = sourceSlice(source, "function setMember(", "function setAuthActionHidden(");
   assert.doesNotMatch(setMember, /localStorage|token/i);
@@ -469,9 +625,11 @@ test("homepage auth lifecycle adopts server sessions and clears CSRF on logout",
   assert.match(restore, /setMember\([^)]*\.member\)/);
 
   const logout = sourceSlice(source, "async function logoutMember()", "async function restoreSession()");
-  assert.match(logout, /memberApi\.bootstrap\(\)/);
-  assert.match(logout, /apiRequest\(["']\/api\/auth\/logout["']/);
-  assert.ok(logout.indexOf("memberApi.clear()") > logout.indexOf("/api/auth/logout"));
+  assert.match(logout, /await\s+memberApi\.logout\(["']\/api\/auth\/logout["']\)/);
+  assert.doesNotMatch(logout, /\.catch\(/);
+  assert.match(logout, /ออกจากระบบไม่สำเร็จ/);
+  assert.ok(logout.indexOf("setMember(null)") > logout.indexOf("ออกจากระบบไม่สำเร็จ"));
+  assert.ok(logout.indexOf("ลงชื่อออกจากระบบแล้ว") > logout.indexOf("setMember(null)"));
 
   for (const endpoint of ["/api/members/register", "/api/members/login", "/api/auth/google", "/api/auth/google-access-token"]) {
     const endpointIndex = source.indexOf(endpoint);
@@ -479,6 +637,49 @@ test("homepage auth lifecycle adopts server sessions and clears CSRF on logout",
     const nextAdopt = source.indexOf("memberApi.adopt(", endpointIndex);
     assert.ok(nextAdopt > endpointIndex, `${endpoint}: response must be adopted`);
   }
+});
+
+test("all logout surfaces preserve authenticated UI on failure and transition only after confirmation", async () => {
+  const contracts = [
+    ["script.js", "async function logoutMember()", "async function restoreSession()", "memberApi.logout", "setMember(null)", "showToast"],
+    ["dashboard.js", "async function logout()", "function setActiveDashboardNav(", "memberApi.logout", "window.location.replace", "showToast"],
+    ["tools-box.js", "async function logout()", "toolsMobileMenu?.addEventListener", "memberApi.logout", "window.location.replace", "showToast"],
+    ["admin.js", "async function adminLogout()", "async function restoreAdminSession()", "adminApi.logout", "adminLoggedIn = false", "adminToast"]
+  ];
+
+  for (const [filename, start, end, requestMarker, terminalMarker, errorMarker] of contracts) {
+    const source = await readFile(join(ROOT, filename), "utf8");
+    const logout = sourceSlice(source, start, end);
+    const request = logout.indexOf(requestMarker);
+    const failureCopy = logout.indexOf("ออกจากระบบไม่สำเร็จ");
+    const terminal = logout.indexOf(terminalMarker);
+    assert.notEqual(request, -1, `${filename}: shared logout request`);
+    assert.notEqual(failureCopy, -1, `${filename}: explicit logout failure`);
+    assert.match(logout, new RegExp(`${errorMarker}\\(`), `${filename}: visible failure feedback`);
+    assert.match(logout.slice(failureCopy, terminal), /return(?:\s+false)?;/, `${filename}: failure must stop terminal UI`);
+    assert.ok(request < failureCopy, `${filename}: request precedes failure branch`);
+    assert.ok(failureCopy < terminal, `${filename}: terminal UI follows guarded failure return`);
+    assert.doesNotMatch(logout, /\.catch\(/, `${filename}: logout errors must not be swallowed`);
+  }
+});
+
+test("admin password leaves the DOM immediately after capture and whenever login UI is shown", async () => {
+  const source = await readFile(join(ROOT, "admin.js"), "utf8");
+  const showLogin = sourceSlice(source, "function showAdminLogin()", "function showAdminLayout()");
+  const showLayout = sourceSlice(source, "function showAdminLayout()", "async function adminFetch(");
+  const login = sourceSlice(source, "async function adminLogin()", "async function adminLogout()");
+  assert.match(showLogin, /adminPassword\.value\s*=\s*['"]["']/);
+  assert.match(showLayout, /adminPassword\.value\s*=\s*['"]["']/);
+
+  const capture = login.indexOf("adminPassword.value");
+  const clear = login.indexOf("adminPassword.value = ''", capture + 1);
+  const request = login.indexOf("adminApi.request(");
+  assert.notEqual(capture, -1, "capture password once");
+  assert.notEqual(clear, -1, "clear password immediately");
+  assert.notEqual(request, -1, "send login request");
+  assert.ok(capture < clear && clear < request, "password must leave the DOM before the request awaits");
+  assert.match(login, /(?:password:\s*password\b|\bpassword\s*\})/);
+  assert.doesNotMatch(login.slice(request), /password:\s*adminPassword\.value/);
 });
 
 test("admin restore cannot overwrite a newer login or logout lifecycle", async () => {

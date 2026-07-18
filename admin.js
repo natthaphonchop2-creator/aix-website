@@ -38,11 +38,13 @@ const adminEmail = document.getElementById('adminEmail');
 const adminPassword = document.getElementById('adminPassword');
 
 function showAdminLogin() {
+  adminPassword.value = '';
   document.getElementById('adminLayout')?.style.setProperty('display', 'none');
   document.getElementById('loginPage')?.style.setProperty('display', '');
 }
 
 function showAdminLayout() {
+  adminPassword.value = '';
   document.getElementById('loginPage')?.style.setProperty('display', 'none');
   document.getElementById('adminLayout')?.style.setProperty('display', 'flex');
 }
@@ -74,10 +76,12 @@ async function adminFetch(url, options = {}) {
 }
 
 async function adminLogin() {
+  const password = adminPassword.value;
+  adminPassword.value = '';
   try {
     const data = await adminApi.request('/api/admin/login', {
       method: 'POST',
-      body: JSON.stringify({ email: adminEmail.value.trim(), password: adminPassword.value })
+      body: JSON.stringify({ email: adminEmail.value.trim(), password })
     });
     adminApi.adopt(data);
     adminLoggedIn = true;
@@ -90,11 +94,15 @@ async function adminLogin() {
 }
 
 async function adminLogout() {
-  if (!adminApi.csrfToken) await adminApi.bootstrap().catch(() => null);
-  await adminApi.request('/api/admin/logout', { method: 'POST' }).catch(() => null);
-  adminApi.clear();
+  try {
+    await adminApi.logout('/api/admin/logout');
+  } catch (error) {
+    adminToast('❌ ออกจากระบบไม่สำเร็จ ระบบยังคงสถานะเข้าสู่ระบบไว้ กรุณาลองใหม่', 'error');
+    return false;
+  }
   adminLoggedIn = false;
   showAdminLogin();
+  return true;
 }
 
 async function restoreAdminSession() {

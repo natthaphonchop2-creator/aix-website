@@ -4,6 +4,46 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0B Task 4 formal review logout follow-up
+
+Scope:
+- Added one shared `logout(path)` transaction to the cookie/CSRF browser client. A logout becomes terminal only after a `2xx` response or a `401` from the authenticated logout/session check, because those outcomes confirm that the HttpOnly cookie is no longer an authenticated session.
+- A logout `403` now refreshes the session CSRF token without discarding the last usable token, then retries the logout exactly once. Network errors, `5xx`, a second `403`, invalid refresh data, or a stale auth epoch reject the operation while preserving the authenticated client/UI state; no false success is announced.
+- Epoch checks cover the direct logout, session refresh, retry preflight, request completion, and terminal clear. A pending older logout cannot clear state, send a retry against, or transition UI for a newer login lifecycle.
+- Migrated Homepage, Dashboard, Tools Box, and Admin logout handlers to the shared transaction. Each surface now shows an explicit logout failure and returns before guest-state mutation or redirect. Successful member/admin cleanup runs only after the client confirms a terminal outcome.
+- Admin login now copies the password into the request-local value and clears the password DOM field before the first network await, covering both success and failure. Both the logged-in layout and logged-out/login view clear the field again so browser autofill or a restored session cannot leave the secret in a hidden DOM node.
+- This entry supersedes the original Task 4 statement that every failed logout clears local state. Failed logout attempts now intentionally retain authenticated state unless a `401` confirms the session is already unauthenticated.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `aix-api-client.js`
+- `script.js`
+- `dashboard.js`
+- `tools-box.js`
+- `admin.js`
+- `tests/client-auth-contract.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Follow-up RED: `node --test tests/client-auth-contract.test.mjs` ran 21 tests with 15 passing and 6 failing at the intentionally missing client logout transaction, all four unsafe surface handlers, and Admin password lifecycle.
+- Initial client GREEN: the first implementation passed 21 of 21 after one intermediate 20-of-21 run showed only an over-specific source assertion that rejected valid object-property shorthand; accepting both equivalent JavaScript forms restored the intended lifecycle proof without weakening it.
+- Independent-review race RED/GREEN: after the first `403` refresh completed, a concurrent login could adopt a newer token in the microtask gap before the retry. The deterministic target first failed 0 of 1 because the retry was sent (`2 !== 1` logout calls). It passed 1 of 1 after an epoch assertion was added synchronously at the start of the retry request; the proof confirms only the old token was sent, the newer token remained adopted, and no retry reached `fetch`.
+- Final client GREEN: `node --test tests/client-auth-contract.test.mjs` passed 22 tests with 0 failures.
+- Focused GREEN: `node --test tests/client-auth-contract.test.mjs tests/homepage-contract.test.mjs tests/publication-manifest.test.mjs` passed 60 tests with 0 failures.
+- Named security suite: `npm run test:security` passed 175 tests with 0 failures.
+- Full regression: `npm test` passed 207 tests with 0 failures.
+- Syntax: `node --check` passed for the shared client, four changed page scripts, and client contract.
+- Cloudflare dry-run: `npm run cf:check` exited 0, prepared 100 manifest-approved files, Wrangler `4.95.0` read 107 generated asset-directory files, and stopped at `--dry-run` without deployment.
+- `git diff --check` passed; pre-existing untracked user assets remained outside the task scope.
+- Independent read-only follow-up: Approved with no remaining Critical, Important, or Minor finding after verifying the pre-request epoch guard, deterministic sent-token regression, 22-of-22 client contract, and clean diff.
+
+Unresolved risks:
+- A network or server failure intentionally leaves the authenticated UI visible because the HttpOnly session may still be valid. The explicit error asks the user to retry rather than claiming a logout that the server did not confirm.
+- A `401` from either the authenticated logout endpoint or its session refresh is treated as terminal because the cookie no longer authenticates. Other refresh failures fail closed and retain state.
+- No deployment was performed in this follow-up.
+
 ## 2026-07-18 - Phase 0B Task 4 shared cookie and CSRF browser client
 
 Scope:

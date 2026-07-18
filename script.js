@@ -612,14 +612,18 @@ function updateMemberUi() {
 }
 
 async function logoutMember() {
-  if (!memberApi.csrfToken) await memberApi.bootstrap().catch(() => null);
-  await apiRequest("/api/auth/logout", { method: "POST" }).catch(() => {});
-  memberApi.clear();
+  try {
+    await memberApi.logout("/api/auth/logout");
+  } catch (error) {
+    showToast("ออกจากระบบไม่สำเร็จ ระบบยังคงสถานะเข้าสู่ระบบไว้ กรุณาลองใหม่");
+    return false;
+  }
   state.googleCredential = "";
   state.googleProfile = null;
   setMember(null);
   closeAuthModal();
   showToast("ลงชื่อออกจากระบบแล้ว");
+  return true;
 }
 
 async function restoreSession() {

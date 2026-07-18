@@ -635,13 +635,14 @@ async function loadToolsBox() {
 
 async function logout() {
   try {
-    await bootstrapMemberSession();
-    await apiRequest("/api/auth/logout", { method: "POST" });
+    await memberApi.logout("/api/auth/logout");
   } catch (error) {
-    // Continue with local cleanup when the member session has already expired.
+    showToast("ออกจากระบบไม่สำเร็จ ระบบยังคงสถานะเข้าสู่ระบบไว้ กรุณาลองใหม่");
+    return false;
   }
-  memberApi.clear();
+  memberSessionPromise = null;
   window.location.replace("/index.html");
+  return true;
 }
 
 toolsMobileMenu?.addEventListener("click", () => {

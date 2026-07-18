@@ -558,13 +558,14 @@ async function markNotificationRead(id) {
 
 async function logout() {
   try {
-    await bootstrapMemberSession();
-    await apiRequest("/api/auth/logout", { method: "POST" });
+    await memberApi.logout("/api/auth/logout");
   } catch (error) {
-    // Clearing the in-memory session is still required when the server is unavailable.
+    showToast("ออกจากระบบไม่สำเร็จ ระบบยังคงสถานะเข้าสู่ระบบไว้ กรุณาลองใหม่");
+    return false;
   }
-  memberApi.clear();
+  memberSessionPromise = null;
   window.location.replace("/index.html");
+  return true;
 }
 
 function setActiveDashboardNav(id) {

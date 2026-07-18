@@ -10,6 +10,7 @@
     "aix_members"
   ];
   const GENERIC_ERROR_MESSAGE = "ไม่สามารถเชื่อมต่อระบบได้";
+  const STALE_AUTH_MESSAGE = "สถานะการเข้าสู่ระบบมีการเปลี่ยนแปลง กรุณาลองออกจากระบบอีกครั้ง";
 
   function removeRetiredAuthStorage() {
     let storage;
@@ -187,10 +188,65 @@
       }
     }
 
+    function completeLogout(expectedEpoch) {
+      if (tokenEpoch !== expectedEpoch) throw safeError(409, STALE_AUTH_MESSAGE);
+      clear();
+      return true;
+    }
+
+    async function refreshLogoutSession(expectedEpoch) {
+      const data = await executeRequest(sessionPath, { cache: "no-store" });
+      if (tokenEpoch !== expectedEpoch) throw safeError(409, STALE_AUTH_MESSAGE);
+      if (!data || typeof data.csrfToken !== "string" || !data.csrfToken.trim()) {
+        throw safeError(0);
+      }
+      adopt(data);
+      return tokenEpoch;
+    }
+
+    async function sendLogout(path, expectedEpoch) {
+      if (tokenEpoch !== expectedEpoch) throw safeError(409, STALE_AUTH_MESSAGE);
+      try {
+        await executeRequest(path, { method: "POST" });
+      } catch (error) {
+        if (tokenEpoch !== expectedEpoch) throw safeError(409, STALE_AUTH_MESSAGE);
+        if (error.status === 401) return completeLogout(expectedEpoch);
+        throw error;
+      }
+      return completeLogout(expectedEpoch);
+    }
+
+    async function logout(path) {
+      let logoutEpoch = tokenEpoch;
+      if (!csrfToken) {
+        try {
+          logoutEpoch = await refreshLogoutSession(logoutEpoch);
+        } catch (error) {
+          if (error.status === 401) return completeLogout(logoutEpoch);
+          throw error;
+        }
+      }
+
+      try {
+        return await sendLogout(path, logoutEpoch);
+      } catch (error) {
+        if (error.status !== 403) throw error;
+      }
+
+      try {
+        logoutEpoch = await refreshLogoutSession(logoutEpoch);
+      } catch (error) {
+        if (error.status === 401) return completeLogout(logoutEpoch);
+        throw error;
+      }
+      return sendLogout(path, logoutEpoch);
+    }
+
     return Object.freeze({
       request,
       raw,
       bootstrap,
+      logout,
       adopt,
       clear,
       get csrfToken() {
