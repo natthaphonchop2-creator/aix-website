@@ -68,6 +68,19 @@ function clearedCookieValue(name, sameSite) {
   return `${name}=; Max-Age=0; Path=/; HttpOnly; SameSite=${sameSite}; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }
 
+function assertRateLimitDirective(header, name, expected) {
+  const requested = String(name).toLowerCase();
+  const values = String(header || "")
+    .split(";")
+    .slice(1)
+    .flatMap((segment) => {
+      const match = segment.trim().match(/^([a-z][a-z0-9_-]*)=(-?(?:0|[1-9]\d*))$/i);
+      if (!match || match[1].toLowerCase() !== requested) return [];
+      return [Number(match[2])];
+    });
+  assert.deepEqual(values, [expected], `${requested} directive`);
+}
+
 async function registerMember(server, overrides = {}) {
   const input = {
     firstName: "Integration",
@@ -106,6 +119,25 @@ test("no-bearer response guard rejects credential fields at every nesting depth"
       key
     );
   }
+});
+
+test("rate-limit directive guard rejects numeric prefixes and key suffixes", () => {
+  const falseMatches = [
+    { header: '"ignored"; r=01; t=731', name: "r", expected: 0 },
+    { header: '"ignored"; q=50; w=900', name: "q", expected: 5 },
+    { header: '"ignored"; q=5; w=9000', name: "w", expected: 900 },
+    { header: '"ignored"; xr=0; t=731', name: "r", expected: 0 }
+  ];
+  for (const sample of falseMatches) {
+    assert.throws(
+      () => assertRateLimitDirective(sample.header, sample.name, sample.expected),
+      { name: "AssertionError" },
+      `${sample.name}=${sample.expected}`
+    );
+  }
+  assert.doesNotThrow(() => assertRateLimitDirective('"different label"; r=0; t=417', "r", 0));
+  assert.doesNotThrow(() => assertRateLimitDirective('"different label"; q=5; w=900', "q", 5));
+  assert.doesNotThrow(() => assertRateLimitDirective('"different label"; q=5; w=900', "w", 900));
 });
 
 test("member registration and password login issue only host cookies plus session-bound csrf", async (t) => {
@@ -288,9 +320,9 @@ test("legacy auth stays retired and a fresh admin limiter blocks the sixth faile
     body: JSON.stringify({ email: "owner@example.com", password: "wrong-six" })
   });
   assert.equal(blocked.status, 429);
-  assert.match(blocked.headers.get("ratelimit") || "", /r=0/i);
-  assert.match(blocked.headers.get("ratelimit-policy") || "", /q=5/i);
-  assert.match(blocked.headers.get("ratelimit-policy") || "", /w=900/i);
+  assertRateLimitDirective(blocked.headers.get("ratelimit"), "r", 0);
+  assertRateLimitDirective(blocked.headers.get("ratelimit-policy"), "q", 5);
+  assertRateLimitDirective(blocked.headers.get("ratelimit-policy"), "w", 900);
   for (const name of ["x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset"]) {
     assert.equal(blocked.headers.get(name), null, name);
   }
