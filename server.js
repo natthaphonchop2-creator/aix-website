@@ -26,6 +26,14 @@ const {
 } = require('./security/session-security.cjs');
 const { assertLoginAllowed } = require('./security/account-policy.cjs');
 const { createHttpSecurity } = require('./security/http-security.cjs');
+const {
+  UPLOAD_POLICIES,
+  placeStagedUpload,
+  removeContainedFile,
+  resolveInside,
+  validateStagedUpload
+} = require('./security/upload-policy.cjs');
+const { streamMedia } = require('./security/media-delivery.cjs');
 
 let BetterSqliteDatabase;
 try {
@@ -429,28 +437,85 @@ function isValidGoogleClientId(clientId) {
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 const UPLOAD_ROOT = path.resolve(process.env.UPLOAD_DIR || path.join(DATA_DIR, 'uploads'));
+const STAGING_UPLOAD_DIR = path.join(UPLOAD_ROOT, '.staging');
+const REPLAY_STAGING_DIR = path.join(STAGING_UPLOAD_DIR, 'replays');
+const RESOURCE_STAGING_DIR = path.join(STAGING_UPLOAD_DIR, 'resources');
 const REPLAY_UPLOAD_DIR = path.join(UPLOAD_ROOT, 'replays');
 const RESOURCE_UPLOAD_DIR = path.join(UPLOAD_ROOT, 'resources');
-fs.mkdirSync(REPLAY_UPLOAD_DIR, { recursive: true });
-fs.mkdirSync(RESOURCE_UPLOAD_DIR, { recursive: true });
 
-function safeUploadFilename(originalName = 'upload') {
-  const ext = path.extname(originalName).toLowerCase().replace(/[^a-z0-9.]/g, '');
-  const base = path.basename(originalName, ext).replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'file';
-  return `${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${base}${ext}`;
+function ensurePrivateUploadDirectory(directory) {
+  try {
+    const existing = fs.lstatSync(directory);
+    if (existing.isSymbolicLink() || !existing.isDirectory()) {
+      throw new Error(`Upload path must be an application-owned directory: ${directory}`);
+    }
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+  }
+  fs.chmodSync(directory, 0o700);
 }
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination(req, file, cb) {
-      cb(null, file.fieldname === 'video' ? REPLAY_UPLOAD_DIR : RESOURCE_UPLOAD_DIR);
+for (const directory of [
+  UPLOAD_ROOT,
+  STAGING_UPLOAD_DIR,
+  REPLAY_STAGING_DIR,
+  RESOURCE_STAGING_DIR,
+  REPLAY_UPLOAD_DIR,
+  RESOURCE_UPLOAD_DIR
+]) ensurePrivateUploadDirectory(directory);
+
+function stagingStorage(directory) {
+  return multer.diskStorage({
+    destination(req, file, callback) {
+      callback(null, directory);
     },
-    filename(req, file, cb) {
-      cb(null, safeUploadFilename(file.originalname));
+    filename(req, file, callback) {
+      callback(null, `${Date.now()}-${crypto.randomBytes(16).toString('hex')}.stage`);
     }
-  }),
-  limits: { fileSize: 1024 * 1024 * 800 }
+  });
+}
+
+const COMMON_UPLOAD_LIMITS = Object.freeze({
+  files: 1,
+  fields: 8,
+  parts: 10,
+  fieldNameSize: 100,
+  fieldSize: 16 * 1024,
+  fieldNestingDepth: 0
 });
+const replayUploadParser = multer({
+  storage: stagingStorage(REPLAY_STAGING_DIR),
+  limits: { ...COMMON_UPLOAD_LIMITS, fileSize: UPLOAD_POLICIES.replay.maxBytes }
+}).single('video');
+const resourceUploadParser = multer({
+  storage: stagingStorage(RESOURCE_STAGING_DIR),
+  limits: { ...COMMON_UPLOAD_LIMITS, fileSize: UPLOAD_POLICIES.resource.maxBytes }
+}).single('file');
+
+async function cleanupStagedUpload(file) {
+  if (!file?.path) return;
+  await fs.promises.rm(file.path, { force: true }).catch(() => {});
+}
+
+function guardedUpload(parser) {
+  return (req, res, next) => {
+    req.once('aborted', () => { void cleanupStagedUpload(req.file); });
+    parser(req, res, (error) => {
+      if (!error && !req.aborted) return next();
+      cleanupStagedUpload(req.file).finally(() => {
+        if (res.headersSent || res.writableEnded) return;
+        if (req.aborted) return res.destroy();
+        const status = error?.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+        const message = status === 413 ? 'ไฟล์มีขนาดเกินกำหนด' : 'ข้อมูลอัปโหลดไม่ถูกต้อง';
+        return res.status(status).json({ error: message });
+      });
+    });
+  };
+}
+
+const replayUpload = guardedUpload(replayUploadParser);
+const resourceUpload = guardedUpload(resourceUploadParser);
 
 // ---- Middleware ----
 app.use(cors(HTTP_SECURITY.corsOptions));
@@ -2467,7 +2532,7 @@ app.get('/api/member/dashboard', requireMemberSession, async (req, res) => {
         SELECT * FROM member_resources
         WHERE visibility = 'members'
         ORDER BY sortOrder ASC, createdAt DESC
-      `).all().map(publicResource)
+      `).all().map(memberResource)
     : [];
   const schedule = access.active ? getUpcomingSchedules().slice(0, 8) : [];
   const notifications = access.active ? ensureScheduleNotifications(req.member) : [];
@@ -2820,9 +2885,17 @@ function parseJsonField(value, fallback = []) {
   }
 }
 
+function omitInternalFilePaths(value) {
+  if (Array.isArray(value)) return value.map(omitInternalFilePaths);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => key !== 'filePath')
+    .map(([key, child]) => [key, omitInternalFilePaths(child)]));
+}
+
 function publicCourse(course) {
   if (!course) return null;
-  return {
+  return omitInternalFilePaths({
     id: course.id,
     title: course.name,
     name: course.name,
@@ -2856,7 +2929,7 @@ function publicCourse(course) {
     brandFocus: parseJsonField(course.brandFocus),
     sortOrder: course.sortOrder || 0,
     featured: Boolean(course.featured)
-  };
+  });
 }
 
 function publicCatalogCourse(course) {
@@ -2899,41 +2972,101 @@ function publicCatalogCourse(course) {
 
 function publicReplay(replay) {
   if (!replay) return null;
-  return {
+  return omitInternalFilePaths({
     id: replay.id,
     courseId: replay.courseId,
     courseTitle: replay.courseTitle || replay.courseName || '',
     title: replay.title,
     description: replay.description || '',
-    videoUrl: replay.videoUrl || replay.filePath || '',
-    filePath: replay.filePath || '',
+    videoUrl: safeExternalUrl(replay.videoUrl),
+    mediaUrl: '',
     duration: replay.durationText || '',
     durationText: replay.durationText || '',
     visibility: replay.visibility || 'members',
     sortOrder: replay.sortOrder || 0,
     createdAt: replay.createdAt,
     updatedAt: replay.updatedAt
-  };
+  });
 }
 
 function publicResource(resource) {
   if (!resource) return null;
-  return {
+  return omitInternalFilePaths({
     id: resource.id,
     courseId: resource.courseId || '',
     courseTitle: resource.courseTitle || resource.courseName || '',
     type: resource.type || 'tool',
     title: resource.title,
     description: resource.description || '',
-    url: resource.url || resource.filePath || '',
-    filePath: resource.filePath || '',
+    url: safeExternalUrl(resource.url),
+    mediaUrl: '',
     fileName: resource.fileName || '',
     tags: parseJsonField(resource.tags),
     visibility: resource.visibility || 'members',
     sortOrder: resource.sortOrder || 0,
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt
-  };
+  });
+}
+
+function safeExternalUrl(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  if (/^\/(?!\/)/u.test(text)) {
+    const rawPath = text.split(/[?#]/u, 1)[0];
+    const unsafeSegments = (pathname) => pathname.split('/').some((segment) => segment === '.' || segment === '..');
+    const unsafePath = (pathname) => (
+      /[\\\0\x00-\x1f\x7f]/u.test(pathname) ||
+      unsafeSegments(pathname) ||
+      /^\/uploads(?:\/|$)/iu.test(pathname)
+    );
+    if (unsafePath(rawPath) || /%(?![0-9a-f]{2})/iu.test(rawPath)) return '';
+    let decodedPath = rawPath;
+    try {
+      for (let pass = 0; pass < 2 && /%[0-9a-f]{2}/iu.test(decodedPath); pass += 1) {
+        decodedPath = decodeURIComponent(decodedPath.replace(/%(?![0-9a-f]{2})/giu, '%25'));
+        if (unsafePath(decodedPath)) return '';
+      }
+    } catch {
+      return '';
+    }
+    return text;
+  }
+  try {
+    const url = new URL(text);
+    if (url.protocol !== 'https:' || url.username || url.password) return '';
+    return url.href;
+  } catch {
+    return '';
+  }
+}
+
+function protectedMediaUrl(family, row) {
+  return row?.filePath ? `/api/media/${family}/${encodeURIComponent(row.id)}` : '';
+}
+
+function memberReplay(replay) {
+  const item = publicReplay(replay);
+  if (!item) return null;
+  const mediaUrl = protectedMediaUrl('replays', replay);
+  return { ...item, videoUrl: mediaUrl || safeExternalUrl(replay.videoUrl), mediaUrl };
+}
+
+function adminReplay(replay) {
+  const item = memberReplay(replay);
+  return item ? { ...item, hasUpload: Boolean(replay.filePath) } : null;
+}
+
+function memberResource(resource) {
+  const item = publicResource(resource);
+  if (!item) return null;
+  const mediaUrl = protectedMediaUrl('resources', resource);
+  return { ...item, url: mediaUrl || safeExternalUrl(resource.url), mediaUrl };
+}
+
+function adminResource(resource) {
+  const item = memberResource(resource);
+  return item ? { ...item, hasUpload: Boolean(resource.filePath) } : null;
 }
 
 function publicLearningProgress(progress) {
@@ -3268,14 +3401,113 @@ function ensureScheduleNotifications(member) {
   `).all(member.id).map(publicNotification);
 }
 
-function removeLocalUpload(filePath = '') {
-  if (!filePath || !filePath.startsWith('/uploads/')) return;
-  const relativeUpload = filePath.replace(/^\/uploads\/?/, '');
-  const fullPath = path.resolve(UPLOAD_ROOT, relativeUpload);
-  if (fullPath.startsWith(`${UPLOAD_ROOT}${path.sep}`) && fs.existsSync(fullPath)) {
-    fs.unlinkSync(fullPath);
+function allowMediaSession(req, res, next) {
+  expireRetiredMemberCookieIfPresent(req, res);
+  const adminSession = SESSION_SECURITY.readAdmin(req);
+  if (adminSession && adminSession.email === ADMIN_EMAIL) {
+    req.mediaRole = 'admin';
+    req.authSession = adminSession;
+    return next();
   }
+
+  const memberSession = SESSION_SECURITY.readMember(req);
+  if (!memberSession) return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบ' });
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(memberSession.sub);
+  try {
+    assertLoginAllowed(member);
+  } catch (error) {
+    return res.status(error.status || 401).json({ error: error.message });
+  }
+  if (!memberAccess(member).active) {
+    return res.status(403).json({ error: 'สมาชิกยังไม่มีสิทธิ์เข้าถึงไฟล์นี้' });
+  }
+  req.mediaRole = 'member';
+  req.authSession = memberSession;
+  req.member = member;
+  return next();
 }
+
+function resolveStoredUpload(filePath, family) {
+  const prefix = `/uploads/${family}/`;
+  const value = String(filePath || '');
+  if (!value.startsWith(prefix)) return null;
+  const filename = value.slice(prefix.length);
+  if (
+    !filename || filename === '.' || filename === '..' || filename.includes('/') || filename.includes('\\') ||
+    /%(?:2f|5c)/i.test(filename) || /[\0\x00-\x1f\x7f]/u.test(filename)
+  ) return null;
+  return resolveInside(path.join(UPLOAD_ROOT, family), filename);
+}
+
+function contentTypeFor(filePath) {
+  return ({
+    '.pdf': 'application/pdf',
+    '.zip': 'application/zip',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.csv': 'text/csv; charset=utf-8',
+    '.txt': 'text/plain; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp'
+  })[path.extname(String(filePath || '')).toLowerCase()] || 'application/octet-stream';
+}
+
+function mediaNotFound(error) {
+  return ['ENOENT', 'ENOTDIR', 'ELOOP', 'MEDIA_NOT_FOUND'].includes(error?.code);
+}
+
+app.get('/api/media/replays/:id', allowMediaSession, async (req, res, next) => {
+  const replay = req.mediaRole === 'admin'
+    ? db.prepare('SELECT * FROM course_replays WHERE id = ?').get(req.params.id)
+    : db.prepare(`
+        SELECT r.* FROM course_replays r
+        INNER JOIN courses c ON c.id = r.courseId AND c.featured = 1
+        WHERE r.id = ? AND r.visibility = 'members'
+      `).get(req.params.id);
+  if (!replay?.filePath) return res.sendStatus(404);
+  const absolutePath = resolveStoredUpload(replay.filePath, 'replays');
+  if (!absolutePath) return res.sendStatus(404);
+  try {
+    await streamMedia(req, res, {
+      absolutePath,
+      root: REPLAY_UPLOAD_DIR,
+      contentType: path.extname(replay.filePath).toLowerCase() === '.webm' ? 'video/webm' : 'video/mp4',
+      disposition: 'inline',
+      downloadName: replay.title || path.basename(replay.filePath)
+    });
+  } catch (error) {
+    if (mediaNotFound(error) && !res.headersSent) return res.sendStatus(404);
+    return next(error);
+  }
+});
+
+app.get('/api/media/resources/:id', allowMediaSession, async (req, res, next) => {
+  const resource = req.mediaRole === 'admin'
+    ? db.prepare('SELECT * FROM member_resources WHERE id = ?').get(req.params.id)
+    : db.prepare(`
+        SELECT r.* FROM member_resources r
+        LEFT JOIN courses c ON c.id = r.courseId AND c.featured = 1
+        WHERE r.id = ? AND r.visibility = 'members' AND (r.courseId = '' OR c.id IS NOT NULL)
+      `).get(req.params.id);
+  if (!resource?.filePath) return res.sendStatus(404);
+  const absolutePath = resolveStoredUpload(resource.filePath, 'resources');
+  if (!absolutePath) return res.sendStatus(404);
+  try {
+    await streamMedia(req, res, {
+      absolutePath,
+      root: RESOURCE_UPLOAD_DIR,
+      contentType: contentTypeFor(resource.filePath),
+      disposition: 'attachment',
+      downloadName: resource.fileName || resource.title || path.basename(resource.filePath)
+    });
+  } catch (error) {
+    if (mediaNotFound(error) && !res.headersSent) return res.sendStatus(404);
+    return next(error);
+  }
+});
 
 // ============================================================
 // COURSES API
@@ -3311,12 +3543,12 @@ app.get('/api/courses/:id/content', requireMemberSession, (req, res) => {
     SELECT * FROM course_replays
     WHERE courseId = ? AND visibility = 'members'
     ORDER BY sortOrder ASC, createdAt DESC
-  `).all(publicData.id).map(publicReplay);
+  `).all(publicData.id).map(memberReplay);
   const resources = db.prepare(`
     SELECT * FROM member_resources
     WHERE visibility = 'members' AND (courseId = '' OR courseId = ?)
     ORDER BY CASE WHEN courseId = ? THEN 0 ELSE 1 END, sortOrder ASC, createdAt DESC
-  `).all(publicData.id, publicData.id).map(publicResource);
+  `).all(publicData.id, publicData.id).map(memberResource);
   const schedule = getUpcomingSchedules(publicData.id);
   res.json({
     course: publicData,
@@ -3349,12 +3581,12 @@ app.post('/api/courses/:id/teacher-chat', requireMemberSession, async (req, res)
     SELECT * FROM course_replays
     WHERE courseId = ? AND visibility = 'members'
     ORDER BY sortOrder ASC, createdAt DESC
-  `).all(publicData.id).map(publicReplay);
+  `).all(publicData.id).map(memberReplay);
   const resources = db.prepare(`
     SELECT * FROM member_resources
     WHERE visibility = 'members' AND (courseId = '' OR courseId = ?)
     ORDER BY CASE WHEN courseId = ? THEN 0 ELSE 1 END, sortOrder ASC, createdAt DESC
-  `).all(publicData.id, publicData.id).map(publicResource);
+  `).all(publicData.id, publicData.id).map(memberResource);
   const modules = courseModules(publicData, replays);
   const kb = lessonKnowledgeBase(publicData, modules, resources, req.body?.moduleIndex);
   const mode = ['ask', 'check', 'practice', 'summarize', 'review'].includes(req.body?.mode) ? req.body.mode : 'ask';
@@ -3527,7 +3759,7 @@ function adminListReplays() {
     FROM course_replays r
     LEFT JOIN courses c ON c.id = r.courseId
     ORDER BY r.sortOrder ASC, r.createdAt DESC
-  `).all().map(publicReplay);
+  `).all().map(adminReplay);
 }
 
 function adminListResources() {
@@ -3536,7 +3768,7 @@ function adminListResources() {
     FROM member_resources r
     LEFT JOIN courses c ON c.id = r.courseId
     ORDER BY r.sortOrder ASC, r.createdAt DESC
-  `).all().map(publicResource);
+  `).all().map(adminResource);
 }
 
 function adminListSchedules() {
@@ -3569,190 +3801,335 @@ function validateCourseId(courseId, allowEmpty = false) {
   return course ? id : null;
 }
 
+const REPLAY_BODY_FIELDS = new Set([
+  'courseId', 'title', 'description', 'videoUrl', 'durationText', 'visibility', 'sortOrder'
+]);
+const RESOURCE_BODY_FIELDS = new Set([
+  'courseId', 'type', 'title', 'description', 'url', 'tags', 'visibility', 'sortOrder'
+]);
+const RESOURCE_TYPES = new Set(['tool', 'skill', 'template', 'file', 'link']);
+const ASSET_VISIBILITIES = new Set(['members', 'hidden']);
+
+function uploadInputError(message) {
+  const error = new Error(message);
+  error.status = 400;
+  return error;
+}
+
+function assertUploadBodyFields(body, allowed) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) throw uploadInputError('ข้อมูลอัปโหลดไม่ถูกต้อง');
+  if (Object.values(body).some((value) => typeof value !== 'string')) {
+    throw uploadInputError('ช่องข้อมูลอัปโหลดต้องมีค่าเดียว');
+  }
+  const unknown = Object.keys(body).find((field) => !allowed.has(field));
+  if (unknown) throw uploadInputError('พบช่องข้อมูลอัปโหลดที่ไม่รองรับ');
+}
+
+function uploadText(body, field, fallback = '', maxBytes = 1000, required = false) {
+  const value = body[field] === undefined ? String(fallback || '') : String(body[field] || '').trim();
+  if (Buffer.byteLength(value, 'utf8') > maxBytes) throw uploadInputError(`${field} ยาวเกินกำหนด`);
+  if (required && !value) throw uploadInputError(`กรุณาระบุ ${field}`);
+  return value;
+}
+
+function uploadSort(body, fallback = 0) {
+  if (body.sortOrder === undefined) return Number(fallback || 0);
+  const value = String(body.sortOrder).trim();
+  if (!/^-?\d{1,9}$/u.test(value)) throw uploadInputError('ลำดับไม่ถูกต้อง');
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) throw uploadInputError('ลำดับไม่ถูกต้อง');
+  return parsed;
+}
+
+function uploadVisibility(body, fallback = 'members') {
+  const value = uploadText(body, 'visibility', fallback, 20) || 'members';
+  if (!ASSET_VISIBILITIES.has(value)) throw uploadInputError('ค่าการมองเห็นไม่ถูกต้อง');
+  return value;
+}
+
+function uploadExternalUrl(body, field, fallback = '') {
+  if (body[field] === undefined) return String(fallback || '');
+  const value = uploadText(body, field, '', 2048);
+  if (!value) return '';
+  const safe = safeExternalUrl(value);
+  if (!safe) throw uploadInputError('ลิงก์ต้องเป็น HTTPS หรือ path ภายในระบบที่ปลอดภัย');
+  return safe;
+}
+
+function replayUploadInput(body, existing = null) {
+  assertUploadBodyFields(body, REPLAY_BODY_FIELDS);
+  return {
+    courseId: uploadText(body, 'courseId', existing?.courseId, 160, true),
+    title: uploadText(body, 'title', existing?.title, 240, true),
+    description: uploadText(body, 'description', existing?.description, 8000),
+    videoUrl: uploadExternalUrl(body, 'videoUrl', existing?.videoUrl),
+    durationText: uploadText(body, 'durationText', existing?.durationText, 160),
+    visibility: uploadVisibility(body, existing?.visibility),
+    sortOrder: uploadSort(body, existing?.sortOrder)
+  };
+}
+
+function resourceUploadInput(body, existing = null) {
+  assertUploadBodyFields(body, RESOURCE_BODY_FIELDS);
+  const type = uploadText(body, 'type', existing?.type || 'tool', 40) || 'tool';
+  if (!RESOURCE_TYPES.has(type)) throw uploadInputError('ประเภท Resource ไม่ถูกต้อง');
+  const tags = body.tags === undefined
+    ? parseJsonField(existing?.tags)
+    : normalizeTagsInput(uploadText(body, 'tags', '', 4000));
+  if (tags.length > 20 || tags.some((tag) => Buffer.byteLength(tag, 'utf8') > 80)) {
+    throw uploadInputError('Tags เกินขอบเขตที่รองรับ');
+  }
+  return {
+    courseId: uploadText(body, 'courseId', existing?.courseId, 160),
+    type,
+    title: uploadText(body, 'title', existing?.title, 240, true),
+    description: uploadText(body, 'description', existing?.description, 8000),
+    url: uploadExternalUrl(body, 'url', existing?.url),
+    tags,
+    visibility: uploadVisibility(body, existing?.visibility),
+    sortOrder: uploadSort(body, existing?.sortOrder)
+  };
+}
+
+async function finalizeUpload(file, policy, directory) {
+  if (!file) return null;
+  try {
+    await validateStagedUpload(file, policy);
+    return await placeStagedUpload(file, directory);
+  } catch (error) {
+    await cleanupStagedUpload(file);
+    throw uploadInputError('ไฟล์อัปโหลดไม่ผ่านการตรวจสอบ');
+  }
+}
+
+function storedUploadRelative(filePath, family) {
+  const prefix = `/uploads/${family}/`;
+  const value = String(filePath || '');
+  if (!value.startsWith(prefix)) return null;
+  const filename = value.slice(prefix.length);
+  if (!filename || filename.includes('/') || filename.includes('\\') || /%(?:2f|5c)/i.test(filename)) return null;
+  return `${family}/${filename}`;
+}
+
+async function removeStoredUpload(filePath, family) {
+  const relative = storedUploadRelative(filePath, family);
+  return relative ? removeContainedFile(UPLOAD_ROOT, relative) : false;
+}
+
+async function removePlacedUpload(placed, family) {
+  if (!placed?.filename) return false;
+  return removeContainedFile(UPLOAD_ROOT, `${family}/${placed.filename}`);
+}
+
+function sendAssetRouteError(error, res, next) {
+  if (error?.status === 400 && !res.headersSent) return res.status(400).json({ error: error.message });
+  if (!res.headersSent) return res.status(500).json({ error: 'ไม่สามารถดำเนินการกับไฟล์ได้' });
+  return next(error);
+}
+
 app.get('/api/admin/replays', requireAdminSession, (req, res) => {
   res.json(adminListReplays());
 });
 
-app.post('/api/admin/replays', requireAdminSession, upload.single('video'), (req, res) => {
-  const courseId = validateCourseId(req.body.courseId);
-  const title = String(req.body.title || '').trim();
-  if (!courseId) return res.status(400).json({ error: 'กรุณาเลือกคอร์สที่ถูกต้อง' });
-  if (!title) return res.status(400).json({ error: 'กรุณาระบุชื่อคลิปย้อนหลัง' });
-
-  const now = new Date().toISOString();
-  const id = createRecordId('replay');
-  const filePath = req.file ? `/uploads/replays/${req.file.filename}` : '';
-  db.prepare(`
-    INSERT INTO course_replays (
-      id, courseId, title, description, videoUrl, filePath, durationText, visibility, sortOrder, createdAt, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    id,
-    courseId,
-    title,
-    String(req.body.description || '').trim(),
-    String(req.body.videoUrl || '').trim(),
-    filePath,
-    String(req.body.durationText || '').trim(),
-    String(req.body.visibility || 'members').trim(),
-    normalSort(req.body.sortOrder),
-    now,
-    now
-  );
-
-  const replay = db.prepare(`
-    SELECT r.*, c.name as courseTitle
-    FROM course_replays r
-    LEFT JOIN courses c ON c.id = r.courseId
-    WHERE r.id = ?
-  `).get(id);
-  res.json(publicReplay(replay));
+app.post('/api/admin/replays', requireAdminSession, replayUpload, async (req, res, next) => {
+  let placed = null;
+  let databaseSucceeded = false;
+  try {
+    const input = replayUploadInput(req.body);
+    const courseId = validateCourseId(input.courseId);
+    if (!courseId) throw uploadInputError('กรุณาเลือกคอร์สที่ถูกต้อง');
+    placed = await finalizeUpload(req.file, UPLOAD_POLICIES.replay, REPLAY_UPLOAD_DIR);
+    const now = new Date().toISOString();
+    const id = createRecordId('replay');
+    const filePath = placed ? `/uploads/replays/${placed.filename}` : '';
+    db.prepare(`
+      INSERT INTO course_replays (
+        id, courseId, title, description, videoUrl, filePath, durationText, visibility, sortOrder, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id, courseId, input.title, input.description, input.videoUrl, filePath,
+      input.durationText, input.visibility, input.sortOrder, now, now
+    );
+    databaseSucceeded = true;
+    const replay = db.prepare(`
+      SELECT r.*, c.name as courseTitle
+      FROM course_replays r
+      LEFT JOIN courses c ON c.id = r.courseId
+      WHERE r.id = ?
+    `).get(id);
+    return res.json(adminReplay(replay));
+  } catch (error) {
+    if (!databaseSucceeded && placed) await removePlacedUpload(placed, 'replays').catch(() => {});
+    await cleanupStagedUpload(req.file);
+    return sendAssetRouteError(error, res, next);
+  }
 });
 
-app.put('/api/admin/replays/:id', requireAdminSession, upload.single('video'), (req, res) => {
+app.put('/api/admin/replays/:id', requireAdminSession, replayUpload, async (req, res, next) => {
   const existing = db.prepare('SELECT * FROM course_replays WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'ไม่พบคลิปย้อนหลัง' });
-
-  const courseId = req.body.courseId !== undefined ? validateCourseId(req.body.courseId) : existing.courseId;
-  const title = req.body.title !== undefined ? String(req.body.title || '').trim() : existing.title;
-  if (!courseId) return res.status(400).json({ error: 'กรุณาเลือกคอร์สที่ถูกต้อง' });
-  if (!title) return res.status(400).json({ error: 'กรุณาระบุชื่อคลิปย้อนหลัง' });
-
-  let filePath = existing.filePath || '';
-  if (req.file) {
-    removeLocalUpload(filePath);
-    filePath = `/uploads/replays/${req.file.filename}`;
+  if (!existing) {
+    await cleanupStagedUpload(req.file);
+    return res.status(404).json({ error: 'ไม่พบคลิปย้อนหลัง' });
   }
 
-  db.prepare(`
-    UPDATE course_replays
-    SET courseId = ?, title = ?, description = ?, videoUrl = ?, filePath = ?,
-        durationText = ?, visibility = ?, sortOrder = ?, updatedAt = ?
-    WHERE id = ?
-  `).run(
-    courseId,
-    title,
-    req.body.description !== undefined ? String(req.body.description || '').trim() : existing.description,
-    req.body.videoUrl !== undefined ? String(req.body.videoUrl || '').trim() : existing.videoUrl,
-    filePath,
-    req.body.durationText !== undefined ? String(req.body.durationText || '').trim() : existing.durationText,
-    req.body.visibility !== undefined ? String(req.body.visibility || 'members').trim() : existing.visibility,
-    req.body.sortOrder !== undefined ? normalSort(req.body.sortOrder) : existing.sortOrder,
-    new Date().toISOString(),
-    req.params.id
-  );
-
-  const replay = db.prepare(`
-    SELECT r.*, c.name as courseTitle
-    FROM course_replays r
-    LEFT JOIN courses c ON c.id = r.courseId
-    WHERE r.id = ?
-  `).get(req.params.id);
-  res.json(publicReplay(replay));
+  let placed = null;
+  let databaseSucceeded = false;
+  try {
+    const input = replayUploadInput(req.body, existing);
+    const courseId = validateCourseId(input.courseId);
+    if (!courseId) throw uploadInputError('กรุณาเลือกคอร์สที่ถูกต้อง');
+    placed = await finalizeUpload(req.file, UPLOAD_POLICIES.replay, REPLAY_UPLOAD_DIR);
+    const filePath = placed ? `/uploads/replays/${placed.filename}` : (existing.filePath || '');
+    db.prepare(`
+      UPDATE course_replays
+      SET courseId = ?, title = ?, description = ?, videoUrl = ?, filePath = ?,
+          durationText = ?, visibility = ?, sortOrder = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(
+      courseId, input.title, input.description, input.videoUrl, filePath,
+      input.durationText, input.visibility, input.sortOrder, new Date().toISOString(), req.params.id
+    );
+    databaseSucceeded = true;
+    if (placed && existing.filePath) {
+      const removed = await removeStoredUpload(existing.filePath, 'replays').catch((error) => {
+        console.warn('Replay upload cleanup debt:', error.message);
+        return false;
+      });
+      if (!removed) console.warn('Replay upload cleanup debt: previous file was not removed');
+    }
+    const replay = db.prepare(`
+      SELECT r.*, c.name as courseTitle
+      FROM course_replays r
+      LEFT JOIN courses c ON c.id = r.courseId
+      WHERE r.id = ?
+    `).get(req.params.id);
+    return res.json(adminReplay(replay));
+  } catch (error) {
+    if (!databaseSucceeded && placed) await removePlacedUpload(placed, 'replays').catch(() => {});
+    await cleanupStagedUpload(req.file);
+    return sendAssetRouteError(error, res, next);
+  }
 });
 
-app.delete('/api/admin/replays/:id', requireAdminSession, (req, res) => {
+app.delete('/api/admin/replays/:id', requireAdminSession, async (req, res, next) => {
   const existing = db.prepare('SELECT * FROM course_replays WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบคลิปย้อนหลัง' });
-  removeLocalUpload(existing.filePath);
-  db.prepare('DELETE FROM course_replays WHERE id = ?').run(req.params.id);
-  res.json({ success: true });
+  try {
+    db.prepare('DELETE FROM course_replays WHERE id = ?').run(req.params.id);
+  } catch (error) {
+    return sendAssetRouteError(error, res, next);
+  }
+  if (existing.filePath) {
+    const removed = await removeStoredUpload(existing.filePath, 'replays').catch((error) => {
+      console.warn('Replay delete cleanup debt:', error.message);
+      return false;
+    });
+    if (!removed) console.warn('Replay delete cleanup debt: file was not removed');
+  }
+  return res.json({ success: true });
 });
 
 app.get('/api/admin/resources', requireAdminSession, (req, res) => {
   res.json(adminListResources());
 });
 
-app.post('/api/admin/resources', requireAdminSession, upload.single('file'), (req, res) => {
-  const courseId = validateCourseId(req.body.courseId, true);
-  const title = String(req.body.title || '').trim();
-  if (courseId === null) return res.status(400).json({ error: 'คอร์สไม่ถูกต้อง' });
-  if (!title) return res.status(400).json({ error: 'กรุณาระบุชื่อ Resource' });
-
-  const now = new Date().toISOString();
-  const id = createRecordId('resource');
-  const filePath = req.file ? `/uploads/resources/${req.file.filename}` : '';
-  db.prepare(`
-    INSERT INTO member_resources (
-      id, courseId, type, title, description, url, filePath, fileName, tags, visibility, sortOrder, createdAt, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    id,
-    courseId,
-    String(req.body.type || 'tool').trim(),
-    title,
-    String(req.body.description || '').trim(),
-    String(req.body.url || '').trim(),
-    filePath,
-    req.file?.originalname || '',
-    safeJson(normalizeTagsInput(req.body.tags)),
-    String(req.body.visibility || 'members').trim(),
-    normalSort(req.body.sortOrder),
-    now,
-    now
-  );
-
-  const resource = db.prepare(`
-    SELECT r.*, c.name as courseTitle
-    FROM member_resources r
-    LEFT JOIN courses c ON c.id = r.courseId
-    WHERE r.id = ?
-  `).get(id);
-  res.json(publicResource(resource));
+app.post('/api/admin/resources', requireAdminSession, resourceUpload, async (req, res, next) => {
+  let placed = null;
+  let databaseSucceeded = false;
+  try {
+    const input = resourceUploadInput(req.body);
+    const courseId = validateCourseId(input.courseId, true);
+    if (courseId === null) throw uploadInputError('คอร์สไม่ถูกต้อง');
+    placed = await finalizeUpload(req.file, UPLOAD_POLICIES.resource, RESOURCE_UPLOAD_DIR);
+    const now = new Date().toISOString();
+    const id = createRecordId('resource');
+    const filePath = placed ? `/uploads/resources/${placed.filename}` : '';
+    db.prepare(`
+      INSERT INTO member_resources (
+        id, courseId, type, title, description, url, filePath, fileName, tags, visibility, sortOrder, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id, courseId, input.type, input.title, input.description, input.url, filePath,
+      placed ? req.file.originalname : '', safeJson(input.tags), input.visibility, input.sortOrder, now, now
+    );
+    databaseSucceeded = true;
+    const resource = db.prepare(`
+      SELECT r.*, c.name as courseTitle
+      FROM member_resources r
+      LEFT JOIN courses c ON c.id = r.courseId
+      WHERE r.id = ?
+    `).get(id);
+    return res.json(adminResource(resource));
+  } catch (error) {
+    if (!databaseSucceeded && placed) await removePlacedUpload(placed, 'resources').catch(() => {});
+    await cleanupStagedUpload(req.file);
+    return sendAssetRouteError(error, res, next);
+  }
 });
 
-app.put('/api/admin/resources/:id', requireAdminSession, upload.single('file'), (req, res) => {
+app.put('/api/admin/resources/:id', requireAdminSession, resourceUpload, async (req, res, next) => {
   const existing = db.prepare('SELECT * FROM member_resources WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'ไม่พบ Resource' });
-
-  const courseId = req.body.courseId !== undefined ? validateCourseId(req.body.courseId, true) : existing.courseId;
-  const title = req.body.title !== undefined ? String(req.body.title || '').trim() : existing.title;
-  if (courseId === null) return res.status(400).json({ error: 'คอร์สไม่ถูกต้อง' });
-  if (!title) return res.status(400).json({ error: 'กรุณาระบุชื่อ Resource' });
-
-  let filePath = existing.filePath || '';
-  let fileName = existing.fileName || '';
-  if (req.file) {
-    removeLocalUpload(filePath);
-    filePath = `/uploads/resources/${req.file.filename}`;
-    fileName = req.file.originalname;
+  if (!existing) {
+    await cleanupStagedUpload(req.file);
+    return res.status(404).json({ error: 'ไม่พบ Resource' });
   }
 
-  db.prepare(`
-    UPDATE member_resources
-    SET courseId = ?, type = ?, title = ?, description = ?, url = ?, filePath = ?,
-        fileName = ?, tags = ?, visibility = ?, sortOrder = ?, updatedAt = ?
-    WHERE id = ?
-  `).run(
-    courseId,
-    req.body.type !== undefined ? String(req.body.type || 'tool').trim() : existing.type,
-    title,
-    req.body.description !== undefined ? String(req.body.description || '').trim() : existing.description,
-    req.body.url !== undefined ? String(req.body.url || '').trim() : existing.url,
-    filePath,
-    fileName,
-    req.body.tags !== undefined ? safeJson(normalizeTagsInput(req.body.tags)) : existing.tags,
-    req.body.visibility !== undefined ? String(req.body.visibility || 'members').trim() : existing.visibility,
-    req.body.sortOrder !== undefined ? normalSort(req.body.sortOrder) : existing.sortOrder,
-    new Date().toISOString(),
-    req.params.id
-  );
-
-  const resource = db.prepare(`
-    SELECT r.*, c.name as courseTitle
-    FROM member_resources r
-    LEFT JOIN courses c ON c.id = r.courseId
-    WHERE r.id = ?
-  `).get(req.params.id);
-  res.json(publicResource(resource));
+  let placed = null;
+  let databaseSucceeded = false;
+  try {
+    const input = resourceUploadInput(req.body, existing);
+    const courseId = validateCourseId(input.courseId, true);
+    if (courseId === null) throw uploadInputError('คอร์สไม่ถูกต้อง');
+    placed = await finalizeUpload(req.file, UPLOAD_POLICIES.resource, RESOURCE_UPLOAD_DIR);
+    const filePath = placed ? `/uploads/resources/${placed.filename}` : (existing.filePath || '');
+    const fileName = placed ? req.file.originalname : (existing.fileName || '');
+    db.prepare(`
+      UPDATE member_resources
+      SET courseId = ?, type = ?, title = ?, description = ?, url = ?, filePath = ?,
+          fileName = ?, tags = ?, visibility = ?, sortOrder = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(
+      courseId, input.type, input.title, input.description, input.url, filePath,
+      fileName, safeJson(input.tags), input.visibility, input.sortOrder, new Date().toISOString(), req.params.id
+    );
+    databaseSucceeded = true;
+    if (placed && existing.filePath) {
+      const removed = await removeStoredUpload(existing.filePath, 'resources').catch((error) => {
+        console.warn('Resource upload cleanup debt:', error.message);
+        return false;
+      });
+      if (!removed) console.warn('Resource upload cleanup debt: previous file was not removed');
+    }
+    const resource = db.prepare(`
+      SELECT r.*, c.name as courseTitle
+      FROM member_resources r
+      LEFT JOIN courses c ON c.id = r.courseId
+      WHERE r.id = ?
+    `).get(req.params.id);
+    return res.json(adminResource(resource));
+  } catch (error) {
+    if (!databaseSucceeded && placed) await removePlacedUpload(placed, 'resources').catch(() => {});
+    await cleanupStagedUpload(req.file);
+    return sendAssetRouteError(error, res, next);
+  }
 });
 
-app.delete('/api/admin/resources/:id', requireAdminSession, (req, res) => {
+app.delete('/api/admin/resources/:id', requireAdminSession, async (req, res, next) => {
   const existing = db.prepare('SELECT * FROM member_resources WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'ไม่พบ Resource' });
-  removeLocalUpload(existing.filePath);
-  db.prepare('DELETE FROM member_resources WHERE id = ?').run(req.params.id);
-  res.json({ success: true });
+  try {
+    db.prepare('DELETE FROM member_resources WHERE id = ?').run(req.params.id);
+  } catch (error) {
+    return sendAssetRouteError(error, res, next);
+  }
+  if (existing.filePath) {
+    const removed = await removeStoredUpload(existing.filePath, 'resources').catch((error) => {
+      console.warn('Resource delete cleanup debt:', error.message);
+      return false;
+    });
+    if (!removed) console.warn('Resource delete cleanup debt: file was not removed');
+  }
+  return res.json({ success: true });
 });
 
 app.get('/api/admin/schedules', requireAdminSession, (req, res) => {

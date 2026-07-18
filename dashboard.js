@@ -378,7 +378,7 @@ function renderResources(paid, resources = []) {
   }
 
   memberResources.innerHTML = toolsBoxCard + resources.map((resource) => {
-    const rawHref = resource.url || resource.filePath || "#";
+    const rawHref = resource.url || resource.mediaUrl || "#";
     const href = rawHref === "/dashboard" ? "/tools-box#resources" : rawHref;
     const external = /^https?:\/\//.test(href);
     return `

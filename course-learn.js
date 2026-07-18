@@ -83,11 +83,11 @@ function escapeHtml(value = "") {
 }
 
 function playableVideo(url = "") {
-  return url.startsWith("/uploads/") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+  return url.startsWith("/api/media/replays/") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 }
 
 function moduleVideo(module, index) {
-  return module.videoUrl || state.replays[index]?.videoUrl || state.replays[index]?.filePath || "";
+  return module.videoUrl || module.mediaUrl || state.replays[index]?.videoUrl || state.replays[index]?.mediaUrl || "";
 }
 
 function notesKey() {
@@ -312,7 +312,7 @@ function renderReading(module, index) {
     <div class="learn-download-list">
       ${state.resources.length
         ? state.resources.slice(0, 5).map((resource) => {
-            const href = resource.url || resource.filePath || "#";
+            const href = resource.url || resource.mediaUrl || "#";
             const external = /^https?:\/\//.test(href);
             return `<a href="${escapeHtml(href)}" ${external ? 'target="_blank" rel="noopener"' : ""}><i class="fa-solid fa-file-arrow-down"></i><span>${escapeHtml(resource.title)}</span></a>`;
           }).join("")

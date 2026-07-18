@@ -56,7 +56,7 @@ function formatDateTime(value) {
 }
 
 function playableVideo(url = "") {
-  return url.startsWith("/uploads/") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+  return url.startsWith("/api/media/replays/") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 }
 
 function courseStartUrl(courseId) {
@@ -96,7 +96,7 @@ function renderContent(data) {
 
   document.getElementById("classResources").innerHTML = resources.length
     ? resources.map((resource) => {
-        const href = resource.url || resource.filePath || "#";
+        const href = resource.url || resource.mediaUrl || "#";
         const external = /^https?:\/\//.test(href);
         return `
           <a class="member-resource-card" href="${escapeHtml(href)}" ${external ? 'target="_blank" rel="noopener"' : ""}>

@@ -564,8 +564,8 @@ function renderReplays() {
   }
 
   tbody.innerHTML = rows.map((item) => {
-    const source = item.filePath ? 'ไฟล์อัปโหลด' : (item.videoUrl ? 'ลิงก์วิดีโอ' : 'ยังไม่มีไฟล์');
-    const playableUrl = item.videoUrl || item.filePath || '';
+    const source = item.hasUpload ? 'ไฟล์อัปโหลดที่ป้องกันแล้ว' : (item.videoUrl ? 'ลิงก์วิดีโอ' : 'ยังไม่มีไฟล์');
+    const playableUrl = item.mediaUrl || item.videoUrl || '';
     return `
       <tr>
         <td>
@@ -597,14 +597,14 @@ function openReplayModal(id = null) {
   document.getElementById('replayFormCourse').innerHTML = courseOptions(item?.courseId || '');
   document.getElementById('replayFormTitle').value = item?.title || '';
   document.getElementById('replayFormDuration').value = item?.durationText || item?.duration || '';
-  document.getElementById('replayFormVideoUrl').value = item?.videoUrl && item.videoUrl !== item.filePath ? item.videoUrl : '';
+  document.getElementById('replayFormVideoUrl').value = item?.hasUpload ? '' : (item?.videoUrl || '');
   document.getElementById('replayFormVideo').value = '';
   document.getElementById('replayFormSort').value = item?.sortOrder || 0;
   document.getElementById('replayFormVisibility').value = item?.visibility || 'members';
   document.getElementById('replayFormDescription').value = item?.description || '';
-  document.getElementById('replayFileNote').textContent = item?.filePath
-    ? `ไฟล์ปัจจุบัน: ${item.filePath}`
-    : 'รองรับไฟล์วิดีโอ ขนาดสูงสุด 800MB';
+  document.getElementById('replayFileNote').textContent = item?.hasUpload
+    ? 'มีไฟล์อัปโหลดที่ป้องกันแล้ว อัปโหลดไฟล์ใหม่เมื่อต้องการแทนที่'
+    : 'รองรับไฟล์ MP4 หรือ WebM ขนาดสูงสุด 500MB';
   openAdminModal('replayModal');
 }
 
@@ -653,7 +653,7 @@ function renderResourcesAdmin() {
   }
 
   tbody.innerHTML = rows.map((item) => {
-    const link = item.url || item.filePath || '';
+    const link = item.mediaUrl || item.url || '';
     return `
       <tr>
         <td>
@@ -682,7 +682,7 @@ function openResourceModal(id = null) {
   document.getElementById('resourceFormType').value = item?.type || 'tool';
   document.getElementById('resourceFormCourse').innerHTML = courseOptions(item?.courseId || '', true);
   document.getElementById('resourceFormTitle').value = item?.title || '';
-  document.getElementById('resourceFormUrl').value = item?.url && item.url !== item.filePath ? item.url : '';
+  document.getElementById('resourceFormUrl').value = item?.hasUpload ? '' : (item?.url || '');
   document.getElementById('resourceFormFile').value = '';
   document.getElementById('resourceFormTags').value = (item?.tags || []).join(', ');
   document.getElementById('resourceFormSort').value = item?.sortOrder || 0;

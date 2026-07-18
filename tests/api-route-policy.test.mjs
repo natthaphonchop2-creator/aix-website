@@ -25,6 +25,9 @@ const API_ROUTE_POLICIES = {
     "POST /api/payments/confirm", "GET /api/courses/:id/content",
     "POST /api/courses/:id/teacher-chat"
   ],
+  protectedMedia: [
+    "GET /api/media/replays/:id", "GET /api/media/resources/:id"
+  ],
   admin: [
     "GET /api/members", "GET /api/members/:id", "PUT /api/members/:id", "DELETE /api/members/:id",
     "GET /api/courses", "GET /api/courses/:id", "POST /api/courses", "PUT /api/courses/:id", "DELETE /api/courses/:id",
@@ -299,6 +302,9 @@ test("member and admin declarations include their auth middleware", () => {
   }
   for (const route of API_ROUTE_POLICIES.admin) {
     assert.equal(argumentIdentifier(routes.get(route)?.arguments[1]), "requireAdminSession", route);
+  }
+  for (const route of API_ROUTE_POLICIES.protectedMedia) {
+    assert.equal(argumentIdentifier(routes.get(route)?.arguments[1]), "allowMediaSession", route);
   }
 });
 

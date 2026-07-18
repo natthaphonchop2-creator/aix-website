@@ -500,7 +500,7 @@ function resourceIcon(type = "") {
 }
 
 function resourceHref(resource) {
-  const href = resource.url || resource.filePath || "#resources";
+  const href = resource.url || resource.mediaUrl || "#resources";
   if (href === "/dashboard") return "/tools-box#resources";
   return href;
 }

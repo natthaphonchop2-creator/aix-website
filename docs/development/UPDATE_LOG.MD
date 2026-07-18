@@ -4,6 +4,59 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0C Task 2 protected member media and opaque upload projections
+
+Scope:
+- Added cookie-authenticated `GET`/`HEAD` delivery at `/api/media/replays/:id` and `/api/media/resources/:id`. Active paid members can access only member-visible assets belonging to featured courses (or global member resources); the configured Admin session can preview hidden/unfeatured assets. Retired bearer and cookie credentials remain rejected.
+- Added strict single-range delivery for bounded, open-ended, suffix, and clamped byte ranges, including exact `200`, `206`, and `416` headers, zero-byte files, and body-free `HEAD`. Responses send server-defined content types, `nosniff`, `private, no-store`, and injection-safe dual ASCII/RFC 5987 `Content-Disposition` filenames whose extension comes from the stored validated file. Node's stream `pipeline` now owns both ends, destroys the source, and closes the file handle when a client terminates a large response early; open/read errors are also deterministic.
+- Bound every delivery to one exact replay/resource filename beneath the expected family. Lexical traversal, encoded separators, the wrong upload family, nested paths, missing files, directories, final symlinks, and symlinked ancestors fail closed. Delivery opens a no-follow regular file handle and verifies its identity before streaming; raw `/uploads/...` paths remain unpublished for both `GET` and `HEAD`.
+- Replaced direct-to-final Multer writes with route-specific owner-only staging directories under the application upload root. Replay and resource routes use the Task 1 policies' exact 500 MB and 50 MB limits plus finite one-file, eight-field, ten-part, 100-byte field-name, 16 KB field-value, and flat-body boundaries. Eight fields is the smallest value compatible with the current resource form; exact body allowlists and scalar-only values reject unknown, nested, and duplicate fields even within the transport limits.
+- Integrated staged validation and atomic placement into replay/resource create and update handlers. Database failure removes the newly placed file; a successful database replacement precedes deletion of the old contained file; delete removes the row before the old file. No asynchronous filesystem operation runs inside a database transaction. Rejected, oversized, aborted, and forced SQLite-failure requests are compensated without leaving a staged file or unintended row during the tested process lifetime. Multipart, validation/filesystem, and database failures use fixed or allowlisted JSON messages and never return low-level error text, SQL trigger details, or staging paths.
+- Removed `filePath` from every member/Admin projection and authorized browser consumer, including adversarially nested course JSON and resource tags. Member objects use opaque `mediaUrl` plus protected `videoUrl`/`url`; Admin receives only `hasUpload` and the same protected preview URL. Safe root-relative and credential-free HTTPS links are preserved, while direct, encoded, and double-encoded upload/traversal/backslash/control paths plus HTTP, protocol-relative, credentialed, JavaScript, and data URLs are stripped.
+- Updated Course Content/Learn playback and download links, Dashboard and Tools Box resource links, and Admin replay/resource previews to consume protected URLs. Admin forms now advertise only `.mp4,.webm` at 500 MB and the exact resource extension set at 50 MB.
+- Added the protected-media routes to the AST route-policy inventory and added the new deterministic integration suite to the exact named `test:security` command and its package-script contract.
+
+Version:
+- `1.0.1` unchanged. No dependency or lockfile changed.
+
+Changed files:
+- `security/media-delivery.cjs`
+- `tests/protected-media.test.mjs`
+- `server.js`
+- `dashboard.js`
+- `tools-box.js`
+- `course-content.js`
+- `course-learn.js`
+- `admin.js`
+- `admin.html`
+- `tests/api-route-policy.test.mjs`
+- `package.json`
+- `tests/cloudflare-publication.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Initial module RED: the first protected-media run exited 1 with `MODULE_NOT_FOUND` for `../security/media-delivery.cjs`, proving the contract ran before implementation.
+- Focused range/auth/policy RED-GREEN: byte-range unit tests passed 2 of 2 after the parser was added; anonymous media initially returned `404` instead of `401`, and the AST inventory initially lacked both protected routes. Cookie-only authorization and exact `allowMediaSession` route declarations made both selected groups pass.
+- Delivery RED-GREEN: the first range request returned `200` instead of `206`, and the first traversal fixture returned `200`. Contained file-handle delivery, complete range/HEAD behavior, exact-family resolution, and symlink/regular-file checks made both selected groups pass 2 of 2.
+- Stream-lifecycle review RED-GREEN: a deterministic destination-abort test showed the initial manual `res.close` Promise resolved with `source.destroyed === false`, leaving the FileHandle stream open. Replacing it with `pipeline` made the real handle reject further `stat` calls as closed; injected open and read failures propagate, and the read-failure source is destroyed and closed.
+- Projection and filename RED-GREEN: the first member payload recursively exposed `resources[0].filePath`, and the first Thai filename response lacked a safe dual filename header. Opaque projections and sanitized ASCII plus RFC 5987 disposition generation made both focused groups pass. Pre-commit review then injected `filePath` into nested course skills/tools/outcomes/info/syllabus/FAQ/brand data and resource tags; the anonymous catalog failed at `response.skills[0].filePath`. Deep response sanitization made anonymous, member, and Admin recursive guards pass. The URL-normalization expansion also failed on a valid encoded-percent root-relative path; bounded decoding now preserves it while rejecting direct, encoded, and double-encoded unsafe variants.
+- Multipart RED-GREEN: an HTML-disguised PDF initially returned `200`; staging validation and body boundaries made the selected upload matrix pass. A later minimal duplicate `title` body reproduced an unintended `200`; scalar-only field validation changed it to `400`. Removing the staging destination then reproduced a raw `ENOENT` response containing its absolute `.staging` path; fixed multipart and validation error mapping now returns generic JSON. The matrix also covers unknown/nested fields, long field names/values, a second file, a 50 MB plus one-byte resource, exact owner-only directory modes, no residual staging files, and no unintended rows.
+- Lifecycle RED-GREEN: forced SQLite insert/update/delete failures for resources and replays verify database-first ownership transitions, preservation of the old file/row on failed mutations, removal of a newly placed file on failed database work, and old-file deletion only after successful replacement. Their first disclosure assertions received Express `text/html` instead of generic JSON; create/update/delete now return one fixed JSON `500` without SQL, trigger, upload-name, or path details. The first resource trigger fixture also exposed an over-tight Busboy `parts` threshold; the smallest compatible value (`10`) made both lifecycle groups pass 2 of 2. A raw-socket abort regression passes with no staged file or row.
+- Client/package RED-GREEN: the authorized-client source contract first failed on `dashboard.js` consuming `resource.filePath`, then passed after all five browser consumers and Admin were migrated. The package-script contract then failed because `test:security` did not include `tests/protected-media.test.mjs`, and passed after exact wiring.
+- Focused protected-media suite: `node --test tests/protected-media.test.mjs` passed 14 tests with 0 failures.
+- Cross-boundary focused suite: `node --test tests/upload-policy.test.mjs tests/protected-media.test.mjs tests/client-auth-contract.test.mjs tests/api-route-policy.test.mjs tests/publication-boundary.test.mjs tests/cloudflare-publication.test.mjs` passed 122 tests with 0 failures.
+- Named security suite: `npm run test:security` passed 212 tests with 0 failures.
+- Full regression: `npm test` passed 244 tests with 0 failures.
+- Production dependency audit: `npm audit --omit=dev` exited 0 with `found 0 vulnerabilities`.
+- Full dependency audit: `npm audit --audit-level=high` exited 1 with the expected 5 development findings (1 low, 4 high) in `esbuild`, `undici`, and `ws` through Wrangler/Miniflare. No audit fix or dependency change was applied.
+- No external provider call, production query, deployment, push, pull request, or other external-state mutation was performed. Pre-existing untracked user files remained outside the task scope.
+
+Unresolved risks:
+- Runtime exceptions and request aborts have deterministic compensating cleanup, but a process or host crash can still leave a staged file, a newly placed file before its database insert, an old file after a successful replacement, or a file after its row was deleted. No startup/background reconciliation job is included in this task; operators should reconcile upload directories against database references after an unclean shutdown.
+- Path and inode checks assume the upload root and all staging/final directories are application-owned and remain owner-only (`0700`). Portable Node APIs cannot eliminate every parent-component time-of-check/time-of-use race against a malicious same-UID local process; this is not claimed as a hostile local-user boundary.
+- Existing legacy files are path/identity checked during delivery but are not retroactively signature-scanned on every read. Newly uploaded files pass the Task 1 signature/container policy before placement. Signature checks are not malware scanning or content disarm.
+- Large replay ranges are streamed by the Node process rather than an authenticated object-storage/CDN layer. That architecture and the 4 known high development-dependency advisories remain follow-up work.
+
 ## 2026-07-18 - Phase 0C Task 1 staged upload validation and safe lifecycle
 
 Scope:
