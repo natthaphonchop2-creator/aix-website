@@ -46,6 +46,7 @@ test("copies approved regular files and excludes sensitive or executable files",
   await mkdir(join(root, "assets", "vendor"), { recursive: true });
   await writeFile(join(root, "index.html"), "public");
   await writeFile(join(root, "styles.css"), "style");
+  await writeFile(join(root, "safe-dom.js"), "safe helper");
   await writeFile(join(root, "server.js"), "secret");
   await writeFile(join(root, "dashboard.html"), "private");
   await mkdir(join(root, "content"));
@@ -60,6 +61,7 @@ test("copies approved regular files and excludes sensitive or executable files",
 
   assert.equal(await readFile(join(destination, "index.html"), "utf8"), "public");
   assert.equal(await readFile(join(destination, "styles.css"), "utf8"), "style");
+  assert.equal(await readFile(join(destination, "safe-dom.js"), "utf8"), "safe helper");
   assert.equal(await readFile(join(destination, "assets", "logo.png"), "utf8"), "image");
   await assertMissing(join(destination, "server.js"));
   await assertMissing(join(destination, "dashboard.html"));
@@ -415,7 +417,7 @@ test("package scripts use the manifest builder and preserve the dry-run boundary
   assert.equal(packageJson.scripts.test, "node --test tests/*.test.mjs");
   assert.equal(
     packageJson.scripts["test:security"],
-    "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs tests/protected-media.test.mjs tests/tools-protection.test.mjs"
+    "node --test tests/safe-dom.test.mjs tests/safe-render-contract.test.mjs tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs tests/protected-media.test.mjs tests/tools-protection.test.mjs"
   );
   assert.equal(packageJson.scripts["cf:prepare"], "node scripts/prepare-cloudflare-assets.cjs");
   assert.equal(packageJson.scripts["cf:check"], "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"");
@@ -424,4 +426,5 @@ test("package scripts use the manifest builder and preserve the dry-run boundary
   assert.equal(packageJson.scripts["cf:dev"], "wrangler dev");
   assert.equal(packageJson.scripts["cf:deploy"], "npm run cf:prepare && wrangler deploy --env=\"\"");
   assert.equal(packageJson.devDependencies.acorn, "8.15.0");
+  assert.equal(packageJson.devDependencies.linkedom, "0.18.13");
 });

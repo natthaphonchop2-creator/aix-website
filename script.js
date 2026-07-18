@@ -1335,12 +1335,18 @@ function matchesSearch(course) {
 
 function courseCta(course) {
   if (!state.member) {
-    return `<a class="secondary-btn" href="class-detail.html?id=${course.id}">ดูรายละเอียด</a>`;
+    return AiXDom.link({
+      href: AiXDom.safeUrl(`class-detail.html?id=${encodeURIComponent(course.id)}`),
+      className: "secondary-btn"
+    }, ["ดูรายละเอียด"]);
   }
   if (state.member.paymentStatus === "paid") {
-    return `<a class="primary-btn full" href="/course/${encodeURIComponent(course.id)}/start">เข้าเรียน</a>`;
+    return AiXDom.link({
+      href: AiXDom.safeUrl(`/course/${encodeURIComponent(course.id)}/start`),
+      className: "primary-btn full"
+    }, ["เข้าเรียน"]);
   }
-  return `<a class="primary-btn full" href="/payment">ชำระเงินเพื่อเข้าเรียน</a>`;
+  return AiXDom.link({ href: AiXDom.safeUrl("/payment"), className: "primary-btn full" }, ["ชำระเงินเพื่อเข้าเรียน"]);
 }
 
 function courseVisualIcon(course) {
@@ -1351,7 +1357,7 @@ function courseVisualIcon(course) {
     Coding: "fa-code",
     Prompt: "fa-brain"
   };
-  return iconMap[course.level] || "fa-graduation-cap";
+  return Object.hasOwn(iconMap, course.level) ? iconMap[course.level] : "fa-graduation-cap";
 }
 
 function courseTopicIcons(course) {
@@ -1369,7 +1375,9 @@ function courseTopicIcons(course) {
     Coding: ["fa-code-branch", "fa-terminal"],
     Prompt: ["fa-comments", "fa-file-lines"]
   };
-  return iconsById[course.id] || iconsByLevel[course.level] || ["fa-layer-group", "fa-arrow-trend-up"];
+  if (Object.hasOwn(iconsById, course.id)) return iconsById[course.id];
+  if (Object.hasOwn(iconsByLevel, course.level)) return iconsByLevel[course.level];
+  return ["fa-layer-group", "fa-arrow-trend-up"];
 }
 
 function courseTopicLogo(course) {
@@ -1380,7 +1388,7 @@ function courseTopicLogo(course) {
     "ai-video-graphic": { src: "assets/ai-logos/higgsfield.png", label: "Higgsfield", tone: "higgsfield" },
     "ai-agent-business": { src: "assets/ai-logos/chatgpt.svg", label: "ChatGPT", tone: "chatgpt" }
   };
-  return logosById[course.id] || null;
+  return Object.hasOwn(logosById, course.id) ? logosById[course.id] : null;
 }
 
 function courseTopicVisuals(course) {
@@ -1395,8 +1403,19 @@ function courseTopicVisuals(course) {
   ];
 }
 
+const courseToneByLevel = Object.freeze({
+  Agent: "agent",
+  Automation: "automation",
+  Creative: "creative",
+  Coding: "coding",
+  Prompt: "prompt",
+  Workshop: "workshop",
+  Course: "course"
+});
+
 function courseVisualTone(course) {
-  return normalizeText(course.level || course.type || "ai").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  if (Object.hasOwn(courseToneByLevel, course.level)) return courseToneByLevel[course.level];
+  return Object.hasOwn(courseToneByLevel, course.type) ? courseToneByLevel[course.type] : "ai";
 }
 
 function courseTopicBadge(course) {
@@ -1407,96 +1426,121 @@ function courseTopicBadge(course) {
     "ai-video-graphic": "AI Video",
     "ai-agent-business": "AI Agent"
   };
-  return labelsById[course.id] || course.skills?.[0] || course.level || course.type || "AI";
+  return (Object.hasOwn(labelsById, course.id) ? labelsById[course.id] : null)
+    || course.skills?.[0]
+    || course.level
+    || course.type
+    || "AI";
 }
 
 function renderCourses() {
   const filtered = courses.filter((course) => matchesFilter(course) && matchesSearch(course));
-  classesGrid.innerHTML = filtered.map((course) => {
+  const cards = filtered.map((course) => {
     const topicTone = courseTopicLogo(course)?.tone || courseVisualTone(course);
+    const positions = ["left", "center", "right"];
+    const visuals = courseTopicVisuals(course).map((visual, index) => {
+      const position = positions[index] || "center";
+      const visualClass = visual.type === "logo"
+        ? `aix-topic-icon aix-topic-logo aix-topic-logo-${visual.tone} aix-topic-icon-${position}`
+        : `aix-topic-icon aix-topic-icon-${position}`;
+      const content = visual.type === "logo"
+        ? AiXDom.node("img", {
+            attrs: { alt: "", loading: "eager", decoding: "async", "data-topic-logo": visual.label },
+            urls: { src: { value: visual.value, options: { allowedProtocols: ["http:", "https:"] } } }
+          })
+        : AiXDom.node("i", { className: `fa-solid ${visual.value}` });
+      return AiXDom.node("span", { className: visualClass }, [content]);
+    });
+    const skills = Array.isArray(course.skills) ? course.skills.slice(0, 2) : [];
+    const detailAction = state.member
+      ? AiXDom.link({ href: AiXDom.safeUrl(`class-detail.html?id=${encodeURIComponent(course.id)}`), className: "secondary-btn" }, ["รายละเอียด"])
+      : null;
 
-    return `
-    <article class="course-card aix-topic-card aix-topic-tone-${topicTone}">
-      <div class="aix-topic-icons" aria-hidden="true">
-        ${courseTopicVisuals(course).map((visual, index) => `
-          <span class="aix-topic-icon ${visual.type === "logo" ? `aix-topic-logo aix-topic-logo-${visual.tone}` : ""} aix-topic-icon-${["left", "center", "right"][index]}">
-            ${visual.type === "logo"
-              ? `<img src="${visual.value}" alt="" loading="eager" decoding="async" data-topic-logo="${visual.label}">`
-              : `<i class="fa-solid ${visual.value}"></i>`}
-          </span>
-        `).join("")}
-      </div>
-      <div class="course-body aix-topic-body">
-        <span class="course-badge aix-topic-badge">${courseTopicBadge(course)}</span>
-        <h3>${course.title}</h3>
-        <p>${course.description}</p>
-        <div class="skill-row aix-topic-skills">
-          ${course.skills.slice(0, 2).map((skill) => `<span>${skill}</span>`).join("")}
-        </div>
-        <div class="course-meta aix-topic-meta">
-          <span><i class="fa-regular fa-clock"></i>${course.duration}</span>
-          <span><i class="fa-solid fa-list-check"></i>${course.lessons}</span>
-        </div>
-        <div class="course-actions aix-topic-actions">
-          ${courseCta(course)}
-          ${state.member ? `<a class="secondary-btn" href="class-detail.html?id=${course.id}">รายละเอียด</a>` : ""}
-        </div>
-      </div>
-    </article>
-  `;
-  }).join("") || `<div class="resource-card catalog-empty-state"><h3>ไม่พบคอร์ส</h3><p>ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ใหม่</p></div>`;
+    return AiXDom.node("article", { className: `course-card aix-topic-card aix-topic-tone-${topicTone}` }, [
+      AiXDom.node("div", { className: "aix-topic-icons", attrs: { "aria-hidden": "true" } }, visuals),
+      AiXDom.node("div", { className: "course-body aix-topic-body" }, [
+        AiXDom.node("span", { className: "course-badge aix-topic-badge", text: courseTopicBadge(course) }),
+        AiXDom.node("h3", { text: course.title }),
+        AiXDom.node("p", { text: course.description }),
+        AiXDom.node("div", { className: "skill-row aix-topic-skills" }, skills.map((skill) => AiXDom.node("span", { text: skill }))),
+        AiXDom.node("div", { className: "course-meta aix-topic-meta" }, [
+          AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-regular fa-clock" }), course.duration]),
+          AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-solid fa-list-check" }), course.lessons])
+        ]),
+        AiXDom.node("div", { className: "course-actions aix-topic-actions" }, [courseCta(course), detailAction])
+      ])
+    ]);
+  });
+  AiXDom.replace(classesGrid, cards.length ? cards : [
+    AiXDom.node("div", { className: "resource-card catalog-empty-state" }, [
+      AiXDom.node("h3", { text: "ไม่พบคอร์ส" }),
+      AiXDom.node("p", { text: "ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ใหม่" })
+    ])
+  ]);
 
   refreshPageEffects();
 }
 
+function publicResourceIcon(icon) {
+  const map = Object.freeze({
+    "fa-arrows-rotate": "fa-arrows-rotate",
+    "fa-route": "fa-route",
+    "fa-folder-open": "fa-folder-open",
+    "fa-circle-play": "fa-circle-play"
+  });
+  return Object.hasOwn(map, icon) ? map[icon] : "fa-folder-open";
+}
+
 function renderResources() {
-  resourceList.innerHTML = resources.map((resource) => `
-    <article class="resource-card">
-      <i class="fa-solid ${resource.icon}"></i>
-      <span class="provider">${resource.category}</span>
-      <h3>${resource.title}</h3>
-      <p>${resource.description}</p>
-    </article>
-  `).join("");
+  AiXDom.replace(resourceList, resources.map((resource) => AiXDom.node("article", { className: "resource-card" }, [
+    AiXDom.node("i", { className: `fa-solid ${publicResourceIcon(resource.icon)}` }),
+    AiXDom.node("span", { className: "provider", text: resource.category }),
+    AiXDom.node("h3", { text: resource.title }),
+    AiXDom.node("p", { text: resource.description })
+  ])));
 }
 
 function openClassModal(id) {
   const course = courses.find((item) => item.id === id);
   if (!course) return;
   lastClassTrigger = captureFocusTrigger(classModal) || lastClassTrigger;
-  classModalContent.innerHTML = `
-    <div class="modal-content">
-      <span class="provider">AiX Club</span>
-      <h2 id="classModalTitle">${course.title}</h2>
-      <p>${course.description}</p>
-      <div class="course-meta">
-        <span><i class="fa-regular fa-user"></i>${course.instructor}</span>
-        <span><i class="fa-regular fa-clock"></i>${course.duration}</span>
-        <span><i class="fa-solid fa-star"></i>${course.rating}</span>
-        <span><i class="fa-solid fa-tag"></i>${course.price ? `฿${course.price.toLocaleString()}` : "รวมในสมาชิก"}</span>
-      </div>
-      <h3>สิ่งที่จะได้เรียน</h3>
-      <div class="modal-topics">
-        ${course.topics.map((topic) => `<div>${topic}</div>`).join("")}
-      </div>
-      <div class="hero-actions">
-        <button class="primary-btn" type="button" data-course-signup="${course.id}">สมัคร AiX Member</button>
-        <button class="secondary-btn" type="button" data-close-modal>ปิด</button>
-      </div>
-    </div>
-  `;
-  classModal.classList.add("open");
-  classModal.setAttribute("aria-hidden", "false");
-  focusElement(getModalPanel(classModal));
-
-  classModal.querySelectorAll("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", closeClassModal);
+  const price = Number(course.price);
+  const meta = [
+    ["fa-regular fa-user", course.instructor],
+    ["fa-regular fa-clock", course.duration],
+    ["fa-solid fa-star", course.rating],
+    ["fa-solid fa-tag", Number.isFinite(price) && price > 0 ? `฿${price.toLocaleString("th-TH")}` : "รวมในสมาชิก"]
+  ];
+  const signupButton = AiXDom.node("button", {
+    className: "primary-btn",
+    text: "สมัคร AiX Member",
+    attrs: { type: "button", "data-course-signup": "" }
   });
-  classModal.querySelector("[data-course-signup]")?.addEventListener("click", () => {
+  const closeButton = AiXDom.node("button", { className: "secondary-btn", text: "ปิด", attrs: { type: "button" } });
+  signupButton.addEventListener("click", () => {
     state.currentCourseId = course.id;
     closeClassModal();
     openAuthModal("signup");
   });
+  closeButton.addEventListener("click", closeClassModal);
+  const modalTitle = AiXDom.node("h2", { text: course.title });
+  modalTitle.id = "classModalTitle";
+  AiXDom.replace(classModalContent, [AiXDom.node("div", { className: "modal-content" }, [
+    AiXDom.node("span", { className: "provider", text: "AiX Club" }),
+    modalTitle,
+    AiXDom.node("p", { text: course.description }),
+    AiXDom.node("div", { className: "course-meta" }, meta.map(([icon, label]) => (
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: icon }), label])
+    ))),
+    AiXDom.node("h3", { text: "สิ่งที่จะได้เรียน" }),
+    AiXDom.node("div", { className: "modal-topics" }, (Array.isArray(course.topics) ? course.topics : []).map((topic) => (
+      AiXDom.node("div", { text: topic })
+    ))),
+    AiXDom.node("div", { className: "hero-actions" }, [signupButton, closeButton])
+  ])]);
+  classModal.classList.add("open");
+  classModal.setAttribute("aria-hidden", "false");
+  focusElement(getModalPanel(classModal));
   initRainbowButtons(classModal);
 }
 

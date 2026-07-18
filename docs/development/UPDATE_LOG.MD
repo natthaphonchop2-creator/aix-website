@@ -4,6 +4,70 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0C Task 4 safe DOM rendering boundary
+
+Scope:
+- Added the frozen UMD `AiXDom` helper with the four approved browser/CommonJS interfaces: `safeUrl`, `node`, `link`, and `replace`. Tags, ordinary attributes, typed properties, and media URL properties are explicit allowlists; anchors can be created only through `link`; server text is assigned through text nodes; and absolute HTTP(S) links receive an authored `_blank` plus `noopener noreferrer` boundary.
+- Added a fail-closed URL policy for relative/root/query/hash URLs, canonical credential-free HTTP(S), explicit opt-in `mailto:`/`tel:`, and `about:blank`. It rejects executable or caller-invented schemes, protocol-relative and noncanonical authorities, credentials, controls, markup delimiters, backslashes, malformed percent escapes, encoded schemes, encoded/double-encoded traversal, and prototype-key bypasses while preserving benign percent-encoded path/query values such as Thai filenames and signed download URLs.
+- Published `safe-dom.js` explicitly and loaded it after `/aix-api-client.js` but before the renderer on the homepage, class detail, Dashboard, Tools Box, Course Content, Course Learn, and Admin pages. The Cloudflare fixture now copies and validates the same helper.
+- Rebuilt every named API/database renderer in `script.js`, `class-detail.js`, `dashboard.js`, `tools-box.js`, `course-content.js`, `course-learn.js`, and `admin.js` with DOM nodes, safe links, fixed class/icon maps, bounded authored styles, typed properties, encoded API path segments, and event listeners instead of HTML interpolation or inline handlers. JSON-LD and AiX Teacher replies remain on non-parsing `textContent` sinks.
+- Preserved the existing visual structure and behavior, including the class-modal rainbow CTA marker, Admin table/detail presentation, raw display labels for unknown Admin states, bounded learning progress, valid percent-encoded receipt/media URLs, and fallback behavior for malformed course paths or prototype keys.
+- Preserved the Phase 0C Task 2 opaque protected-media projections (`filePath` remains absent) and the Task 3 premium Tools Box fetch, validation, generation, logout, copy, and download lifecycle. The Tools protection VM now loads the real page DOM and real `safe-dom.js` through LinkeDOM instead of a permissive fake DOM.
+- Added hostile-DOM unit coverage plus Acorn-enforced source contracts for every affected renderer, script order, publication, fixed-map ownership checks, event listeners, encoded IDs, URL sinks, and the Task 2/3 boundaries. Updated prior homepage/auth/publication contracts only where the approved safe-DOM script and equivalent node structure changed.
+
+Version and dependencies:
+- `1.0.1` unchanged.
+- Added exact development-only `linkedom@0.18.13` for deterministic browser-DOM security tests; `package-lock.json` records its transitive test dependencies. No production dependency changed and no audit fix was run.
+
+Changed files:
+- `safe-dom.js`
+- `security/publication-manifest.cjs`
+- `index.html`
+- `class-detail.html`
+- `dashboard.html`
+- `tools-box.html`
+- `course-content.html`
+- `course-learn.html`
+- `admin.html`
+- `script.js`
+- `class-detail.js`
+- `dashboard.js`
+- `tools-box.js`
+- `course-content.js`
+- `course-learn.js`
+- `admin.js`
+- `tests/safe-dom.test.mjs`
+- `tests/safe-render-contract.test.mjs`
+- `tests/homepage-contract.test.mjs`
+- `tests/client-auth-contract.test.mjs`
+- `tests/tools-protection.test.mjs`
+- `tests/publication-manifest.test.mjs`
+- `tests/publication-boundary.test.mjs`
+- `tests/cloudflare-publication.test.mjs`
+- `package.json`
+- `package-lock.json`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Initial Safe DOM/renderer RED: `node --test tests/safe-dom.test.mjs tests/safe-render-contract.test.mjs` ran 20 tests, passed 1, and failed 19 because the helper did not exist and the named renderers still used parsing sinks or lacked the required contracts.
+- Hostile URL/attribute review cycles added regressions for caller scheme opt-in, credentialed URLs, runtime IDs, malformed percent escapes, caller `target`/`rel` overrides, root `/`, encoded traversal, numeric entities, and prototype keys before their fixes. The formal-review percent-URL, class-modal marker, and server-icon cycle reproduced 3 failures in a 23-test run, then passed 23/23 after the fixes; the URL-controlled class-detail prototype regression separately failed 0/1 and then passed 1/1.
+- Focused Safe DOM and renderer contract: 24/24 passed, including behavioral rejection/clamping for `Infinity`, `NaN`, negative, and over-limit progress values before storage, percentage styles, and learning navigation.
+- Homepage and shared-client contract: 54/54 passed.
+- Publication manifest/boundary/Cloudflare contract: 25/25 passed.
+- Task 2/3 regression group (`upload-policy`, `protected-media`, `tools-protection`, and `api-route-policy`): 90/90 passed.
+- Named security suite: `npm run test:security` passed 245 tests with 0 failures.
+- Full regression: `npm test` passed 277 tests with 0 failures.
+- Cloudflare publication dry-run: `npm run cf:check` prepared 101 manifest-approved assets, read 108 files, and exited successfully at `wrangler deploy --dry-run`; no deployment occurred.
+- Production dependency audit: `npm audit --omit=dev --audit-level=high` exited 0 with `found 0 vulnerabilities`.
+- Full dependency audit: `npm audit --audit-level=high` exited 1 with the expected development-only 5 findings (1 low, 4 high) in `esbuild`, `undici`, and `ws` through Wrangler/Miniflare. These remain assigned to Phase 0C Task 5; no `npm audit fix` was run.
+- Final independent read-only re-review approved the complete diff with no remaining Critical, Important, or Minor finding after the percent-URL, modal CTA, fixed-icon, prototype-key, and finite-progress follow-ups.
+- Syntax checks for all eight affected JavaScript files, `git diff --check`, deterministic sink scans, and the prepared-publication scan passed. No server route, CSS, production data, external provider, deploy, push, or pull request was changed or invoked. Pre-existing untracked user files remained outside the task scope.
+
+Unresolved risks:
+- `safeUrl` establishes an executable-URL and DOM-injection boundary; it does not establish that an otherwise valid external HTTP(S) destination is trustworthy. Server-side URL governance remains responsible for which external destinations are stored.
+- Future API-backed renderers must continue using the helper, fixed authored classes/styles, encoded identifiers, and listener-based actions. The source contracts cover the current named renderer inventory but do not automatically discover future files outside that inventory.
+- The existing 4 high development-tool advisories remain open for the separately approved dependency-maintenance task; production dependencies currently audit clean.
+
 ## 2026-07-18 - Phase 0C Task 3 protected premium Tools Box library
 
 Scope:

@@ -286,36 +286,49 @@ function refreshDashboard() {
 
   const recentMembersEl = document.getElementById('recentMembers');
   if (memberArr.length === 0) {
-    recentMembersEl.innerHTML = '<div class="empty-state"><p style="font-size:0.82rem;">ยังไม่มีสมาชิก</p></div>';
+    AiXDom.replace(recentMembersEl, [adminDashboardEmptyState('ยังไม่มีสมาชิก')]);
   } else {
-    recentMembersEl.innerHTML = memberArr.map(m => `
-      <div class="recent-item">
-        <div class="ri-avatar">${escapeHtml(memberName(m).charAt(0).toUpperCase())}</div>
-        <div class="ri-info">
-          <div class="ri-name">${escapeHtml(memberName(m))}</div>
-          <div class="ri-detail">${providerLabel(m.provider || m.authProvider)} • ${paymentLabel(m.paymentStatus)}</div>
-        </div>
-        <div class="ri-time">${formatDate(m.createdAt || m.joinedDate)}</div>
-      </div>
-    `).join('');
+    AiXDom.replace(recentMembersEl, memberArr.map((member) => {
+      const name = memberName(member);
+      return AiXDom.node('div', { className: 'recent-item' }, [
+        AiXDom.node('div', { className: 'ri-avatar', text: name.charAt(0).toUpperCase() }),
+        AiXDom.node('div', { className: 'ri-info' }, [
+          AiXDom.node('div', { className: 'ri-name', text: name }),
+          AiXDom.node('div', { className: 'ri-detail' }, [
+            providerLabel(member.provider || member.authProvider),
+            ' • ',
+            paymentLabel(member.paymentStatus)
+          ])
+        ]),
+        AiXDom.node('div', { className: 'ri-time', text: formatDate(member.createdAt || member.joinedDate) })
+      ]);
+    }));
   }
 
   // Recent leads
   const recentLeads = [...leads].sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0)).slice(0, 5);
   const recentLeadsEl = document.getElementById('recentLeads');
   if (recentLeads.length === 0) {
-    recentLeadsEl.innerHTML = '<div class="empty-state"><p style="font-size:0.82rem;">ยังไม่มี Lead</p></div>';
+    AiXDom.replace(recentLeadsEl, [adminDashboardEmptyState('ยังไม่มี Lead')]);
   } else {
-    recentLeadsEl.innerHTML = recentLeads.map(l => `
-      <div class="recent-item">
-        <div class="ri-avatar">${(l.firstName || 'L').charAt(0).toUpperCase()}</div>
-        <div class="ri-info">
-          <div class="ri-name">${l.firstName} ${l.lastName}</div>
-          <div class="ri-detail">${l.email} • <span class="status-badge status-${l.status}" style="padding:2px 6px;font-size:0.65rem;">${l.status}</span></div>
-        </div>
-        <div class="ri-time">${formatDate(l.createdAt || l.date)}</div>
-      </div>
-    `).join('');
+    AiXDom.replace(recentLeadsEl, recentLeads.map((lead) => {
+      const rawStatus = String(lead.status || 'new');
+      const status = rawStatus.toLowerCase();
+      const statusBadge = AiXDom.node('span', {
+        className: `status-badge ${adminMappedClass('leadStatus', status, 'status-new')}`,
+        text: adminMappedLabel('leadStatus', status, rawStatus)
+      });
+      statusBadge.style.padding = '2px 6px';
+      statusBadge.style.fontSize = '0.65rem';
+      return AiXDom.node('div', { className: 'recent-item' }, [
+        AiXDom.node('div', { className: 'ri-avatar', text: String(lead.firstName || 'L').charAt(0).toUpperCase() }),
+        AiXDom.node('div', { className: 'ri-info' }, [
+          AiXDom.node('div', { className: 'ri-name', text: `${lead.firstName || ''} ${lead.lastName || ''}`.trim() || 'Lead' }),
+          AiXDom.node('div', { className: 'ri-detail' }, [lead.email || '-', ' • ', statusBadge])
+        ]),
+        AiXDom.node('div', { className: 'ri-time', text: formatDate(lead.createdAt || lead.date) })
+      ]);
+    }));
   }
 
   updateBadges();
@@ -344,13 +357,110 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
 }
 
-function escapeHtml(value = '') {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+const adminClassMaps = Object.freeze({
+  level: Object.freeze({
+    beginner: 'level-beginner',
+    intermediate: 'level-intermediate',
+    advanced: 'level-advanced'
+  }),
+  leadStatus: Object.freeze({
+    new: 'status-new',
+    contacted: 'status-contacted',
+    converted: 'status-converted'
+  }),
+  tier: Object.freeze({
+    explorer: 'tier-explorer',
+    navigator: 'tier-navigator',
+    commander: 'tier-commander'
+  }),
+  provider: Object.freeze({
+    google: 'provider-google',
+    email: 'provider-email'
+  }),
+  memberStatus: Object.freeze({
+    active: 'status-active',
+    suspended: 'status-suspended'
+  }),
+  paymentStatus: Object.freeze({
+    paid: 'status-paid',
+    unpaid: 'status-unpaid'
+  })
+});
+
+const adminLabelMaps = Object.freeze({
+  leadStatus: Object.freeze({ new: 'New', contacted: 'Contacted', converted: 'Converted' }),
+  tier: Object.freeze({ explorer: 'Explorer', navigator: 'Navigator', commander: 'Commander' }),
+  paymentMethod: Object.freeze({
+    credit: 'Credit/Debit Card',
+    promptpay: 'PromptPay/QR',
+    bank: 'Bank Transfer'
+  })
+});
+
+function adminMappedClass(group, value, fallback = "") {
+  const map = adminClassMaps[group];
+  const key = String(value ?? '').trim().toLowerCase();
+  return map && Object.hasOwn(map, key) ? map[key] : fallback;
+}
+
+function adminMappedLabel(group, value, fallback = '-') {
+  const map = adminLabelMaps[group];
+  const key = String(value ?? '').trim().toLowerCase();
+  return map && Object.hasOwn(map, key) ? map[key] : fallback;
+}
+
+function adminFiniteNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function adminIcon(className) {
+  return AiXDom.node('i', { className });
+}
+
+function adminActionButton(className, title, iconClass) {
+  return AiXDom.node('button', {
+    className,
+    attrs: { type: 'button', title }
+  }, [adminIcon(iconClass)]);
+}
+
+function adminEmptyTableRow(colspan, icon, message) {
+  return AiXDom.node('tr', {}, [
+    AiXDom.node('td', { attrs: { colspan } }, [
+      AiXDom.node('div', { className: 'empty-state' }, [
+        AiXDom.node('div', { className: 'empty-icon', text: icon }),
+        AiXDom.node('p', { text: message })
+      ])
+    ])
+  ]);
+}
+
+function adminDashboardEmptyState(message) {
+  const textNode = AiXDom.node('p', { text: message });
+  textNode.style.fontSize = '0.82rem';
+  return AiXDom.node('div', { className: 'empty-state' }, [textNode]);
+}
+
+function adminDetailRow(label, valueNode, bordered = true) {
+  const labelNode = AiXDom.node('span', { className: 'admin-detail-label', text: label });
+  const contentNode = valueNode?.nodeType
+    ? valueNode
+    : AiXDom.node('span', { className: 'admin-detail-value', text: valueNode });
+  const row = AiXDom.node('div', { className: 'admin-detail-row' }, [
+    labelNode,
+    contentNode
+  ]);
+  labelNode.style.color = 'var(--text-muted)';
+  contentNode.style.fontWeight = '600';
+  row.style.display = 'flex';
+  row.style.justifyContent = 'space-between';
+  row.style.gap = '16px';
+  if (bordered) {
+    row.style.paddingBottom = '12px';
+    row.style.borderBottom = '1px solid var(--border-subtle)';
+  }
+  return row;
 }
 
 function toDateInput(value = '') {
@@ -383,12 +493,21 @@ function fromDateTimeInput(value = '') {
 }
 
 function courseOptions(selected = '', includeGlobal = false) {
+  const selectedValue = String(selected ?? '');
   const options = Object.values(getCourses()).map((course) => {
-    const id = course.id;
-    const title = course.name || course.title || id;
-    return `<option value="${escapeHtml(id)}" ${id === selected ? 'selected' : ''}>${escapeHtml(title)}</option>`;
-  }).join('');
-  return `${includeGlobal ? `<option value="" ${!selected ? 'selected' : ''}>ใช้กับสมาชิกทุกคอร์ส</option>` : ''}${options}`;
+    const id = String(course.id ?? '');
+    return AiXDom.node('option', {
+      text: course.name || course.title || id,
+      props: { value: id, selected: id === selectedValue }
+    });
+  });
+  if (includeGlobal) {
+    options.unshift(AiXDom.node('option', {
+      text: 'ใช้กับสมาชิกทุกคอร์ส',
+      props: { value: '', selected: !selectedValue }
+    }));
+  }
+  return options;
 }
 
 function resourceTypeLabel(type = '') {
@@ -408,7 +527,11 @@ function providerLabel(provider = '') {
 }
 
 function paymentLabel(status = '') {
-  return status === 'paid' ? 'ชำระแล้ว' : 'ยังไม่ชำระ';
+  const rawStatus = String(status || 'unpaid');
+  const key = rawStatus.toLowerCase();
+  if (key === 'paid') return 'ชำระแล้ว';
+  if (key === 'unpaid') return 'ยังไม่ชำระ';
+  return rawStatus;
 }
 
 function courseHours(course = {}) {
@@ -428,44 +551,64 @@ function renderCourses() {
   const tbody = document.getElementById('coursesTableBody');
 
   const entries = Object.entries(courses).filter(([id, c]) => {
-    const title = c.name || c.title || '';
-    return title.toLowerCase().includes(search) || (c.instructor || '').toLowerCase().includes(search);
+    const title = String(c.name || c.title || '');
+    return title.toLowerCase().includes(search) || String(c.instructor || '').toLowerCase().includes(search);
   });
 
   if (entries.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📚</div><p>ไม่พบคอร์ส</p></div></td></tr>`;
+    AiXDom.replace(tbody, [adminEmptyTableRow(7, '📚', 'ไม่พบคอร์ส')]);
     return;
   }
 
-  tbody.innerHTML = entries.map(([id, c]) => {
-    const title = c.name || c.title || '-';
-    const status = c.featured ? (c.status || 'เปิดบน Platform') : 'ซ่อนจาก Platform';
-    return `
-      <tr>
-        <td>
-          <div class="cell-main">${escapeHtml(title)}</div>
-          <div class="cell-small">${courseHours(c)}h • ${courseLessons(c)} lessons • ${escapeHtml(status)}</div>
-        </td>
-        <td>${escapeHtml(c.instructor || '-')}</td>
-        <td><span class="level-badge level-${escapeHtml(c.level || 'beginner')}">${escapeHtml(c.level || 'beginner')}</span></td>
-        <td>
-          <span class="cell-price">฿${(c.price || 0).toLocaleString()}</span>
-          ${c.originalPrice ? `<br><span class="cell-small" style="text-decoration:line-through;">฿${c.originalPrice.toLocaleString()}</span>` : ''}
-        </td>
-        <td>${(c.students || 0).toLocaleString()}</td>
-        <td>
-          <span style="color:var(--accent-gold);font-weight:600;">★ ${escapeHtml(c.rating || '-')}</span>
-          <div class="cell-small">(${(c.ratingCount || 0).toLocaleString()})</div>
-        </td>
-        <td>
-          <div class="action-btns">
-            <button class="action-btn" onclick="editCourse('${id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
-            <button class="action-btn btn-del" onclick="requestDelete('course','${id}','${escapeHtml(title)}')" title="ลบ"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  AiXDom.replace(tbody, entries.map(([id, course]) => {
+    const title = course.name || course.title || '-';
+    const status = course.featured ? (course.status || 'เปิดบน Platform') : 'ซ่อนจาก Platform';
+    const level = String(course.level || 'beginner').toLowerCase();
+    const price = adminFiniteNumber(course.price);
+    const originalPrice = adminFiniteNumber(course.originalPrice);
+    const priceChildren = [AiXDom.node('span', { className: 'cell-price', text: `฿${price.toLocaleString('th-TH')}` })];
+    if (originalPrice > 0) {
+      const oldPrice = AiXDom.node('div', { className: 'cell-small', text: `฿${originalPrice.toLocaleString('th-TH')}` });
+      oldPrice.style.textDecoration = 'line-through';
+      priceChildren.push(oldPrice);
+    }
+
+    const editButton = adminActionButton('action-btn', 'แก้ไข', 'fas fa-edit');
+    editButton.addEventListener("click", () => editCourse(id));
+    const deleteButton = adminActionButton('action-btn btn-del', 'ลบ', 'fas fa-trash');
+    deleteButton.addEventListener("click", () => requestDelete('course', id, title));
+
+    const rating = AiXDom.node('span', { text: `★ ${course.rating ?? '-'}` });
+    rating.style.color = 'var(--accent-gold)';
+    rating.style.fontWeight = '600';
+
+    return AiXDom.node('tr', {}, [
+      AiXDom.node('td', {}, [
+        AiXDom.node('div', { className: 'cell-main', text: title }),
+        AiXDom.node('div', {
+          className: 'cell-small',
+          text: `${adminFiniteNumber(courseHours(course))}h • ${adminFiniteNumber(courseLessons(course))} lessons • ${status}`
+        })
+      ]),
+      AiXDom.node('td', { text: course.instructor || '-' }),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', {
+          className: `level-badge ${adminMappedClass('level', level, 'level-beginner')}`,
+          text: course.level || 'beginner'
+        })
+      ]),
+      AiXDom.node('td', {}, priceChildren),
+      AiXDom.node('td', { text: adminFiniteNumber(course.students).toLocaleString('th-TH') }),
+      AiXDom.node('td', {}, [
+        rating,
+        AiXDom.node('div', {
+          className: 'cell-small',
+          text: `(${adminFiniteNumber(course.ratingCount).toLocaleString('th-TH')})`
+        })
+      ]),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'action-btns' }, [editButton, deleteButton])])
+    ]);
+  }));
 }
 
 function openCourseModal(id = null) {
@@ -530,7 +673,7 @@ async function saveCourse(event) {
     featured: document.getElementById('courseFormFeatured').checked
   };
 
-  const url = isEdit ? `${ADMIN_API_ORIGIN}/api/courses/${idStr}` : `${ADMIN_API_ORIGIN}/api/courses`;
+  const url = isEdit ? `${ADMIN_API_ORIGIN}/api/courses/${encodeURIComponent(idStr)}` : `${ADMIN_API_ORIGIN}/api/courses`;
   const method = isEdit ? 'PUT' : 'POST';
 
   try {
@@ -559,42 +702,51 @@ function renderReplays() {
   });
 
   if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🎥</div><p>ยังไม่มีคลิปย้อนหลัง</p></div></td></tr>`;
+    AiXDom.replace(tbody, [adminEmptyTableRow(5, '🎥', 'ยังไม่มีคลิปย้อนหลัง')]);
     return;
   }
 
-  tbody.innerHTML = rows.map((item) => {
+  AiXDom.replace(tbody, rows.map((item) => {
     const source = item.hasUpload ? 'ไฟล์อัปโหลดที่ป้องกันแล้ว' : (item.videoUrl ? 'ลิงก์วิดีโอ' : 'ยังไม่มีไฟล์');
     const playableUrl = item.mediaUrl || item.videoUrl || '';
-    return `
-      <tr>
-        <td>
-          <div class="cell-main">${escapeHtml(item.title)}</div>
-          <div class="cell-small">${escapeHtml(item.description || '-')}</div>
-        </td>
-        <td>${escapeHtml(item.courseTitle || item.courseId || '-')}</td>
-        <td>${escapeHtml(item.durationText || item.duration || '-')}</td>
-        <td>
-          <span class="status-badge ${playableUrl ? 'status-active' : 'status-disabled'}">${source}</span>
-          ${playableUrl ? `<div class="cell-small">${escapeHtml(playableUrl)}</div>` : ''}
-        </td>
-        <td>
-          <div class="action-btns">
-            ${playableUrl ? `<a class="action-btn btn-view" href="${escapeHtml(playableUrl)}" target="_blank" title="เปิด"><i class="fas fa-play"></i></a>` : ''}
-            <button class="action-btn" onclick="openReplayModal('${item.id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
-            <button class="action-btn btn-del" onclick="requestDelete('replay','${item.id}','${escapeHtml(item.title)}')" title="ลบ"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+    const actionChildren = [];
+    if (playableUrl) {
+      actionChildren.push(AiXDom.link({
+        href: playableUrl,
+        className: 'action-btn btn-view',
+        attrs: { title: 'เปิด' }
+      }, [adminIcon('fas fa-play')]));
+    }
+    const editButton = adminActionButton('action-btn', 'แก้ไข', 'fas fa-edit');
+    editButton.addEventListener("click", () => openReplayModal(item.id));
+    const deleteButton = adminActionButton('action-btn btn-del', 'ลบ', 'fas fa-trash');
+    deleteButton.addEventListener("click", () => requestDelete('replay', item.id, item.title));
+    actionChildren.push(editButton, deleteButton);
+
+    return AiXDom.node('tr', {}, [
+      AiXDom.node('td', {}, [
+        AiXDom.node('div', { className: 'cell-main', text: item.title }),
+        AiXDom.node('div', { className: 'cell-small', text: item.description || '-' })
+      ]),
+      AiXDom.node('td', { text: item.courseTitle || item.courseId || '-' }),
+      AiXDom.node('td', { text: item.durationText || item.duration || '-' }),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', {
+          className: `status-badge ${playableUrl ? 'status-active' : 'status-disabled'}`,
+          text: source
+        }),
+        playableUrl ? AiXDom.node('div', { className: 'cell-small', text: playableUrl }) : null
+      ]),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'action-btns' }, actionChildren)])
+    ]);
+  }));
 }
 
 function openReplayModal(id = null) {
   const item = id ? getReplays().find((entry) => entry.id === id) : null;
   document.getElementById('replayEditId').value = id || '';
   document.getElementById('replayModalTitle').textContent = id ? '🎥 แก้ไขคลิปย้อนหลัง' : '🎥 เพิ่มคลิปย้อนหลัง';
-  document.getElementById('replayFormCourse').innerHTML = courseOptions(item?.courseId || '');
+  AiXDom.replace(document.getElementById('replayFormCourse'), courseOptions(item?.courseId || ''));
   document.getElementById('replayFormTitle').value = item?.title || '';
   document.getElementById('replayFormDuration').value = item?.durationText || item?.duration || '';
   document.getElementById('replayFormVideoUrl').value = item?.hasUpload ? '' : (item?.videoUrl || '');
@@ -623,7 +775,7 @@ async function saveReplay(event) {
   if (file) formData.append('video', file);
 
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/replays${id ? `/${id}` : ''}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/replays${id ? `/${encodeURIComponent(id)}` : ''}`, {
       method: id ? 'PUT' : 'POST',
       body: formData
     });
@@ -644,35 +796,47 @@ function renderResourcesAdmin() {
   const search = (document.getElementById('resourceSearch')?.value || '').toLowerCase();
   const tbody = document.getElementById('resourcesTableBody');
   const rows = getResourcesAdmin().filter((item) => {
-    return `${item.title || ''} ${item.courseTitle || ''} ${item.description || ''} ${(item.tags || []).join(' ')}`.toLowerCase().includes(search);
+    const tags = Array.isArray(item.tags) ? item.tags.join(' ') : '';
+    return `${item.title || ''} ${item.courseTitle || ''} ${item.description || ''} ${tags}`.toLowerCase().includes(search);
   });
 
   if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🧰</div><p>ยังไม่มี Tools หรือ Skill Set</p></div></td></tr>`;
+    AiXDom.replace(tbody, [adminEmptyTableRow(5, '🧰', 'ยังไม่มี Tools หรือ Skill Set')]);
     return;
   }
 
-  tbody.innerHTML = rows.map((item) => {
+  AiXDom.replace(tbody, rows.map((item) => {
     const link = item.mediaUrl || item.url || '';
-    return `
-      <tr>
-        <td>
-          <div class="cell-main">${escapeHtml(item.title)}</div>
-          <div class="cell-small">${escapeHtml(item.description || '-')}</div>
-        </td>
-        <td><span class="status-badge status-active">${escapeHtml(resourceTypeLabel(item.type))}</span></td>
-        <td>${escapeHtml(item.courseTitle || (item.courseId ? item.courseId : 'ทุกคอร์ส'))}</td>
-        <td><div class="tag-list">${(item.tags || []).map((tag) => `<span>${escapeHtml(tag)}</span>`).join('') || '<span>-</span>'}</div></td>
-        <td>
-          <div class="action-btns">
-            ${link ? `<a class="action-btn btn-view" href="${escapeHtml(link)}" target="_blank" title="เปิด"><i class="fas fa-arrow-up-right-from-square"></i></a>` : ''}
-            <button class="action-btn" onclick="openResourceModal('${item.id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
-            <button class="action-btn btn-del" onclick="requestDelete('resource','${item.id}','${escapeHtml(item.title)}')" title="ลบ"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+    const tags = Array.isArray(item.tags) && item.tags.length
+      ? item.tags.map((tag) => AiXDom.node('span', { text: tag }))
+      : [AiXDom.node('span', { text: '-' })];
+    const actionChildren = [];
+    if (link) {
+      actionChildren.push(AiXDom.link({
+        href: link,
+        className: 'action-btn btn-view',
+        attrs: { title: 'เปิด' }
+      }, [adminIcon('fas fa-arrow-up-right-from-square')]));
+    }
+    const editButton = adminActionButton('action-btn', 'แก้ไข', 'fas fa-edit');
+    editButton.addEventListener("click", () => openResourceModal(item.id));
+    const deleteButton = adminActionButton('action-btn btn-del', 'ลบ', 'fas fa-trash');
+    deleteButton.addEventListener("click", () => requestDelete('resource', item.id, item.title));
+    actionChildren.push(editButton, deleteButton);
+
+    return AiXDom.node('tr', {}, [
+      AiXDom.node('td', {}, [
+        AiXDom.node('div', { className: 'cell-main', text: item.title }),
+        AiXDom.node('div', { className: 'cell-small', text: item.description || '-' })
+      ]),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', { className: 'status-badge status-active', text: resourceTypeLabel(item.type) })
+      ]),
+      AiXDom.node('td', { text: item.courseTitle || (item.courseId ? item.courseId : 'ทุกคอร์ส') }),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'tag-list' }, tags)]),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'action-btns' }, actionChildren)])
+    ]);
+  }));
 }
 
 function openResourceModal(id = null) {
@@ -680,7 +844,7 @@ function openResourceModal(id = null) {
   document.getElementById('resourceEditId').value = id || '';
   document.getElementById('resourceModalTitle').textContent = id ? '🧰 แก้ไข Resource' : '🧰 เพิ่ม Resource';
   document.getElementById('resourceFormType').value = item?.type || 'tool';
-  document.getElementById('resourceFormCourse').innerHTML = courseOptions(item?.courseId || '', true);
+  AiXDom.replace(document.getElementById('resourceFormCourse'), courseOptions(item?.courseId || '', true));
   document.getElementById('resourceFormTitle').value = item?.title || '';
   document.getElementById('resourceFormUrl').value = item?.hasUpload ? '' : (item?.url || '');
   document.getElementById('resourceFormFile').value = '';
@@ -705,7 +869,7 @@ async function saveResource(event) {
   if (file) formData.append('file', file);
 
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/resources${id ? `/${id}` : ''}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/resources${id ? `/${encodeURIComponent(id)}` : ''}`, {
       method: id ? 'PUT' : 'POST',
       body: formData
     });
@@ -726,38 +890,46 @@ function renderSchedules() {
   const tbody = document.getElementById('schedulesTableBody');
   const rows = getSchedules();
   if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🗓️</div><p>ยังไม่มีตารางเรียน</p></div></td></tr>`;
+    AiXDom.replace(tbody, [adminEmptyTableRow(5, '🗓️', 'ยังไม่มีตารางเรียน')]);
     return;
   }
 
-  tbody.innerHTML = rows.map((item) => `
-    <tr>
-      <td>
-        <div class="cell-main">${escapeHtml(item.title)}</div>
-        <div class="cell-small">${escapeHtml(item.description || '-')}</div>
-      </td>
-      <td>${escapeHtml(item.courseTitle || item.courseId || '-')}</td>
-      <td>
-        ${formatDateTime(item.startsAt)}
-        ${item.endsAt ? `<div class="cell-small">ถึง ${formatDateTime(item.endsAt)}</div>` : ''}
-      </td>
-      <td><span class="status-badge status-contacted">${Number(item.notifyBeforeMinutes || 0).toLocaleString()} นาที</span></td>
-      <td>
-        <div class="action-btns">
-          <button class="action-btn btn-view" onclick="notifySchedule('${item.id}')" title="ส่งแจ้งเตือน"><i class="fas fa-bell"></i></button>
-          <button class="action-btn" onclick="openScheduleModal('${item.id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
-          <button class="action-btn btn-del" onclick="requestDelete('schedule','${item.id}','${escapeHtml(item.title)}')" title="ลบ"><i class="fas fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  AiXDom.replace(tbody, rows.map((item) => {
+    const notifyButton = adminActionButton('action-btn btn-view', 'ส่งแจ้งเตือน', 'fas fa-bell');
+    notifyButton.addEventListener("click", () => notifySchedule(item.id));
+    const editButton = adminActionButton('action-btn', 'แก้ไข', 'fas fa-edit');
+    editButton.addEventListener("click", () => openScheduleModal(item.id));
+    const deleteButton = adminActionButton('action-btn btn-del', 'ลบ', 'fas fa-trash');
+    deleteButton.addEventListener("click", () => requestDelete('schedule', item.id, item.title));
+
+    return AiXDom.node('tr', {}, [
+      AiXDom.node('td', {}, [
+        AiXDom.node('div', { className: 'cell-main', text: item.title }),
+        AiXDom.node('div', { className: 'cell-small', text: item.description || '-' })
+      ]),
+      AiXDom.node('td', { text: item.courseTitle || item.courseId || '-' }),
+      AiXDom.node('td', {}, [
+        formatDateTime(item.startsAt),
+        item.endsAt ? AiXDom.node('div', { className: 'cell-small', text: `ถึง ${formatDateTime(item.endsAt)}` }) : null
+      ]),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', {
+          className: 'status-badge status-contacted',
+          text: `${adminFiniteNumber(item.notifyBeforeMinutes).toLocaleString('th-TH')} นาที`
+        })
+      ]),
+      AiXDom.node('td', {}, [
+        AiXDom.node('div', { className: 'action-btns' }, [notifyButton, editButton, deleteButton])
+      ])
+    ]);
+  }));
 }
 
 function openScheduleModal(id = null) {
   const item = id ? getSchedules().find((entry) => entry.id === id) : null;
   document.getElementById('scheduleEditId').value = id || '';
   document.getElementById('scheduleModalTitle').textContent = id ? '🗓️ แก้ไขตารางเรียน' : '🗓️ เพิ่มตารางเรียน';
-  document.getElementById('scheduleFormCourse').innerHTML = courseOptions(item?.courseId || '');
+  AiXDom.replace(document.getElementById('scheduleFormCourse'), courseOptions(item?.courseId || ''));
   document.getElementById('scheduleFormTitle').value = item?.title || '';
   document.getElementById('scheduleFormStartsAt').value = toDateTimeInput(item?.startsAt || '');
   document.getElementById('scheduleFormEndsAt').value = toDateTimeInput(item?.endsAt || '');
@@ -783,7 +955,7 @@ async function saveSchedule(event) {
   };
 
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules${id ? `/${id}` : ''}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules${id ? `/${encodeURIComponent(id)}` : ''}`, {
       method: id ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -803,7 +975,7 @@ async function saveSchedule(event) {
 
 async function notifySchedule(id) {
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules/${id}/notify`, { method: 'POST' });
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/admin/schedules/${encodeURIComponent(id)}/notify`, { method: 'POST' });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Cannot notify');
     adminToast(`✅ ส่งแจ้งเตือนแล้ว ${data.created || 0} รายการ`, 'success');
@@ -833,42 +1005,59 @@ function renderLeads() {
   filtered.sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><p>ไม่พบ Lead</p></div></td></tr>`;
+    AiXDom.replace(tbody, [adminEmptyTableRow(8, '📋', 'ไม่พบ Lead')]);
     return;
   }
 
-  tbody.innerHTML = filtered.map((l, i) => {
-    const courseName = courses[l.courseId]?.name || courses[l.course]?.name || l.courseId || l.course || '-';
-    const tierMap = { explorer: 'Explorer', navigator: 'Navigator', commander: 'Commander' };
-    return `
-      <tr>
-        <td class="cell-main">${l.firstName} ${l.lastName}</td>
-        <td>${l.email}</td>
-        <td>${l.phone || '-'}</td>
-        <td><div class="cell-small">${courseName}</div></td>
-        <td><span class="tier-badge tier-${l.membership || 'explorer'}">${tierMap[l.membership] || l.membership || '-'}</span></td>
-        <td>
-          <select class="filter-select" style="padding:4px 24px 4px 8px;font-size:0.72rem;" onchange="changeLeadStatus('${l.id}', this.value)">
-            <option value="new" ${l.status === 'new' ? 'selected' : ''}>New</option>
-            <option value="contacted" ${l.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-            <option value="converted" ${l.status === 'converted' ? 'selected' : ''}>Converted</option>
-          </select>
-        </td>
-        <td class="cell-small">${formatDate(l.createdAt || l.date)}</td>
-        <td>
-          <div class="action-btns">
-            <button class="action-btn btn-view" onclick="viewLeadDetail('${l.id}')" title="ดูรายละเอียด"><i class="fas fa-eye"></i></button>
-            <button class="action-btn btn-del" onclick="requestDelete('lead','${l.id}','${l.firstName} ${l.lastName}')" title="ลบ"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  AiXDom.replace(tbody, filtered.map((lead) => {
+    const courseName = courses[lead.courseId]?.name || courses[lead.course]?.name || lead.courseId || lead.course || '-';
+    const rawTier = String(lead.membership || 'explorer');
+    const tier = rawTier.toLowerCase();
+    const rawStatus = String(lead.status || 'new');
+    const status = rawStatus.toLowerCase();
+    const fullName = `${lead.firstName || ''} ${lead.lastName || ''}`.trim() || '-';
+    const statusOptions = [
+      AiXDom.node('option', { text: 'New', props: { value: 'new', selected: status === 'new' } }),
+      AiXDom.node('option', { text: 'Contacted', props: { value: 'contacted', selected: status === 'contacted' } }),
+      AiXDom.node('option', { text: 'Converted', props: { value: 'converted', selected: status === 'converted' } })
+    ];
+    if (!Object.hasOwn(adminLabelMaps.leadStatus, status)) {
+      statusOptions.unshift(AiXDom.node('option', {
+        text: rawStatus,
+        props: { value: rawStatus, selected: true }
+      }));
+    }
+    const statusSelect = AiXDom.node('select', { className: 'filter-select' }, statusOptions);
+    statusSelect.style.padding = '4px 24px 4px 8px';
+    statusSelect.style.fontSize = '0.72rem';
+    statusSelect.addEventListener("change", () => changeLeadStatus(lead.id, statusSelect.value));
+
+    const viewButton = adminActionButton('action-btn btn-view', 'ดูรายละเอียด', 'fas fa-eye');
+    viewButton.addEventListener("click", () => viewLeadDetail(lead.id));
+    const deleteButton = adminActionButton('action-btn btn-del', 'ลบ', 'fas fa-trash');
+    deleteButton.addEventListener("click", () => requestDelete('lead', lead.id, fullName));
+
+    return AiXDom.node('tr', {}, [
+      AiXDom.node('td', { className: 'cell-main', text: fullName }),
+      AiXDom.node('td', { text: lead.email || '-' }),
+      AiXDom.node('td', { text: lead.phone || '-' }),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'cell-small', text: courseName })]),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', {
+          className: `tier-badge ${adminMappedClass('tier', tier, 'tier-explorer')}`,
+          text: adminMappedLabel('tier', tier, rawTier)
+        })
+      ]),
+      AiXDom.node('td', {}, [statusSelect]),
+      AiXDom.node('td', { className: 'cell-small', text: formatDate(lead.createdAt || lead.date) }),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'action-btns' }, [viewButton, deleteButton])])
+    ]);
+  }));
 }
 
 async function changeLeadStatus(leadId, newStatus) {
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/leads/${leadId}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/leads/${encodeURIComponent(leadId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -891,45 +1080,33 @@ function viewLeadDetail(leadId) {
 
   const courses = getCourses();
   const courseName = courses[l.courseId]?.name || courses[l.course]?.name || l.courseId || l.course || '-';
-  const tierMap = { explorer: 'Explorer', navigator: 'Navigator', commander: 'Commander' };
-  const paymentMap = { credit: 'Credit/Debit Card', promptpay: 'PromptPay/QR', bank: 'Bank Transfer' };
-
-  document.getElementById('leadDetailContent').innerHTML = `
-    <div style="display:grid;gap:14px;font-size:0.88rem;">
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">ชื่อ-นามสกุล</span>
-        <span style="font-weight:600;">${l.firstName} ${l.lastName}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">Email</span>
-        <span style="font-weight:600;">${l.email}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">เบอร์โทร</span>
-        <span style="font-weight:600;">${l.phone || '-'}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">คอร์สที่สนใจ</span>
-        <span style="font-weight:600;color:var(--accent-cyan);">${courseName}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">แพ็คเกจ</span>
-        <span class="tier-badge tier-${l.membership || 'explorer'}">${tierMap[l.membership] || '-'}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">ช่องทางชำระเงิน</span>
-        <span style="font-weight:600;">${paymentMap[l.payment] || l.payment || '-'}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
-        <span style="color:var(--text-muted);">สถานะ</span>
-        <span class="status-badge status-${l.status}">${l.status}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;">
-        <span style="color:var(--text-muted);">วันที่ลงทะเบียน</span>
-        <span style="font-weight:600;">${new Date(l.createdAt || l.date || Date.now()).toLocaleString('th-TH')}</span>
-      </div>
-    </div>
-  `;
+  const rawTier = String(l.membership || 'explorer');
+  const tier = rawTier.toLowerCase();
+  const rawPayment = String(l.payment || '-');
+  const rawStatus = String(l.status || 'new');
+  const status = rawStatus.toLowerCase();
+  const courseValue = AiXDom.node('span', { className: 'admin-detail-value', text: courseName });
+  courseValue.style.color = 'var(--accent-cyan)';
+  const detailGrid = AiXDom.node('div', { className: 'admin-detail-grid' }, [
+    adminDetailRow('ชื่อ-นามสกุล', `${l.firstName || ''} ${l.lastName || ''}`.trim() || '-'),
+    adminDetailRow('Email', l.email || '-'),
+    adminDetailRow('เบอร์โทร', l.phone || '-'),
+    adminDetailRow('คอร์สที่สนใจ', courseValue),
+    adminDetailRow('แพ็คเกจ', AiXDom.node('span', {
+      className: `tier-badge ${adminMappedClass('tier', tier, 'tier-explorer')}`,
+      text: adminMappedLabel('tier', tier, rawTier)
+    })),
+    adminDetailRow('ช่องทางชำระเงิน', adminMappedLabel('paymentMethod', l.payment, rawPayment)),
+    adminDetailRow('สถานะ', AiXDom.node('span', {
+      className: `status-badge ${adminMappedClass('leadStatus', status, 'status-new')}`,
+      text: adminMappedLabel('leadStatus', status, rawStatus)
+    })),
+    adminDetailRow('วันที่ลงทะเบียน', new Date(l.createdAt || l.date || Date.now()).toLocaleString('th-TH'), false)
+  ]);
+  detailGrid.style.display = 'grid';
+  detailGrid.style.gap = '14px';
+  detailGrid.style.fontSize = '0.88rem';
+  AiXDom.replace(document.getElementById('leadDetailContent'), [detailGrid]);
 
   openAdminModal('leadDetailModal');
 }
@@ -958,43 +1135,67 @@ function renderMembers() {
   entries.sort((a, b) => new Date(b[1].createdAt || b[1].joinedDate || 0) - new Date(a[1].createdAt || a[1].joinedDate || 0));
 
   if (entries.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><p>ไม่พบสมาชิก</p></div></td></tr>`;
+    AiXDom.replace(tbody, [adminEmptyTableRow(7, '👥', 'ไม่พบสมาชิก')]);
     return;
   }
 
-  tbody.innerHTML = entries.map(([id, m]) => {
-    const name = memberName(m);
-    const provider = providerLabel(m.provider || m.authProvider);
-    const status = m.status || 'active';
-    const paymentStatus = m.paymentStatus || m.payment_status || 'unpaid';
-    return `
-      <tr>
-        <td>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="member-avatar">${escapeHtml(name.charAt(0).toUpperCase())}</div>
-            <div>
-              <div class="cell-main">${escapeHtml(name)}</div>
-              <div class="cell-small">${escapeHtml(m.phone || 'ไม่มีเบอร์โทร')}</div>
-            </div>
-          </div>
-        </td>
-        <td>${escapeHtml(m.email || '-')}</td>
-        <td><span class="provider-badge provider-${escapeHtml(String(m.provider || m.authProvider || 'email').toLowerCase())}">${escapeHtml(provider)}</span></td>
-        <td><span class="status-badge status-${escapeHtml(status)}">${status === 'active' ? 'Active' : 'Suspended'}</span></td>
-        <td>
-          <span class="status-badge status-${escapeHtml(paymentStatus)}">${paymentLabel(paymentStatus)}</span>
-          ${paymentStatus === 'paid' && m.expiresAt ? `<div class="cell-small">หมดอายุ ${formatDate(m.expiresAt)}</div>` : ''}
-        </td>
-        <td class="cell-small">${formatDate(m.createdAt || m.joinedDate)}</td>
-        <td>
-          <div class="action-btns">
-            <button class="action-btn" onclick="editMember('${m.id}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
-            <button class="action-btn btn-del" onclick="requestDelete('member','${m.id}','${escapeHtml(name)}')" title="ลบ"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  AiXDom.replace(tbody, entries.map(([id, member]) => {
+    const name = memberName(member);
+    const providerKey = String(member.provider || member.authProvider || 'email').toLowerCase();
+    const rawStatus = String(member.status || 'active');
+    const status = rawStatus.toLowerCase();
+    const rawPaymentStatus = String(member.paymentStatus || member.payment_status || 'unpaid');
+    const paymentStatus = rawPaymentStatus.toLowerCase();
+
+    const memberSummary = AiXDom.node('div', { className: 'admin-member-summary' }, [
+      AiXDom.node('div', { className: 'member-avatar', text: name.charAt(0).toUpperCase() }),
+      AiXDom.node('div', {}, [
+        AiXDom.node('div', { className: 'cell-main', text: name }),
+        AiXDom.node('div', { className: 'cell-small', text: member.phone || 'ไม่มีเบอร์โทร' })
+      ])
+    ]);
+    memberSummary.style.display = 'flex';
+    memberSummary.style.alignItems = 'center';
+    memberSummary.style.gap = '10px';
+
+    const paymentChildren = [
+      AiXDom.node('span', {
+        className: `status-badge ${adminMappedClass('paymentStatus', paymentStatus, 'status-unpaid')}`,
+        text: paymentLabel(rawPaymentStatus)
+      })
+    ];
+    if (paymentStatus === 'paid' && member.expiresAt) {
+      paymentChildren.push(AiXDom.node('div', {
+        className: 'cell-small',
+        text: `หมดอายุ ${formatDate(member.expiresAt)}`
+      }));
+    }
+
+    const editButton = adminActionButton('action-btn', 'แก้ไข', 'fas fa-edit');
+    editButton.addEventListener("click", () => editMember(id));
+    const deleteButton = adminActionButton('action-btn btn-del', 'ลบ', 'fas fa-trash');
+    deleteButton.addEventListener("click", () => requestDelete('member', id, name));
+
+    return AiXDom.node('tr', {}, [
+      AiXDom.node('td', {}, [memberSummary]),
+      AiXDom.node('td', { text: member.email || '-' }),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', {
+          className: `provider-badge ${adminMappedClass('provider', providerKey, 'provider-email')}`,
+          text: providerLabel(providerKey)
+        })
+      ]),
+      AiXDom.node('td', {}, [
+        AiXDom.node('span', {
+          className: `status-badge ${adminMappedClass('memberStatus', status, 'status-suspended')}`,
+          text: status === 'active' ? 'Active' : status === 'suspended' ? 'Suspended' : rawStatus
+        })
+      ]),
+      AiXDom.node('td', {}, paymentChildren),
+      AiXDom.node('td', { className: 'cell-small', text: formatDate(member.createdAt || member.joinedDate) }),
+      AiXDom.node('td', {}, [AiXDom.node('div', { className: 'action-btns' }, [editButton, deleteButton])])
+    ]);
+  }));
 }
 
 function editMember(id) {
@@ -1011,11 +1212,11 @@ function editMember(id) {
   document.getElementById('memberFormPaidAt').value = toDateInput(m.paidAt || m.paid_at);
   document.getElementById('memberFormExpiresAt').value = toDateInput(m.expiresAt || m.expires_at);
   document.getElementById('memberFormBusiness').value = m.business || '';
-  document.getElementById('memberFormMeta').innerHTML = `
-    <span>Provider: ${escapeHtml(providerLabel(m.provider || m.authProvider))}</span>
-    <span>สมัครเมื่อ: ${formatDate(m.createdAt || m.joinedDate)}</span>
-    <span>Login ล่าสุด: ${formatDate(m.lastLoginAt)}</span>
-  `;
+  AiXDom.replace(document.getElementById('memberFormMeta'), [
+    AiXDom.node('span', { text: `Provider: ${providerLabel(m.provider || m.authProvider)}` }),
+    AiXDom.node('span', { text: `สมัครเมื่อ: ${formatDate(m.createdAt || m.joinedDate)}` }),
+    AiXDom.node('span', { text: `Login ล่าสุด: ${formatDate(m.lastLoginAt)}` })
+  ]);
 
   openAdminModal('memberModal');
 }
@@ -1035,7 +1236,7 @@ async function saveMember(event) {
   };
 
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/members/${id}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/members/${encodeURIComponent(id)}`, {
       method: 'PUT', 
       headers: {'Content-Type':'application/json'}, 
       body: JSON.stringify(payload) 
@@ -1063,33 +1264,45 @@ function renderPackages() {
   const order = ['explorer', 'navigator', 'commander'];
   const ids = [...order.filter(id => packages[id]), ...Object.keys(packages).filter(id => !order.includes(id))];
 
-  grid.innerHTML = ids.map(id => {
-    const p = packages[id];
-    return `
-      <div class="package-edit-card">
-        <div class="pkg-header">
-          <span class="pkg-icon">${p.icon || '📦'}</span>
-          ${p.popular ? '<span class="status-badge status-active" style="font-size:0.65rem;">Popular</span>' : ''}
-          ${!p.enabled ? '<span class="status-badge status-disabled" style="font-size:0.65rem;">Disabled</span>' : ''}
-        </div>
-        <div class="pkg-name">${p.name}</div>
-        <div class="pkg-price">
-          <span class="currency">฿</span>${p.price.toLocaleString()}
-        </div>
-        <div class="pkg-period">${p.period || ''}</div>
-        <ul class="pkg-features-list">
-          ${(p.features || []).map(f => `
-            <li><span class="pf-icon"><i class="fas fa-check"></i></span> ${f}</li>
-          `).join('')}
-        </ul>
-        <div class="pkg-actions">
-          <button class="btn-admin btn-admin-secondary" onclick="editPackage('${id}')">
-            <i class="fas fa-edit"></i> แก้ไข
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
+  AiXDom.replace(grid, ids.map((id) => {
+    const packageItem = packages[id];
+    const headerChildren = [AiXDom.node('span', { className: 'pkg-icon', text: packageItem.icon || '📦' })];
+    if (packageItem.popular) {
+      const badge = AiXDom.node('span', { className: 'status-badge status-active', text: 'Popular' });
+      badge.style.fontSize = '0.65rem';
+      headerChildren.push(badge);
+    }
+    if (!packageItem.enabled) {
+      const badge = AiXDom.node('span', { className: 'status-badge status-disabled', text: 'Disabled' });
+      badge.style.fontSize = '0.65rem';
+      headerChildren.push(badge);
+    }
+
+    const features = Array.isArray(packageItem.features)
+      ? packageItem.features.map((feature) => AiXDom.node('li', {}, [
+          AiXDom.node('span', { className: 'pf-icon' }, [adminIcon('fas fa-check')]),
+          ' ',
+          feature
+        ]))
+      : [];
+    const editButton = AiXDom.node('button', {
+      className: 'btn-admin btn-admin-secondary',
+      attrs: { type: 'button' }
+    }, [adminIcon('fas fa-edit'), ' แก้ไข']);
+    editButton.addEventListener("click", () => editPackage(id));
+
+    return AiXDom.node('div', { className: 'package-edit-card' }, [
+      AiXDom.node('div', { className: 'pkg-header' }, headerChildren),
+      AiXDom.node('div', { className: 'pkg-name', text: packageItem.name }),
+      AiXDom.node('div', { className: 'pkg-price' }, [
+        AiXDom.node('span', { className: 'currency', text: '฿' }),
+        adminFiniteNumber(packageItem.price).toLocaleString('th-TH')
+      ]),
+      AiXDom.node('div', { className: 'pkg-period', text: packageItem.period || '' }),
+      AiXDom.node('ul', { className: 'pkg-features-list' }, features),
+      AiXDom.node('div', { className: 'pkg-actions' }, [editButton])
+    ]);
+  }));
 }
 
 function editPackage(id) {
@@ -1117,12 +1330,15 @@ function editPackage(id) {
 
 function addFeatureRow(value = '') {
   const editor = document.getElementById('featuresEditor');
-  const row = document.createElement('div');
-  row.className = 'feature-row';
-  row.innerHTML = `
-    <input type="text" class="admin-input feature-input" value="${value}" placeholder="ฟีเจอร์...">
-    <button type="button" class="btn-remove-feature" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
-  `;
+  const input = AiXDom.node('input', {
+    className: 'admin-input feature-input',
+    attrs: { type: 'text' },
+    props: { value }
+  });
+  input.placeholder = 'ฟีเจอร์...';
+  const removeButton = adminActionButton('btn-remove-feature', 'ลบฟีเจอร์', 'fas fa-times');
+  const row = AiXDom.node('div', { className: 'feature-row' }, [input, removeButton]);
+  removeButton.addEventListener("click", () => row.remove());
   editor.appendChild(row);
 }
 
@@ -1144,7 +1360,7 @@ async function savePackage(event) {
   };
 
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/packages/${id}`, {
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/packages/${encodeURIComponent(id)}`, {
       method: 'PUT', 
       headers: {'Content-Type':'application/json'}, 
       body: JSON.stringify(payload) 
@@ -1190,7 +1406,7 @@ async function confirmDelete() {
   if (!endpoint || !id) return;
 
   try {
-    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/${endpoint}/${id}`, { method: 'DELETE' });
+    const res = await adminFetch(`${ADMIN_API_ORIGIN}/api/${endpoint}/${encodeURIComponent(id)}`, { method: 'DELETE' });
     if(res.ok) {
         adminToast('✅ ลบข้อมูลสำเร็จ', 'success');
     } else {

@@ -216,16 +216,20 @@ const aiBrandCatalog = {
 };
 
 function renderBrandLogo(name, compact = false) {
-  const brand = aiBrandCatalog[name] || { mark: name.slice(0, 2), className: "default" };
-  const visual = brand.logo
-    ? `<img class="brand-logo-img" src="${brand.logo}" alt="" loading="lazy" decoding="async">`
-    : `<span class="brand-mark">${brand.mark}</span>`;
-  return `
-    <span class="ai-brand-chip ${compact ? "compact" : ""} brand-${brand.className}" title="${name}">
-      ${visual}
-      <span class="brand-name">${name}</span>
-    </span>
-  `;
+  const brand = Object.hasOwn(aiBrandCatalog, name) ? aiBrandCatalog[name] : null;
+  const brandClass = brand?.className || "default";
+  const mark = brand?.mark || String(name || "AI").slice(0, 2);
+  const visual = brand?.logo
+    ? AiXDom.node("img", {
+        className: "brand-logo-img",
+        attrs: { alt: "", loading: "lazy", decoding: "async" },
+        urls: { src: { value: brand.logo, options: { allowedProtocols: ["http:", "https:"] } } }
+      })
+    : AiXDom.node("span", { className: "brand-mark", text: mark });
+  return AiXDom.node("span", {
+    className: `ai-brand-chip ${compact ? "compact" : ""} brand-${brandClass}`,
+    attrs: { title: name }
+  }, [visual, AiXDom.node("span", { className: "brand-name", text: name })]);
 }
 
 async function restoreMemberSession() {
@@ -258,7 +262,7 @@ function updateDetailCtas(course) {
 
   ctas.forEach((cta) => {
     cta.textContent = label;
-    cta.href = href;
+    cta.setAttribute("href", AiXDom.safeUrl(href));
   });
 }
 
@@ -268,7 +272,7 @@ function getCourseId() {
 
 function getCourse() {
   const id = getCourseId();
-  return detailCourses[id] || fallbackCourse;
+  return Object.hasOwn(detailCourses, id) ? detailCourses[id] : fallbackCourse;
 }
 
 async function loadCourseFromDatabase() {
@@ -306,8 +310,9 @@ function setText(id, text) {
 }
 
 function absoluteSiteUrl(path = "") {
-  if (/^https?:\/\//.test(path)) return path;
-  return `https://www.aixclub.co/${String(path || "").replace(/^\/+/, "")}`;
+  const safePath = AiXDom.safeUrl(path, { fallback: "assets/generated/hero-space-learning.jpg" });
+  if (/^https?:\/\//.test(safePath)) return safePath;
+  return AiXDom.safeUrl(`https://www.aixclub.co/${safePath.replace(/^\/+/, "")}`, { allowRelative: false });
 }
 
 function renderDetail(rawCourse = getCourse()) {
@@ -323,7 +328,7 @@ function renderDetail(rawCourse = getCourse()) {
   document.querySelector('meta[name="twitter:title"]')?.setAttribute("content", `${course.title} | AiX Club`);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", course.subtitle);
   document.querySelector('meta[name="twitter:image"]')?.setAttribute("content", imageUrl);
-  document.querySelector('link[rel="canonical"]')?.setAttribute("href", canonicalUrl);
+  document.querySelector('link[rel="canonical"]')?.setAttribute("href", AiXDom.safeUrl(canonicalUrl, { allowRelative: false }));
 
   setText("detailType", course.type);
   setText("detailTitle", course.title);
@@ -338,22 +343,28 @@ function renderDetail(rawCourse = getCourse()) {
 
   const image = document.getElementById("detailImage");
   if (image) {
-    image.src = course.image;
+    image.src = AiXDom.safeUrl(course.image, { fallback: "assets/generated/hero-space-learning.jpg" });
     image.alt = `${course.title} - AiX Club`;
   }
 
-  document.getElementById("detailStats").innerHTML = [
+  const statRows = [
     ["fa-solid fa-star", course.rating],
     ["fa-solid fa-layer-group", course.lessons],
     ["fa-regular fa-clock", course.duration],
     ["fa-solid fa-signal", course.level]
-  ].map(([icon, label]) => `<span><i class="${icon}"></i>${label}</span>`).join("");
+  ];
+  AiXDom.replace(document.getElementById("detailStats"), statRows.map(([icon, label]) => (
+    AiXDom.node("span", {}, [AiXDom.node("i", { className: icon }), label])
+  )));
 
-  document.getElementById("detailMini").innerHTML = [
+  const miniRows = [
     ["fa-solid fa-users", course.learners],
     ["fa-solid fa-calendar-check", course.schedule],
     ["fa-solid fa-globe", "เรียนออนไลน์ ภาษาไทย"]
-  ].map(([icon, label]) => `<span><i class="${icon}"></i>${label}</span>`).join("");
+  ];
+  AiXDom.replace(document.getElementById("detailMini"), miniRows.map(([icon, label]) => (
+    AiXDom.node("span", {}, [AiXDom.node("i", { className: icon }), label])
+  )));
 
   const courseTools = Array.isArray(course.tools) ? course.tools : [];
   const detailBrandStrip = document.getElementById("detailBrandStrip");
@@ -362,41 +373,44 @@ function renderDetail(rawCourse = getCourse()) {
   detailBrandStrip.hidden = courseTools.length === 0;
   detailBrandBoard.hidden = courseTools.length === 0;
   detailTools.hidden = courseTools.length === 0;
-  detailBrandStrip.innerHTML = courseTools.slice(0, 5).map((tool) => renderBrandLogo(tool, true)).join("");
-
-  document.getElementById("detailOutcomes").innerHTML = course.outcomes.map((item) => `
-    <article><i class="fa-solid fa-check"></i><span>${item}</span></article>
-  `).join("");
-
-  document.getElementById("detailSkills").innerHTML = course.skills.map((skill) => `<span>${skill}</span>`).join("");
-  detailBrandBoard.innerHTML = courseTools.map((tool) => renderBrandLogo(tool)).join("");
-  detailTools.innerHTML = courseTools.map((tool) => `<span><i class="fa-solid fa-toolbox"></i>${tool}</span>`).join("");
-
-  document.getElementById("detailInfo").innerHTML = course.info.map(([label, value]) => `
-    <article>
-      <span>${label}</span>
-      <strong>${value}</strong>
-    </article>
-  `).join("");
-
-  document.getElementById("detailSyllabus").innerHTML = course.syllabus.map((module, index) => `
-    <article class="syllabus-item">
-      <div class="syllabus-number">${index + 1}</div>
-      <div>
-        <span>${module.time}</span>
-        <h3>${module.title}</h3>
-        <div class="module-brand-row">${(course.brandFocus?.[index] || courseTools.slice(0, 2)).map((tool) => renderBrandLogo(tool, true)).join("")}</div>
-        <ul>${module.points.map((point) => `<li>${point}</li>`).join("")}</ul>
-      </div>
-    </article>
-  `).join("");
-
-  document.getElementById("detailFaq").innerHTML = course.faq.map(([question, answer], index) => `
-    <details ${index === 0 ? "open" : ""}>
-      <summary>${question}</summary>
-      <p>${answer}</p>
-    </details>
-  `).join("");
+  AiXDom.replace(detailBrandStrip, courseTools.slice(0, 5).map((tool) => renderBrandLogo(tool, true)));
+  AiXDom.replace(document.getElementById("detailOutcomes"), course.outcomes.map((item) => (
+    AiXDom.node("article", {}, [
+      AiXDom.node("i", { className: "fa-solid fa-check" }),
+      AiXDom.node("span", { text: item })
+    ])
+  )));
+  AiXDom.replace(document.getElementById("detailSkills"), course.skills.map((skill) => AiXDom.node("span", { text: skill })));
+  AiXDom.replace(detailBrandBoard, courseTools.map((tool) => renderBrandLogo(tool)));
+  AiXDom.replace(detailTools, courseTools.map((tool) => AiXDom.node("span", {}, [
+    AiXDom.node("i", { className: "fa-solid fa-toolbox" }),
+    tool
+  ])));
+  AiXDom.replace(document.getElementById("detailInfo"), course.info.map(([label, value]) => (
+    AiXDom.node("article", {}, [
+      AiXDom.node("span", { text: label }),
+      AiXDom.node("strong", { text: value })
+    ])
+  )));
+  AiXDom.replace(document.getElementById("detailSyllabus"), course.syllabus.map((module, index) => {
+    const brands = Array.isArray(course.brandFocus?.[index]) ? course.brandFocus[index] : courseTools.slice(0, 2);
+    const points = Array.isArray(module.points) ? module.points : [];
+    return AiXDom.node("article", { className: "syllabus-item" }, [
+      AiXDom.node("div", { className: "syllabus-number", text: index + 1 }),
+      AiXDom.node("div", {}, [
+        AiXDom.node("span", { text: module.time }),
+        AiXDom.node("h3", { text: module.title }),
+        AiXDom.node("div", { className: "module-brand-row" }, brands.map((tool) => renderBrandLogo(tool, true))),
+        AiXDom.node("ul", {}, points.map((point) => AiXDom.node("li", { text: point })))
+      ])
+    ]);
+  }));
+  AiXDom.replace(document.getElementById("detailFaq"), course.faq.map(([question, answer], index) => (
+    AiXDom.node("details", { props: { open: index === 0 } }, [
+      AiXDom.node("summary", { text: question }),
+      AiXDom.node("p", { text: answer })
+    ])
+  )));
 
   const jsonLd = {
     "@context": "https://schema.org",

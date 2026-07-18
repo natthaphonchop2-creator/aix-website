@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { DatabaseSync } from "node:sqlite";
 import { join } from "node:path";
 import vm from "node:vm";
+import { parseHTML } from "linkedom";
 import { startTestServer } from "./helpers/server-harness.mjs";
 
 const require = createRequire(import.meta.url);
@@ -76,39 +77,6 @@ async function assertNoLibrary(response, expectedStatus) {
   return body;
 }
 
-function createElement() {
-  const listeners = new Map();
-  return {
-    innerHTML: "",
-    textContent: "",
-    hidden: false,
-    href: "",
-    value: "",
-    style: {},
-    dataset: {},
-    disabled: false,
-    classList: {
-      add() {},
-      remove() {},
-      toggle() {}
-    },
-    addEventListener(type, listener) {
-      listeners.set(type, listener);
-    },
-    appendChild() {},
-    querySelector() {
-      return createElement();
-    },
-    setAttribute() {},
-    select() {},
-    click() {},
-    remove() {},
-    closest() {
-      return null;
-    }
-  };
-}
-
 function deferred() {
   let resolve;
   let reject;
@@ -165,7 +133,13 @@ async function runToolsClient({
   logout = []
 } = {}) {
   const source = await readFile("tools-box.js", "utf8");
-  const elements = new Map();
+  const safeDomSource = await readFile("safe-dom.js", "utf8");
+  const toolsHtml = await readFile("tools-box.html", "utf8");
+  const { window } = parseHTML(toolsHtml);
+  const { document } = window;
+  const elements = new Map(
+    [...document.querySelectorAll("[id]")].map((element) => [element.id, element])
+  );
   const documentListeners = new Map();
   const requestCalls = [];
   const redirects = [];
@@ -198,35 +172,27 @@ async function runToolsClient({
     }
   };
 
-  const document = {
-    body: createElement(),
-    getElementById(id) {
-      if (!elements.has(id)) elements.set(id, createElement());
-      return elements.get(id);
-    },
-    createElement(tagName) {
-      const element = createElement();
-      if (tagName === "a") {
-        element.click = () => downloads.push({ download: element.download, href: element.href });
-      }
-      return element;
-    },
-    addEventListener(type, listener) {
-      documentListeners.set(type, listener);
-    },
-    execCommand() {
-      return true;
+  const nativeCreateElement = document.createElement.bind(document);
+  document.createElement = (tagName) => {
+    const element = nativeCreateElement(tagName);
+    if (String(tagName).toLowerCase() === "a") {
+      element.click = () => downloads.push({ download: element.download, href: element.href });
     }
+    return element;
   };
-  const window = {
-    AiXApi: { createClient: () => memberApi },
-    document,
-    location: { replace: (pathname) => redirects.push(pathname) },
-    clearTimeout() {},
-    setTimeout() {
-      return 1;
-    }
+  const nativeAddEventListener = document.addEventListener.bind(document);
+  document.addEventListener = (type, listener, options) => {
+    documentListeners.set(type, listener);
+    return nativeAddEventListener(type, listener, options);
   };
+  document.execCommand = () => true;
+  window.AiXApi = { createClient: () => memberApi };
+  window.location = { replace: (pathname) => redirects.push(pathname) };
+  window.clearTimeout = () => {};
+  window.setTimeout = () => 1;
+  class TestURL extends URL {}
+  TestURL.createObjectURL = () => "blob:test";
+  TestURL.revokeObjectURL = () => {};
   const context = vm.createContext({
     window,
     document,
@@ -239,12 +205,11 @@ async function runToolsClient({
       }
     },
     Blob,
-    URL: {
-      createObjectURL: () => "blob:test",
-      revokeObjectURL() {}
-    },
+    URL: TestURL,
     console
   });
+  new vm.Script(safeDomSource, { filename: "safe-dom.js" }).runInContext(context);
+  context.AiXDom = window.AiXDom;
   new vm.Script(source, { filename: "tools-box.js" }).runInContext(context);
   await flushPromises();
 

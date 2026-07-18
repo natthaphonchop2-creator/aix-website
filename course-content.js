@@ -22,19 +22,21 @@ function getCourseId() {
   return pathMatch ? decodeURIComponent(pathMatch[1]) : new URLSearchParams(window.location.search).get("id");
 }
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function assetUrl(value = "") {
-  if (!value) return "/assets/generated/hero-space-learning.jpg";
-  if (/^https?:\/\//.test(value) || value.startsWith("/")) return value;
-  return `/${value}`;
+  const fallback = "/assets/generated/hero-space-learning.jpg";
+  if (!value) return fallback;
+  const accepted = AiXDom.safeUrl(value, {
+    allowedProtocols: ["http:", "https:"],
+    allowRelative: true,
+    fallback
+  });
+  if (accepted === fallback || /^https?:\/\//i.test(accepted) || accepted.startsWith("/")) return accepted;
+  if (accepted.startsWith("?") || accepted.startsWith("#") || accepted === "about:blank") return fallback;
+  return AiXDom.safeUrl(`/${accepted}`, {
+    allowedProtocols: ["http:", "https:"],
+    allowRelative: true,
+    fallback
+  });
 }
 
 function resourceIcon(type = "") {
@@ -45,7 +47,7 @@ function resourceIcon(type = "") {
     file: "fa-solid fa-download",
     link: "fa-solid fa-arrow-up-right-from-square"
   };
-  return map[type] || "fa-solid fa-toolbox";
+  return Object.hasOwn(map, type) ? map[type] : "fa-solid fa-toolbox";
 }
 
 function formatDateTime(value) {
@@ -70,8 +72,19 @@ function courseLearnUrl(courseId, moduleIndex = 0) {
 function learningEntryUrl(href, courseId) {
   const value = String(href || "");
   const match = value.match(/^\/course\/([^/?#]+)\/content(?:[?#].*)?$/);
-  if (match) return courseStartUrl(decodeURIComponent(match[1]));
-  return value || courseStartUrl(courseId);
+  let destination = value || courseStartUrl(courseId);
+  if (match) {
+    try {
+      destination = courseStartUrl(decodeURIComponent(match[1]));
+    } catch {
+      destination = courseStartUrl(courseId);
+    }
+  }
+  return AiXDom.safeUrl(destination, {
+    allowedProtocols: ["http:", "https:"],
+    allowRelative: true,
+    fallback: courseStartUrl(courseId)
+  });
 }
 
 function renderContent(data) {
@@ -80,56 +93,91 @@ function renderContent(data) {
   document.getElementById("courseTitle").textContent = course.title;
   document.getElementById("classroomNavTitle").textContent = course.title;
   document.getElementById("courseSubtitle").textContent = course.overview || course.description || "";
-  document.getElementById("courseImage").src = assetUrl(course.image);
-  document.getElementById("courseStats").innerHTML = [
+  document.getElementById("courseImage").src = AiXDom.safeUrl(assetUrl(course.image), {
+    allowedProtocols: ["http:", "https:"],
+    allowRelative: true,
+    fallback: "/assets/generated/hero-space-learning.jpg"
+  });
+  AiXDom.replace(document.getElementById("courseStats"), [
     ["fa-regular fa-clock", course.duration],
     ["fa-solid fa-list-check", course.lessons],
     ["fa-solid fa-signal", course.level]
-  ].map(([icon, text]) => `<span><i class="${icon}"></i>${escapeHtml(text || "-")}</span>`).join("");
+  ].map(([icon, text]) => AiXDom.node("span", {}, [
+    AiXDom.node("i", { className: icon }),
+    text || "-"
+  ])));
 
   document.getElementById("courseOverviewText").textContent = course.overview || course.description || "";
-  document.getElementById("courseSkillChips").innerHTML = (course.skills || []).map((skill) => `<span>${escapeHtml(skill)}</span>`).join("");
-  document.getElementById("courseOutcomes").innerHTML = (course.outcomes || []).slice(0, 6).map((outcome) => `
-    <div><i class="fa-solid fa-check"></i><span>${escapeHtml(outcome)}</span></div>
-  `).join("") || `<p>รายละเอียดผลลัพธ์การเรียนจะแสดงเมื่อมีข้อมูลในคอร์ส</p>`;
-  document.getElementById("heroStartLearning").href = courseLearnUrl(course.id, 0);
+  AiXDom.replace(
+    document.getElementById("courseSkillChips"),
+    (course.skills || []).map((skill) => AiXDom.node("span", { text: skill }))
+  );
+  const outcomeNodes = (course.outcomes || []).slice(0, 6).map((outcome) => AiXDom.node("div", {}, [
+    AiXDom.node("i", { className: "fa-solid fa-check" }),
+    AiXDom.node("span", { text: outcome })
+  ]));
+  AiXDom.replace(
+    document.getElementById("courseOutcomes"),
+    outcomeNodes.length
+      ? outcomeNodes
+      : [AiXDom.node("p", { text: "รายละเอียดผลลัพธ์การเรียนจะแสดงเมื่อมีข้อมูลในคอร์ส" })]
+  );
+  document.getElementById("heroStartLearning").href = AiXDom.safeUrl(courseLearnUrl(course.id, 0));
 
-  document.getElementById("classResources").innerHTML = resources.length
+  const resourceNodes = resources.length
     ? resources.map((resource) => {
-        const href = resource.url || resource.mediaUrl || "#";
-        const external = /^https?:\/\//.test(href);
-        return `
-          <a class="member-resource-card" href="${escapeHtml(href)}" ${external ? 'target="_blank" rel="noopener"' : ""}>
-            <span><i class="${resourceIcon(resource.type)}"></i></span>
-            <strong>${escapeHtml(resource.title)}</strong>
-            <small>${escapeHtml(resource.description || (resource.tags || []).join(", ") || "Resource สำหรับคลาสนี้")}</small>
-          </a>
-        `;
-      }).join("")
-    : `<article class="resource-card"><h3>ยังไม่มี Resource</h3><p>Admin สามารถเพิ่ม Tools, Skill Set หรือ Template จากหน้า Admin</p></article>`;
+        const href = AiXDom.safeUrl(resource.url || resource.mediaUrl || "#", {
+          allowedProtocols: ["http:", "https:"],
+          allowRelative: true
+        });
+        const tags = Array.isArray(resource.tags) ? resource.tags : [];
+        return AiXDom.link({ href, className: "member-resource-card" }, [
+          AiXDom.node("span", {}, [AiXDom.node("i", { className: resourceIcon(resource.type) })]),
+          AiXDom.node("strong", { text: resource.title }),
+          AiXDom.node("small", {
+            text: resource.description || tags.join(", ") || "Resource สำหรับคลาสนี้"
+          })
+        ]);
+      })
+    : [AiXDom.node("article", { className: "resource-card" }, [
+        AiXDom.node("h3", { text: "ยังไม่มี Resource" }),
+        AiXDom.node("p", { text: "Admin สามารถเพิ่ม Tools, Skill Set หรือ Template จากหน้า Admin" })
+      ])];
+  AiXDom.replace(document.getElementById("classResources"), resourceNodes);
 
-  document.getElementById("classSchedule").innerHTML = schedule.length
-    ? schedule.map((item) => `
-        <article class="member-schedule-card">
-          <span><i class="fa-regular fa-calendar-check"></i>${formatDateTime(item.startsAt)}</span>
-          <h3>${escapeHtml(item.title)}</h3>
-          <p>${escapeHtml(item.description || item.courseTitle || "AiX Live Class")}</p>
-          <a class="secondary-btn" href="${escapeHtml(learningEntryUrl(item.meetingUrl, item.courseId))}">เข้าห้องเรียน</a>
-        </article>
-      `).join("")
-    : `<article class="resource-card"><h3>ยังไม่มีตารางเรียน</h3><p>ตารางสอนใหม่จะแสดงที่นี่เมื่อ Admin เพิ่มในระบบ</p></article>`;
+  const scheduleNodes = schedule.length
+    ? schedule.map((item) => AiXDom.node("article", { className: "member-schedule-card" }, [
+        AiXDom.node("span", {}, [
+          AiXDom.node("i", { className: "fa-regular fa-calendar-check" }),
+          formatDateTime(item.startsAt)
+        ]),
+        AiXDom.node("h3", { text: item.title }),
+        AiXDom.node("p", { text: item.description || item.courseTitle || "AiX Live Class" }),
+        AiXDom.link({
+          href: learningEntryUrl(item.meetingUrl, item.courseId),
+          className: "secondary-btn"
+        }, ["เข้าห้องเรียน"])
+      ]))
+    : [AiXDom.node("article", { className: "resource-card" }, [
+        AiXDom.node("h3", { text: "ยังไม่มีตารางเรียน" }),
+        AiXDom.node("p", { text: "ตารางสอนใหม่จะแสดงที่นี่เมื่อ Admin เพิ่มในระบบ" })
+      ])];
+  AiXDom.replace(document.getElementById("classSchedule"), scheduleNodes);
 
-  document.getElementById("moduleList").innerHTML = modules.map((module, index) => `
-    <article class="syllabus-item">
-      <div class="syllabus-number">${index + 1}</div>
-      <div>
-        <span>${escapeHtml(module.time || "บทเรียน")}</span>
-        <h3>${escapeHtml(module.title)}</h3>
-        <ul>${(module.lessons || []).map((lesson) => `<li>${escapeHtml(lesson)}</li>`).join("")}</ul>
-        <a class="primary-btn compact learn-now-btn" href="${courseLearnUrl(course.id, index)}">เริ่มเรียนเลย</a>
-      </div>
-    </article>
-  `).join("");
+  AiXDom.replace(document.getElementById("moduleList"), modules.map((module, index) => (
+    AiXDom.node("article", { className: "syllabus-item" }, [
+      AiXDom.node("div", { className: "syllabus-number", text: index + 1 }),
+      AiXDom.node("div", {}, [
+        AiXDom.node("span", { text: module.time || "บทเรียน" }),
+        AiXDom.node("h3", { text: module.title }),
+        AiXDom.node("ul", {}, (module.lessons || []).map((lesson) => AiXDom.node("li", { text: lesson }))),
+        AiXDom.link({
+          href: AiXDom.safeUrl(courseLearnUrl(course.id, index)),
+          className: "primary-btn compact learn-now-btn"
+        }, ["เริ่มเรียนเลย"])
+      ])
+    ])
+  )));
   document.body.classList.add("classroom-ready");
 }
 

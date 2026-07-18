@@ -338,8 +338,8 @@ test("tools box exposes protected downloadable and copyable skill and prompt lib
   assert.match(toolsBoxScript, /document\.execCommand\("copy"\)/);
   assert.match(toolsBoxScript, /new Blob\(\[content\], \{ type: "text\/markdown;charset=utf-8" \}\)/);
   assert.match(toolsBoxScript, /anchor\.download = fileName/);
-  assert.match(toolsBoxScript, /data-tools-action="copy"/);
-  assert.match(toolsBoxScript, /data-tools-action="download"/);
+  assert.match(toolsBoxScript, /"data-tools-action": "copy"/);
+  assert.match(toolsBoxScript, /"data-tools-action": "download"/);
   assert.match(toolsBoxScript, /renderActionCards\(toolsSkillLibrary, skillPacks, \{ kind: "skill" \}\)/);
   assert.match(toolsBoxScript, /renderActionCards\(toolsPromptLibrary, promptPacks, \{ kind: "prompt" \}\)/);
   assert.match(css, /\.tools-action-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*280px\),\s*1fr\)\);/);
@@ -544,8 +544,8 @@ test("homepage sections use concise copy and tighter spacing", () => {
   assert.match(script, /function courseTopicLogo\(course\)/);
   assert.match(script, /function courseTopicBadge\(course\)/);
   assert.match(script, /"claude-manus-vibe-coding":\s*"Vibe Coding"/);
-  assert.match(script, /<span class="course-badge aix-topic-badge">\$\{courseTopicBadge\(course\)\}<\/span>/);
-  assert.doesNotMatch(script, /<span class="course-badge aix-topic-badge">\$\{course\.status\}<\/span>/);
+  assert.match(script, /AiXDom\.node\("span", \{ className: "course-badge aix-topic-badge", text: courseTopicBadge\(course\) \}\)/);
+  assert.doesNotMatch(script, /className: "course-badge aix-topic-badge", text: course\.status/);
   assert.match(script, /"manus-ai":\s*\{\s*src:\s*"assets\/ai-logos\/manus\.webp",\s*label:\s*"Manus",\s*tone:\s*"manus"\s*\}/);
   assert.match(script, /"claude-manus-vibe-coding":\s*\{\s*src:\s*"assets\/ai-logos\/codex\.svg",\s*label:\s*"Codex",\s*tone:\s*"codex"\s*\}/);
   assert.match(script, /"claude-deep-dive":\s*\{\s*src:\s*"assets\/ai-logos\/claude\.svg",\s*label:\s*"Claude",\s*tone:\s*"claude"\s*\}/);
@@ -556,16 +556,19 @@ test("homepage sections use concise copy and tighter spacing", () => {
   assert.match(script, /course\.skills\.slice\(0,\s*2\)/);
   const renderCoursesSource = script.slice(script.indexOf("function renderCourses()"), script.indexOf("function renderResources()"));
   assert.match(renderCoursesSource, /const topicTone = courseTopicLogo\(course\)\?\.tone \|\| courseVisualTone\(course\);/);
-  assert.match(renderCoursesSource, /class="course-card aix-topic-card aix-topic-tone-\$\{topicTone\}"/);
-  assert.match(renderCoursesSource, /class="aix-topic-icons"/);
+  assert.match(script, /const courseToneByLevel = Object\.freeze\(\{/);
+  assert.match(renderCoursesSource, /AiXDom\.node\("article", \{ className: `course-card aix-topic-card aix-topic-tone-\$\{topicTone\}` \}/);
+  assert.match(renderCoursesSource, /AiXDom\.node\("div", \{ className: "aix-topic-icons", attrs: \{ "aria-hidden": "true" \} \}/);
   assert.match(renderCoursesSource, /courseTopicVisuals\(course\)\.map/);
   assert.match(script, /logo\s*\?\s*\{ type: "logo"/);
   assert.match(script, /\{ type: "icon", value: "fa-robot" \}/);
-  assert.match(renderCoursesSource, /aix-topic-logo-\$\{visual\.tone\}/);
-  assert.match(renderCoursesSource, /<img src="\$\{visual\.value\}" alt="" loading="eager" decoding="async" data-topic-logo="\$\{visual\.label\}">/);
+  assert.match(renderCoursesSource, /`aix-topic-icon aix-topic-logo aix-topic-logo-\$\{visual\.tone\} aix-topic-icon-\$\{position\}`/);
+  assert.match(renderCoursesSource, /AiXDom\.node\("img", \{[\s\S]*?attrs: \{ alt: "", loading: "eager", decoding: "async", "data-topic-logo": visual\.label \}[\s\S]*?urls: \{ src: \{ value: visual\.value/);
+  assert.match(renderCoursesSource, /AiXDom\.replace\(classesGrid,/);
+  assert.match(renderCoursesSource, /AiXDom\.link\(\{ href: AiXDom\.safeUrl\(`class-detail\.html\?id=\$\{encodeURIComponent\(course\.id\)\}`\)/);
   assert.doesNotMatch(renderCoursesSource, /course-visual-window|course-visual-panel|course-image course-visual/);
   assert.doesNotMatch(renderCoursesSource, /fa-regular fa-user/);
-  assert.match(renderCoursesSource, /fa-regular fa-clock/);
+  assert.match(renderCoursesSource, /"fa-regular fa-clock"/);
 });
 
 test("class detail pages use real AI logo assets and updated course copy", () => {
@@ -600,7 +603,7 @@ test("class detail pages use real AI logo assets and updated course copy", () =>
   assert.match(classDetailScript, /detailTools\.hidden = courseTools\.length === 0;/);
   assert.match(classDetailScript, /tools:\s*Array\.isArray\(course\.tools\)\s*\?\s*course\.tools\s*:\s*fallback\.tools/);
   assert.match(classDetailScript, /brandFocus:\s*Array\.isArray\(course\.brandFocus\)\s*\?\s*course\.brandFocus\s*:\s*fallback\.brandFocus/);
-  assert.match(classDetailScript, /<img class="brand-logo-img" src="\$\{brand\.logo\}" alt="" loading="lazy" decoding="async">/);
+  assert.match(classDetailScript, /AiXDom\.node\("img", \{[\s\S]*?className: "brand-logo-img",[\s\S]*?attrs: \{ alt: "", loading: "lazy", decoding: "async" \},[\s\S]*?urls: \{ src: \{ value: brand\.logo/);
   assert.match(css, /\.brand-logo-img\s*\{[\s\S]*?object-fit:\s*contain;[\s\S]*?filter:\s*none;/);
   assert.match(css, /\.brand-higgsfield\s*\{[\s\S]*?--brand-accent:\s*#bfff00;/);
   assert.match(css, /#detailRoot \.ai-brand-chip \.brand-logo-img,\s*[\s\S]*?#detailRoot \.ai-brand-chip\.compact \.brand-logo-img\s*\{[\s\S]*?filter:\s*none !important;[\s\S]*?opacity:\s*1 !important;/);

@@ -21,6 +21,7 @@ test("serves approved public files and hides repository internals", async (t) =>
     "/",
     "/index.html",
     "/class-detail.html",
+    "/safe-dom.js",
     "/styles.css",
     "/assets/ai-logos/chatgpt.svg"
   ]) {
@@ -91,7 +92,7 @@ test("applies the publication boundary to HEAD requests", async (t) => {
   const server = await startTestServer();
   t.after(() => server.stop());
 
-  for (const pathname of ["/", "/styles.css", "/assets/ai-logos/chatgpt.svg"]) {
+  for (const pathname of ["/", "/safe-dom.js", "/styles.css", "/assets/ai-logos/chatgpt.svg"]) {
     const response = await fetch(`${server.origin}${pathname}`, {
       method: "HEAD",
       redirect: "manual"

@@ -143,16 +143,6 @@ function downloadText(fileName, content) {
   window.setTimeout(() => URL.revokeObjectURL(url), 800);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[char]));
-}
-
 function resourceIcon(type = "") {
   const map = {
     tool: "fa-solid fa-screwdriver-wrench",
@@ -161,13 +151,13 @@ function resourceIcon(type = "") {
     file: "fa-solid fa-download",
     link: "fa-solid fa-arrow-up-right-from-square"
   };
-  return map[type] || "fa-solid fa-toolbox";
+  return Object.hasOwn(map, type) ? map[type] : "fa-solid fa-toolbox";
 }
 
 function resourceHref(resource) {
   const href = resource.url || resource.mediaUrl || "#resources";
-  if (href === "/dashboard") return "/tools-box#resources";
-  return href;
+  if (href === "/dashboard") return AiXDom.safeUrl("/tools-box#resources");
+  return AiXDom.safeUrl(href, { fallback: "#resources" });
 }
 
 function defaultResources() {
@@ -198,58 +188,66 @@ function defaultResources() {
 
 function renderResources(resources = []) {
   const list = resources.length ? resources : defaultResources();
-  toolsDynamicResources.innerHTML = list.map((resource) => {
+  AiXDom.replace(toolsDynamicResources, list.map((resource) => {
     const href = resourceHref(resource);
-    const external = /^https?:\/\//.test(href);
     const tags = Array.isArray(resource.tags) ? resource.tags : [];
-    return `
-      <a class="tools-resource-row" href="${escapeHtml(href)}" ${external ? 'target="_blank" rel="noopener"' : ""}>
-        <span class="tools-resource-icon"><i class="${resourceIcon(resource.type)}"></i></span>
-        <div>
-          <strong>${escapeHtml(resource.title)}</strong>
-          <small>${escapeHtml(resource.description || "Resource สำหรับสมาชิก AiX Club")}</small>
-          ${tags.length ? `<em>${tags.map(escapeHtml).join(" · ")}</em>` : ""}
-        </div>
-        <i class="fa-solid fa-arrow-right"></i>
-      </a>
-    `;
-  }).join("");
+    return AiXDom.link({ href, className: "tools-resource-row" }, [
+      AiXDom.node("span", { className: "tools-resource-icon" }, [AiXDom.node("i", { className: resourceIcon(resource.type) })]),
+      AiXDom.node("div", {}, [
+        AiXDom.node("strong", { text: resource.title }),
+        AiXDom.node("small", { text: resource.description || "Resource สำหรับสมาชิก AiX Club" }),
+        tags.length ? AiXDom.node("em", { text: tags.join(" · ") }) : null
+      ]),
+      AiXDom.node("i", { className: "fa-solid fa-arrow-right" })
+    ]);
+  }));
+}
+
+function toolLibraryIcon(kind) {
+  return kind === "prompt" ? "fa-solid fa-wand-magic-sparkles" : "fa-solid fa-brain";
 }
 
 function renderActionCards(container, items, options = {}) {
   if (!container) return;
   const locked = Boolean(options.locked);
-  const kind = options.kind || "skill";
-  container.innerHTML = items.map((item) => {
+  const kind = options.kind === "prompt" ? "prompt" : "skill";
+  AiXDom.replace(container, items.map((item) => {
     const content = libraryContent(kind, item);
     const preview = content.split("\n").filter(Boolean).slice(0, 4).join(" · ");
     const tags = Array.isArray(item.tags) ? item.tags : [];
-    return `
-      <article class="tools-action-card ${locked ? "is-locked" : ""}">
-        <div class="tools-action-card-top">
-          <span class="tools-action-icon"><i class="${escapeHtml(item.icon)}"></i></span>
-          <span class="tools-action-type">${kind === "skill" ? "Skill .md" : "Prompt .md"}</span>
-        </div>
-        <div class="tools-action-body">
-          <h3>${escapeHtml(item.title)}</h3>
-          <p>${escapeHtml(item.description)}</p>
-        </div>
-        <div class="tools-action-tags">
-          ${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
-        </div>
-        <p class="tools-action-preview">${escapeHtml(preview)}</p>
-        <div class="tools-action-buttons">
-          <button class="tools-copy-btn" type="button" data-tools-action="copy" data-tools-kind="${kind}" data-resource-id="${escapeHtml(item.id)}" ${locked ? "disabled" : ""}>
-            <i class="fa-regular fa-copy"></i><span>คัดลอก</span>
-          </button>
-          <button class="tools-download-btn" type="button" data-tools-action="download" data-tools-kind="${kind}" data-resource-id="${escapeHtml(item.id)}" ${locked ? "disabled" : ""}>
-            <i class="fa-solid fa-download"></i><span>โหลด .md</span>
-          </button>
-        </div>
-        ${locked ? `<small class="tools-action-lock"><i class="fa-solid fa-lock"></i>เข้าสู่ระบบสมาชิกเพื่อคัดลอกหรือโหลดไฟล์</small>` : ""}
-      </article>
-    `;
-  }).join("");
+    const actionAttrs = {
+      type: "button",
+      "data-tools-kind": kind,
+      "data-resource-id": item.id
+    };
+    const copyButton = AiXDom.node("button", {
+      className: "tools-copy-btn",
+      attrs: { ...actionAttrs, "data-tools-action": "copy" },
+      props: { disabled: locked }
+    }, [AiXDom.node("i", { className: "fa-regular fa-copy" }), AiXDom.node("span", { text: "คัดลอก" })]);
+    const downloadButton = AiXDom.node("button", {
+      className: "tools-download-btn",
+      attrs: { ...actionAttrs, "data-tools-action": "download" },
+      props: { disabled: locked }
+    }, [AiXDom.node("i", { className: "fa-solid fa-download" }), AiXDom.node("span", { text: "โหลด .md" })]);
+    return AiXDom.node("article", { className: `tools-action-card ${locked ? "is-locked" : ""}` }, [
+      AiXDom.node("div", { className: "tools-action-card-top" }, [
+        AiXDom.node("span", { className: "tools-action-icon" }, [AiXDom.node("i", { className: toolLibraryIcon(kind) })]),
+        AiXDom.node("span", { className: "tools-action-type", text: kind === "skill" ? "Skill .md" : "Prompt .md" })
+      ]),
+      AiXDom.node("div", { className: "tools-action-body" }, [
+        AiXDom.node("h3", { text: item.title }),
+        AiXDom.node("p", { text: item.description })
+      ]),
+      AiXDom.node("div", { className: "tools-action-tags" }, tags.map((tag) => AiXDom.node("span", { text: tag }))),
+      AiXDom.node("p", { className: "tools-action-preview", text: preview }),
+      AiXDom.node("div", { className: "tools-action-buttons" }, [copyButton, downloadButton]),
+      locked ? AiXDom.node("small", { className: "tools-action-lock" }, [
+        AiXDom.node("i", { className: "fa-solid fa-lock" }),
+        "เข้าสู่ระบบสมาชิกเพื่อคัดลอกหรือโหลดไฟล์"
+      ]) : null
+    ]);
+  }));
 }
 
 function clearPremiumLibrary() {
@@ -319,19 +317,23 @@ function renderAccess(data, anonymous = false) {
       ? "สมาชิกหมดอายุแล้ว ต่ออายุเพื่อเปิดใช้ Tools Box"
       : "ชำระเงินเพื่อเปิดใช้ Tools Box";
 
-  toolsAccessBadge.innerHTML = anonymous
-    ? `<i class="fa-solid fa-user-lock"></i><span>เข้าสู่ระบบก่อนใช้งาน Tools Box</span>`
+  const badge = anonymous
+    ? { icon: "fa-solid fa-user-lock", label: "เข้าสู่ระบบก่อนใช้งาน Tools Box" }
     : active
-    ? `<i class="fa-solid fa-unlock-keyhole"></i><span>ปลดล็อกแล้วสำหรับสมาชิก</span>`
-    : expired
-      ? `<i class="fa-solid fa-clock-rotate-left"></i><span>สมาชิกหมดอายุ ต้องต่ออายุก่อนใช้งาน</span>`
-      : `<i class="fa-solid fa-lock"></i><span>ยังไม่ปลดล็อก Tools Box</span>`;
+      ? { icon: "fa-solid fa-unlock-keyhole", label: "ปลดล็อกแล้วสำหรับสมาชิก" }
+      : expired
+        ? { icon: "fa-solid fa-clock-rotate-left", label: "สมาชิกหมดอายุ ต้องต่ออายุก่อนใช้งาน" }
+        : { icon: "fa-solid fa-lock", label: "ยังไม่ปลดล็อก Tools Box" };
+  AiXDom.replace(toolsAccessBadge, [
+    AiXDom.node("i", { className: badge.icon }),
+    AiXDom.node("span", { text: badge.label })
+  ]);
   toolsAccessBadge.classList.toggle("is-active", active);
   toolsAccessBadge.classList.toggle("is-locked", !active);
   document.body.classList.toggle("tools-locked", !active);
   toolsLockedState.hidden = active;
   if (toolsLockedAction) {
-    toolsLockedAction.href = anonymous ? "/index.html?auth=login" : "/payment";
+    toolsLockedAction.href = AiXDom.safeUrl(anonymous ? "/index.html?auth=login" : "/payment");
     toolsLockedAction.textContent = anonymous ? "เข้าสู่ระบบ" : "ไปหน้าชำระเงิน";
   }
   renderResources(active ? data.resources || [] : []);

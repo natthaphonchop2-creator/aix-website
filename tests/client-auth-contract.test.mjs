@@ -29,6 +29,15 @@ const PAGE_SCRIPTS = new Map([
   ["course-learn.html", "course-learn.js"],
   ["admin.html", "admin.js"]
 ]);
+const SAFE_DOM_PAGES = new Set([
+  "index.html",
+  "class-detail.html",
+  "dashboard.html",
+  "tools-box.html",
+  "course-content.html",
+  "course-learn.html",
+  "admin.html"
+]);
 
 const MEMBER_SCRIPTS = [...PAGE_SCRIPTS.values()].filter((name) => name !== "admin.js");
 const ALL_SCRIPTS = [...PAGE_SCRIPTS.values()];
@@ -545,15 +554,24 @@ test("raw returns the original Response-compatible object", async () => {
   assert.equal(await client.raw("/api/admin/jobs"), response);
 });
 
-test("every page loads exactly one shared client immediately before its page script", async () => {
+test("every page loads one shared client and affected pages insert safe-dom before their renderer", async () => {
   for (const [page, pageScript] of PAGE_SCRIPTS) {
     const html = await readFile(join(ROOT, page), "utf8");
     const sources = scriptSources(html);
     const sharedIndexes = sources
       .map((source, index) => source.split("?")[0] === "/aix-api-client.js" ? index : -1)
       .filter((index) => index >= 0);
+    const safeDomIndexes = sources
+      .map((source, index) => source.split("?")[0] === "/safe-dom.js" ? index : -1)
+      .filter((index) => index >= 0);
     const pageIndex = sources.findIndex((source) => source.split("?")[0].replace(/^\//, "") === pageScript);
-    assert.deepEqual(sharedIndexes, [pageIndex - 1], `${page}: shared client must be the one script immediately before ${pageScript}`);
+    if (SAFE_DOM_PAGES.has(page)) {
+      assert.deepEqual(sharedIndexes, [pageIndex - 2], `${page}: shared client must load before safe-dom and ${pageScript}`);
+      assert.deepEqual(safeDomIndexes, [pageIndex - 1], `${page}: safe-dom must load immediately before ${pageScript}`);
+    } else {
+      assert.deepEqual(sharedIndexes, [pageIndex - 1], `${page}: shared client must be the one script immediately before ${pageScript}`);
+      assert.deepEqual(safeDomIndexes, [], `${page}: safe-dom is not required by this renderer`);
+    }
   }
 });
 

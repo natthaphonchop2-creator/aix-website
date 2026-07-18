@@ -73,21 +73,22 @@ function clampIndex(index, total) {
   return Math.min(Math.max(Number(index) || 0, 0), Math.max(total - 1, 0));
 }
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function playableVideo(url = "") {
   return url.startsWith("/api/media/replays/") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 }
 
 function moduleVideo(module, index) {
-  return module.videoUrl || module.mediaUrl || state.replays[index]?.videoUrl || state.replays[index]?.mediaUrl || "";
+  const value = module.videoUrl
+    || module.mediaUrl
+    || state.replays[index]?.videoUrl
+    || state.replays[index]?.mediaUrl
+    || "";
+  if (!value) return "";
+  const accepted = AiXDom.safeUrl(value, {
+    allowedProtocols: ["http:", "https:"],
+    allowRelative: true
+  });
+  return accepted === "about:blank" ? "" : accepted;
 }
 
 function notesKey() {
@@ -176,26 +177,48 @@ function updateUrl() {
 function renderSidebar() {
   const progress = currentCourseProgress();
   const completedCount = Number(progress.completedCount) || 0;
-  learnModuleList.innerHTML = state.modules.map((module, index) => `
-    <button class="learn-module-item ${index === state.activeIndex ? "active" : ""} ${index < completedCount ? "completed" : ""}" type="button" data-module-index="${index}">
-      <span>${index < completedCount ? '<i class="fa-solid fa-check"></i>' : index + 1}</span>
-      <strong>${escapeHtml(module.title)}</strong>
-      <small>${escapeHtml((module.videoUrl || state.replays[index]) ? "วิดีโอ + อ่านประกอบ" : "อ่านประกอบ")}${module.time ? ` · ${escapeHtml(module.time)}` : ""}</small>
-    </button>
-  `).join("");
+  AiXDom.replace(learnModuleList, state.modules.map((module, index) => {
+    const completed = index < completedCount;
+    const className = [
+      "learn-module-item",
+      index === state.activeIndex ? "active" : "",
+      completed ? "completed" : ""
+    ].filter(Boolean).join(" ");
+    const mediaLabel = moduleVideo(module, index) ? "วิดีโอ + อ่านประกอบ" : "อ่านประกอบ";
+    return AiXDom.node("button", {
+      className,
+      attrs: { type: "button", "data-module-index": index }
+    }, [
+      AiXDom.node("span", {}, [
+        completed ? AiXDom.node("i", { className: "fa-solid fa-check" }) : index + 1
+      ]),
+      AiXDom.node("strong", { text: module.title }),
+      AiXDom.node("small", { text: `${mediaLabel}${module.time ? ` · ${module.time}` : ""}` })
+    ]);
+  }));
 }
 
 function renderVideo(module, index) {
   const url = moduleVideo(module, index);
-  learnVideoCard.innerHTML = playableVideo(url)
-    ? `<video controls preload="metadata" src="${escapeHtml(url)}"></video>`
-    : `
-      <div class="learn-video-empty">
-        <button type="button" aria-label="Play preview"><i class="fa-solid fa-play"></i></button>
-        <strong>พื้นที่วิดีโอของบทเรียน</strong>
-        <span>เมื่อ Admin อัปโหลดวิดีโอ ระบบจะแสดงในพื้นที่นี้ทันที</span>
-      </div>
-    `;
+  const content = playableVideo(url)
+    ? AiXDom.node("video", {
+        attrs: { preload: "metadata" },
+        props: { controls: true },
+        urls: {
+          src: {
+            value: url,
+            options: { allowedProtocols: ["http:", "https:"], allowRelative: true }
+          }
+        }
+      })
+    : AiXDom.node("div", { className: "learn-video-empty" }, [
+        AiXDom.node("button", { attrs: { type: "button", "aria-label": "Play preview" } }, [
+          AiXDom.node("i", { className: "fa-solid fa-play" })
+        ]),
+        AiXDom.node("strong", { text: "พื้นที่วิดีโอของบทเรียน" }),
+        AiXDom.node("span", { text: "เมื่อ Admin อัปโหลดวิดีโอ ระบบจะแสดงในพื้นที่นี้ทันที" })
+      ]);
+  AiXDom.replace(learnVideoCard, [content]);
 }
 
 function lessonChallenge(module, index) {
@@ -269,56 +292,67 @@ function renderChallenge(module, index) {
   labProblemTitle.textContent = challenge.title;
   labDifficulty.textContent = challenge.difficulty;
   labPrompt.textContent = challenge.prompt;
-  challengePanel.innerHTML = `
-    <div class="learn-challenge-brief">
-      <span>${escapeHtml(challenge.type)}</span>
-      <h2>${escapeHtml(challenge.title)}</h2>
-      <p>${escapeHtml(challenge.scenario)}</p>
-    </div>
-    <div class="learn-challenge-section">
-      <strong>Requirements</strong>
-      <ul>${challenge.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-    </div>
-    <div class="learn-challenge-section">
-      <strong>Test cases</strong>
-      <div class="learn-test-list">${challenge.testCases.map((item) => `
-        <article>
-          <b>${escapeHtml(item.label)}</b>
-          <span>${escapeHtml(item.detail)}</span>
-        </article>
-      `).join("")}</div>
-    </div>
-  `;
+  AiXDom.replace(challengePanel, [
+    AiXDom.node("div", { className: "learn-challenge-brief" }, [
+      AiXDom.node("span", { text: challenge.type }),
+      AiXDom.node("h2", { text: challenge.title }),
+      AiXDom.node("p", { text: challenge.scenario })
+    ]),
+    AiXDom.node("div", { className: "learn-challenge-section" }, [
+      AiXDom.node("strong", { text: "Requirements" }),
+      AiXDom.node("ul", {}, challenge.requirements.map((item) => AiXDom.node("li", { text: item })))
+    ]),
+    AiXDom.node("div", { className: "learn-challenge-section" }, [
+      AiXDom.node("strong", { text: "Test cases" }),
+      AiXDom.node("div", { className: "learn-test-list" }, challenge.testCases.map((item) => (
+        AiXDom.node("article", {}, [
+          AiXDom.node("b", { text: item.label }),
+          AiXDom.node("span", { text: item.detail })
+        ])
+      )))
+    ])
+  ]);
   return challenge;
 }
 
 function renderReading(module, index) {
   const lessons = module.lessons || [];
-  readingPanel.innerHTML = `
-    <div class="learn-book-section">
-      <span>บทนำ</span>
-      <p>บทนี้ช่วยให้เข้าใจหัวข้อ <strong>${escapeHtml(module.title)}</strong> ผ่านการดูวิดีโอควบคู่กับการอ่านสรุปทีละประเด็น เหมือนมีคู่มือประกอบระหว่างเรียน</p>
-    </div>
-    <div class="learn-book-section">
-      <span>สิ่งที่ควรจับประเด็น</span>
-      <ul>${lessons.map((lesson) => `<li>${escapeHtml(lesson)}</li>`).join("") || "<li>อ่านภาพรวมและจดคำถามที่ต้องการให้ AiX Coach ช่วยอธิบาย</li>"}</ul>
-    </div>
-    <div class="learn-book-section">
-      <span>แนวทางลงมือทำ</span>
-      <p>หลังดูวิดีโอ ให้ลองสรุปด้วยคำของตัวเอง 3 ข้อ แล้วเลือกหนึ่งงานจริงเพื่อทดสอบแนวคิดจากบทนี้ หากติดขัดให้ถาม AiX Coach ด้านขวาเพื่อขอตัวอย่างหรือ checklist เพิ่ม</p>
-    </div>
-  `;
-  downloadsPanel.innerHTML = `
-    <div class="learn-download-list">
-      ${state.resources.length
-        ? state.resources.slice(0, 5).map((resource) => {
-            const href = resource.url || resource.mediaUrl || "#";
-            const external = /^https?:\/\//.test(href);
-            return `<a href="${escapeHtml(href)}" ${external ? 'target="_blank" rel="noopener"' : ""}><i class="fa-solid fa-file-arrow-down"></i><span>${escapeHtml(resource.title)}</span></a>`;
-          }).join("")
-        : `<p>ยังไม่มีไฟล์แนบสำหรับคอร์สนี้</p>`}
-    </div>
-  `;
+  const lessonItems = lessons.length
+    ? lessons.map((lesson) => AiXDom.node("li", { text: lesson }))
+    : [AiXDom.node("li", { text: "อ่านภาพรวมและจดคำถามที่ต้องการให้ AiX Coach ช่วยอธิบาย" })];
+  AiXDom.replace(readingPanel, [
+    AiXDom.node("div", { className: "learn-book-section" }, [
+      AiXDom.node("span", { text: "บทนำ" }),
+      AiXDom.node("p", {}, [
+        "บทนี้ช่วยให้เข้าใจหัวข้อ ",
+        AiXDom.node("strong", { text: module.title }),
+        " ผ่านการดูวิดีโอควบคู่กับการอ่านสรุปทีละประเด็น เหมือนมีคู่มือประกอบระหว่างเรียน"
+      ])
+    ]),
+    AiXDom.node("div", { className: "learn-book-section" }, [
+      AiXDom.node("span", { text: "สิ่งที่ควรจับประเด็น" }),
+      AiXDom.node("ul", {}, lessonItems)
+    ]),
+    AiXDom.node("div", { className: "learn-book-section" }, [
+      AiXDom.node("span", { text: "แนวทางลงมือทำ" }),
+      AiXDom.node("p", {
+        text: "หลังดูวิดีโอ ให้ลองสรุปด้วยคำของตัวเอง 3 ข้อ แล้วเลือกหนึ่งงานจริงเพื่อทดสอบแนวคิดจากบทนี้ หากติดขัดให้ถาม AiX Coach ด้านขวาเพื่อขอตัวอย่างหรือ checklist เพิ่ม"
+      })
+    ])
+  ]);
+
+  const downloads = state.resources.length
+    ? state.resources.slice(0, 5).map((resource) => AiXDom.link({
+        href: AiXDom.safeUrl(resource.url || resource.mediaUrl || "#", {
+          allowedProtocols: ["http:", "https:"],
+          allowRelative: true
+        })
+      }, [
+        AiXDom.node("i", { className: "fa-solid fa-file-arrow-down" }),
+        AiXDom.node("span", { text: resource.title })
+      ]))
+    : [AiXDom.node("p", { text: "ยังไม่มีไฟล์แนบสำหรับคอร์สนี้" })];
+  AiXDom.replace(downloadsPanel, [AiXDom.node("div", { className: "learn-download-list" }, downloads)]);
   lessonNotes.value = localStorage.getItem(notesKey()) || "";
 }
 
@@ -329,22 +363,25 @@ function aiSeedMessage(module) {
 
 function lessonKnowledgeSummary(module) {
   const points = module.lessons || [];
-  return `
-    <span>lesson-kb/${escapeHtml(state.course?.id || "course")}/${state.activeIndex + 1}</span>
-    <strong>${escapeHtml(module.title)}</strong>
-    <small>${points.length} ประเด็นในบทเรียน · ${escapeHtml(module.time || "บทเรียน")}</small>
-  `;
+  return [
+    AiXDom.node("span", { text: `lesson-kb/${state.course?.id || "course"}/${state.activeIndex + 1}` }),
+    AiXDom.node("strong", { text: module.title }),
+    AiXDom.node("small", { text: `${points.length} ประเด็นในบทเรียน · ${module.time || "บทเรียน"}` })
+  ];
 }
 
 function renderAi(module) {
   teacherKbLabel.textContent = `KB: ${module.title}`;
-  teacherKbSummary.innerHTML = lessonKnowledgeSummary(module);
-  learnAiMessages.innerHTML = `
-    <article class="learn-ai-message assistant" data-role="assistant">
-      <strong>teacher@aix</strong>
-      <p>${escapeHtml(aiSeedMessage(module))}</p>
-    </article>
-  `;
+  AiXDom.replace(teacherKbSummary, lessonKnowledgeSummary(module));
+  AiXDom.replace(learnAiMessages, [
+    AiXDom.node("article", {
+      className: "learn-ai-message assistant",
+      attrs: { "data-role": "assistant" }
+    }, [
+      AiXDom.node("strong", { text: "teacher@aix" }),
+      AiXDom.node("p", { text: aiSeedMessage(module) })
+    ])
+  ]);
 }
 
 function editorModeConfig(mode = state.editorMode) {
@@ -412,17 +449,25 @@ function evaluateSubmission(text, challenge) {
 
 function renderRunResult(result) {
   const statusClass = result.score >= 80 ? "pass" : result.score >= 55 ? "warn" : "fail";
-  labRunResult.className = `learn-run-result ${statusClass}`;
-  labRunResult.innerHTML = `
-    <div>
-      <strong>Test Result</strong>
-      <span>${result.score}/100 · ${escapeHtml(result.verdict)}</span>
-    </div>
-    <ul>
-      ${result.checks.map((item) => `<li class="${item.pass ? "pass" : "fail"}"><i class="fa-solid ${item.pass ? "fa-check" : "fa-xmark"}"></i>${escapeHtml(item.label)}</li>`).join("")}
-    </ul>
-    <p>${result.lessonHits.length ? `อิงบทเรียนแล้ว ${result.lessonHits.length} จุด` : "ยังไม่เห็นคำสำคัญจากบทเรียนในงานที่ส่ง ลองผูกกับ requirements ให้ชัดขึ้น"}</p>
-  `;
+  labRunResult.classList.remove("pass", "warn", "fail");
+  labRunResult.classList.add(statusClass);
+  AiXDom.replace(labRunResult, [
+    AiXDom.node("div", {}, [
+      AiXDom.node("strong", { text: "Test Result" }),
+      AiXDom.node("span", { text: `${result.score}/100 · ${result.verdict}` })
+    ]),
+    AiXDom.node("ul", {}, result.checks.map((item) => AiXDom.node("li", {
+      className: item.pass ? "pass" : "fail"
+    }, [
+      AiXDom.node("i", { className: `fa-solid ${item.pass ? "fa-check" : "fa-xmark"}` }),
+      item.label
+    ]))),
+    AiXDom.node("p", {
+      text: result.lessonHits.length
+        ? `อิงบทเรียนแล้ว ${result.lessonHits.length} จุด`
+        : "ยังไม่เห็นคำสำคัญจากบทเรียนในงานที่ส่ง ลองผูกกับ requirements ให้ชัดขึ้น"
+    })
+  ]);
 }
 
 function runLabCheck() {
@@ -442,15 +487,19 @@ function runLabCheck() {
   return result;
 }
 
-function appendAiMessage(role, content, label) {
-  const normalizedRole = role.includes("user") ? "user" : "assistant";
-  const article = document.createElement("article");
-  article.className = `learn-ai-message ${role}`;
-  article.dataset.role = normalizedRole;
-  article.innerHTML = `
-    <strong>${escapeHtml(label || (normalizedRole === "user" ? "student@aix" : "teacher@aix"))}</strong>
-    <p>${escapeHtml(content)}</p>
-  `;
+function aiMessageRoleClass(role) {
+  return role === "user" ? "user" : "assistant";
+}
+
+function appendAiMessage(role, content, label, loading = false) {
+  const normalizedRole = aiMessageRoleClass(role);
+  const article = AiXDom.node("article", {
+    className: `learn-ai-message ${normalizedRole}${loading ? " is-loading" : ""}`,
+    attrs: { "data-role": normalizedRole }
+  }, [
+    AiXDom.node("strong", { text: label || (normalizedRole === "user" ? "student@aix" : "teacher@aix") }),
+    AiXDom.node("p", { text: content })
+  ]);
   learnAiMessages.appendChild(article);
   learnAiMessages.scrollTop = learnAiMessages.scrollHeight;
   return article;
@@ -461,9 +510,12 @@ function setAiBusy(isBusy) {
   const submit = learnAiForm?.querySelector("button[type='submit']");
   if (submit) {
     submit.disabled = isBusy;
-    submit.innerHTML = isBusy
-      ? '<i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจ'
-      : '<i class="fa-solid fa-cloud-arrow-up"></i> Submit ให้ AiX Teacher ตรวจ';
+    AiXDom.replace(submit, [
+      AiXDom.node("i", {
+        className: isBusy ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-cloud-arrow-up"
+      }),
+      isBusy ? " กำลังตรวจ" : " Submit ให้ AiX Teacher ตรวจ"
+    ]);
   }
   if (runLabBtn) runLabBtn.disabled = isBusy;
   document.querySelectorAll("[data-ai-command]").forEach((button) => {
@@ -562,11 +614,11 @@ function renderActiveModule() {
   renderReading(module, state.activeIndex);
   renderChallenge(module, state.activeIndex);
   setEditorMode(state.editorMode, false);
-  labRunResult.className = "learn-run-result";
-  labRunResult.innerHTML = `
-    <strong>Test Result</strong>
-    <p>กด Run เพื่อเช็กโครง prompt และ output ก่อนส่งให้อาจารย์ AI ตรวจ</p>
-  `;
+  labRunResult.classList.remove("pass", "warn", "fail");
+  AiXDom.replace(labRunResult, [
+    AiXDom.node("strong", { text: "Test Result" }),
+    AiXDom.node("p", { text: "กด Run เพื่อเช็กโครง prompt และ output ก่อนส่งให้อาจารย์ AI ตรวจ" })
+  ]);
   renderAi(module);
 }
 
@@ -684,12 +736,13 @@ learnAiForm?.addEventListener("submit", (event) => {
     submission
   ].join("\n");
   appendAiMessage("user", `Submit ${state.editorMode}: ${submission.slice(0, 520)}${submission.length > 520 ? "..." : ""}`, "student@aix");
-  const pending = appendAiMessage("assistant is-loading", "กำลังตรวจงานเทียบกับ rubric, test cases และ knowledge base ของบทนี้...", "teacher@aix");
+  const pending = appendAiMessage("assistant", "กำลังตรวจงานเทียบกับ rubric, test cases และ knowledge base ของบทนี้...", "teacher@aix", true);
   setAiBusy(true);
   requestAiTeacher(reviewPrompt, "check")
     .then((data) => {
       pending.classList.remove("is-loading");
-      pending.querySelector("p").textContent = data.answer || localAiAnswer(reviewPrompt, module);
+      const answer = data.answer || localAiAnswer(reviewPrompt, module);
+      pending.querySelector("p").textContent = answer;
       if (data.source === "local-fallback") pending.classList.add("fallback");
     })
     .catch(() => {
@@ -716,12 +769,13 @@ document.querySelectorAll("[data-ai-command]").forEach((button) => {
     }
     if (command === "hint") {
       appendAiMessage("user", "ขอ hint สำหรับโจทย์นี้", "student@aix");
-      const pending = appendAiMessage("assistant is-loading", "กำลังหา hint จากบทเรียนนี้...", "teacher@aix");
+      const pending = appendAiMessage("assistant", "กำลังหา hint จากบทเรียนนี้...", "teacher@aix", true);
       setAiBusy(true);
       requestAiTeacher(`ขอ hint สำหรับโจทย์ ${lessonChallenge(module, state.activeIndex).title} โดยยังไม่เฉลยทั้งหมด`, "ask")
         .then((data) => {
           pending.classList.remove("is-loading");
-          pending.querySelector("p").textContent = data.answer || localAiAnswer("hint", module);
+          const answer = data.answer || localAiAnswer("hint", module);
+          pending.querySelector("p").textContent = answer;
         })
         .catch(() => {
           pending.classList.remove("is-loading");
@@ -733,12 +787,13 @@ document.querySelectorAll("[data-ai-command]").forEach((button) => {
       return;
     }
     appendAiMessage("user", "สรุปโจทย์และ rubric ของบทนี้", "student@aix");
-    const pending = appendAiMessage("assistant is-loading", "กำลังสรุปโจทย์จาก knowledge base...", "teacher@aix");
+    const pending = appendAiMessage("assistant", "กำลังสรุปโจทย์จาก knowledge base...", "teacher@aix", true);
     setAiBusy(true);
     requestAiTeacher(`สรุปโจทย์ฝึกและ rubric ของ ${lessonChallenge(module, state.activeIndex).title} ให้เป็น checklist สั้นๆ`, "summarize")
       .then((data) => {
         pending.classList.remove("is-loading");
-        pending.querySelector("p").textContent = data.answer || localAiAnswer("summary", module);
+        const answer = data.answer || localAiAnswer("summary", module);
+        pending.querySelector("p").textContent = answer;
       })
       .catch(() => {
         pending.classList.remove("is-loading");

@@ -41,6 +41,7 @@ const dashboardNavLinks = Array.from(document.querySelectorAll("[data-dashboard-
 const dashboardMobilePanel = document.getElementById("dashboardMobilePanel");
 const dashboardMobileMenu = document.getElementById("dashboardMobileMenu");
 const PROGRESS_KEY = "aix_learning_progress_v1";
+const MAX_PROGRESS_MODULES = 10000;
 
 let toastTimer = null;
 
@@ -55,15 +56,18 @@ function courseStartUrl(courseId) {
   return `/course/${encodeURIComponent(courseId)}/start`;
 }
 
-function courseLearnUrl(courseId, moduleIndex = 0) {
-  return `/course/${encodeURIComponent(courseId)}/learn?module=${Math.max(Number(moduleIndex) || 0, 0)}&ready=1`;
+function boundedProgressNumber(value, maximum = MAX_PROGRESS_MODULES) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return 0;
+  const finiteMaximum = Number.isFinite(maximum)
+    ? Math.max(Math.floor(maximum), 0)
+    : MAX_PROGRESS_MODULES;
+  return Math.min(Math.floor(number), finiteMaximum);
 }
 
-function learningEntryUrl(href, courseId) {
-  const value = String(href || "");
-  const match = value.match(/^\/course\/([^/?#]+)\/content(?:[?#].*)?$/);
-  if (match) return courseStartUrl(decodeURIComponent(match[1]));
-  return value || courseStartUrl(courseId);
+function courseLearnUrl(courseId, moduleIndex = 0) {
+  const safeIndex = boundedProgressNumber(moduleIndex, MAX_PROGRESS_MODULES - 1);
+  return `/course/${encodeURIComponent(courseId)}/learn?module=${safeIndex}&ready=1`;
 }
 
 function liveRoomUrl(scheduleId) {
@@ -72,7 +76,7 @@ function liveRoomUrl(scheduleId) {
 
 function numberFromText(value) {
   const match = String(value || "").match(/\d+/);
-  return match ? Number(match[0]) : 0;
+  return match ? boundedProgressNumber(match[0]) : 0;
 }
 
 function readLearningProgress() {
@@ -87,24 +91,30 @@ function readLearningProgress() {
 function mergeServerProgress(progressList = []) {
   if (!Array.isArray(progressList) || !progressList.length) return;
   const store = readLearningProgress();
-  const courses = store.courses && typeof store.courses === "object" ? store.courses : {};
+  const storedCourses = store.courses && typeof store.courses === "object" ? store.courses : {};
+  const courses = Object.assign(Object.create(null), storedCourses);
 
   progressList.forEach((progress) => {
     if (!progress?.courseId) return;
-    const existing = courses[progress.courseId] || {};
+    const courseId = String(progress.courseId);
+    const existing = Object.hasOwn(courses, courseId) && courses[courseId] && typeof courses[courseId] === "object"
+      ? courses[courseId]
+      : {};
+    const serverCompleted = boundedProgressNumber(progress.completedCount);
+    const localCompleted = boundedProgressNumber(existing.completedCount);
     const serverTime = Date.parse(progress.updatedAt || 0);
     const localTime = Date.parse(existing.updatedAt || 0);
     const shouldUseServer = !existing.courseId
-      || Number(progress.completedCount || 0) > Number(existing.completedCount || 0)
+      || serverCompleted > localCompleted
       || serverTime >= localTime;
     if (!shouldUseServer) return;
 
-    courses[progress.courseId] = {
+    courses[courseId] = {
       ...existing,
       ...progress,
-      completedCount: Number(progress.completedCount || 0),
-      totalModules: Number(progress.totalModules || 0),
-      activeIndex: Number(progress.activeIndex || 0)
+      completedCount: serverCompleted,
+      totalModules: boundedProgressNumber(progress.totalModules),
+      activeIndex: boundedProgressNumber(progress.activeIndex, MAX_PROGRESS_MODULES - 1)
     };
   });
 
@@ -119,19 +129,18 @@ function mergeServerProgress(progressList = []) {
 
 function courseLearningProgress(course) {
   const store = readLearningProgress();
-  const record = store.courses?.[course.id] || {};
+  const storedCourses = store.courses && typeof store.courses === "object" ? store.courses : {};
+  const candidate = Object.hasOwn(storedCourses, course.id) ? storedCourses[course.id] : null;
+  const record = candidate && typeof candidate === "object" ? candidate : {};
   const total = Math.max(
-    Number(record.totalModules) || 0,
-    Number(course.lessonsCount) || 0,
+    boundedProgressNumber(record.totalModules),
+    boundedProgressNumber(course.lessonsCount),
     numberFromText(course.lessons)
   );
-  const completedRaw = Number(record.completedCount) || 0;
+  const completedRaw = boundedProgressNumber(record.completedCount);
   const completed = total ? Math.min(completedRaw, total) : completedRaw;
-  const activeIndex = Math.min(
-    Math.max(Number(record.activeIndex) || 0, 0),
-    Math.max((total || 1) - 1, 0)
-  );
-  const percent = total ? Math.round((completed / total) * 100) : 0;
+  const activeIndex = boundedProgressNumber(record.activeIndex, Math.max((total || 1) - 1, 0));
+  const percent = total ? boundedProgressNumber(Math.round((completed / total) * 100), 100) : 0;
   const started = completed > 0;
   return {
     ...record,
@@ -166,28 +175,31 @@ function renderCourseCard(course) {
   const progress = courseLearningProgress(course);
   const actionLabel = progress.started ? "เรียนต่อ" : "เริ่มเรียน";
   const badge = progress.started ? `เรียนแล้ว ${progress.percent}%` : (course.status || "พร้อมเรียน");
-  return `
-    <article class="course-card member-course-card ${progress.started ? "in-progress" : ""}">
-      <div class="course-image">
-        <img src="${escapeHtml(course.image || "assets/generated/hero-space-learning.jpg")}" alt="${escapeHtml(course.title)}" loading="lazy">
-        <span class="course-badge">${escapeHtml(badge)}</span>
-      </div>
-      <div class="course-body">
-        <span class="provider">AiX Club</span>
-        <h3>${escapeHtml(course.title)}</h3>
-        <p>${escapeHtml(course.description || course.subtitle || "")}</p>
-        <div class="course-progress-row">
-          <div><span style="width:${progress.percent}%"></span></div>
-          <strong>${escapeHtml(progressLabel(progress))}</strong>
-        </div>
-        <div class="course-meta">
-          <span><i class="fa-regular fa-clock"></i>${escapeHtml(course.duration || "-")}</span>
-          <span><i class="fa-solid fa-list-check"></i>${escapeHtml(course.lessons || "-")}</span>
-        </div>
-        <a class="primary-btn full" href="${escapeHtml(progress.url)}">${actionLabel}</a>
-      </div>
-    </article>
-  `;
+  const progressFill = AiXDom.node("span");
+  progressFill.style.width = `${progress.percent}%`;
+  return AiXDom.node("article", { className: `course-card member-course-card ${progress.started ? "in-progress" : ""}` }, [
+    AiXDom.node("div", { className: "course-image" }, [
+      AiXDom.node("img", {
+        attrs: { alt: course.title, loading: "lazy" },
+        urls: { src: { value: course.image, options: { fallback: "assets/generated/hero-space-learning.jpg" } } }
+      }),
+      AiXDom.node("span", { className: "course-badge", text: badge })
+    ]),
+    AiXDom.node("div", { className: "course-body" }, [
+      AiXDom.node("span", { className: "provider", text: "AiX Club" }),
+      AiXDom.node("h3", { text: course.title }),
+      AiXDom.node("p", { text: course.description || course.subtitle || "" }),
+      AiXDom.node("div", { className: "course-progress-row" }, [
+        AiXDom.node("div", {}, [progressFill]),
+        AiXDom.node("strong", { text: progressLabel(progress) })
+      ]),
+      AiXDom.node("div", { className: "course-meta" }, [
+        AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-regular fa-clock" }), course.duration || "-"]),
+        AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-solid fa-list-check" }), course.lessons || "-"])
+      ]),
+      AiXDom.link({ href: AiXDom.safeUrl(progress.url), className: "primary-btn full" }, [actionLabel])
+    ])
+  ]);
 }
 
 function formatDate(value) {
@@ -202,16 +214,6 @@ function formatMoney(amount, currency = "THB") {
     style: "currency",
     currency: String(currency || "THB").toUpperCase()
   }).format(Number(amount || 0) / 100);
-}
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[char]));
 }
 
 function paymentMethodLabel(member) {
@@ -230,7 +232,7 @@ function resourceIcon(type = "") {
     file: "fa-solid fa-download",
     link: "fa-solid fa-arrow-up-right-from-square"
   };
-  return map[type] || "fa-solid fa-toolbox";
+  return Object.hasOwn(map, type) ? map[type] : "fa-solid fa-toolbox";
 }
 
 function paymentRecordStatusLabel(status = "") {
@@ -248,22 +250,22 @@ function paymentRecordMethodLabel(method = "") {
   if (value === "card") return "บัตรเครดิต / เดบิต";
   if (value.includes("card")) return "บัตรเครดิต / เดบิต";
   if (value.includes("promptpay")) return "PromptPay";
-  return value ? escapeHtml(method) : "Stripe";
+  return value ? String(method) : "Stripe";
 }
 
 function receiptAction(payment, receiptUrl, discount = 0) {
   if (receiptUrl) {
-    return `<a class="secondary-btn compact" href="${escapeHtml(receiptUrl)}" target="_blank" rel="noopener">ดูใบเสร็จ</a>`;
+    return AiXDom.link({ href: AiXDom.safeUrl(receiptUrl), className: "secondary-btn compact" }, ["ดูใบเสร็จ"]);
   }
   const amount = Number(payment.amount || 0);
   const status = String(payment.status || "").toLowerCase();
   if (amount <= 0 && discount > 0) {
-    return `<span class="receipt-pending">ส่วนลดเต็มจำนวน ไม่มีการตัดเงินจริง</span>`;
+    return AiXDom.node("span", { className: "receipt-pending", text: "ส่วนลดเต็มจำนวน ไม่มีการตัดเงินจริง" });
   }
   if (status === "paid") {
-    return `<span class="receipt-pending">กำลังรอใบเสร็จจาก Stripe</span>`;
+    return AiXDom.node("span", { className: "receipt-pending", text: "กำลังรอใบเสร็จจาก Stripe" });
   }
-  return `<span class="receipt-pending">ยังไม่มีใบเสร็จ</span>`;
+  return AiXDom.node("span", { className: "receipt-pending", text: "ยังไม่มีใบเสร็จ" });
 }
 
 function renderContinueLearning(paid, courses = [], expired = false) {
@@ -312,142 +314,161 @@ function renderContinueLearning(paid, courses = [], expired = false) {
 function renderPaymentHistory(payments = [], paid = false) {
   if (!paymentHistory) return;
   if (!payments.length) {
-    paymentHistory.innerHTML = `
-      <article class="payment-history-empty">
-        <span><i class="fa-solid fa-receipt"></i></span>
-        <div>
-          <h3>${paid ? "ยังไม่มีรายการใบเสร็จ" : "ยังไม่มีประวัติชำระเงิน"}</h3>
-          <p>${paid ? "รายการเก่าจะถูกนำมาแสดงเมื่อ Stripe ส่งข้อมูล session กลับมา" : "หลังชำระเงินสำเร็จ ระบบจะแสดงรายการและลิงก์ใบเสร็จตรงนี้"}</p>
-        </div>
-      </article>
-    `;
+    AiXDom.replace(paymentHistory, [AiXDom.node("article", { className: "payment-history-empty" }, [
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-solid fa-receipt" })]),
+      AiXDom.node("div", {}, [
+        AiXDom.node("h3", { text: paid ? "ยังไม่มีรายการใบเสร็จ" : "ยังไม่มีประวัติชำระเงิน" }),
+        AiXDom.node("p", { text: paid ? "รายการเก่าจะถูกนำมาแสดงเมื่อ Stripe ส่งข้อมูล session กลับมา" : "หลังชำระเงินสำเร็จ ระบบจะแสดงรายการและลิงก์ใบเสร็จตรงนี้" })
+      ])
+    ])]);
     return;
   }
 
-  paymentHistory.innerHTML = payments.map((payment) => {
+  AiXDom.replace(paymentHistory, payments.map((payment) => {
     const receiptUrl = payment.receiptUrl || payment.invoiceUrl || "";
     const paidAt = payment.paidAt || payment.createdAt;
     const discount = Number(payment.amountDiscount || 0);
-    return `
-      <article class="payment-history-card">
-        <div class="payment-history-main">
-          <span class="payment-history-icon"><i class="fa-solid fa-receipt"></i></span>
-          <div>
-            <small>${escapeHtml(paymentRecordStatusLabel(payment.status))}</small>
-            <h3>${escapeHtml(payment.productName || "AiX Member")}</h3>
-            <p>${formatDate(paidAt)} · ${paymentRecordMethodLabel(payment.paymentMethod)}</p>
-            ${discount > 0 ? `<p class="payment-discount">ส่วนลด ${formatMoney(discount, payment.currency)}${payment.couponName ? ` · ${escapeHtml(payment.couponName)}` : ""}</p>` : ""}
-          </div>
-        </div>
-        <div class="payment-history-side">
-          <strong>${formatMoney(payment.amount, payment.currency)}</strong>
-          ${receiptAction(payment, receiptUrl, discount)}
-        </div>
-      </article>
-    `;
-  }).join("");
+    const discountNode = discount > 0
+      ? AiXDom.node("p", {
+          className: "payment-discount",
+          text: `ส่วนลด ${formatMoney(discount, payment.currency)}${payment.couponName ? ` · ${payment.couponName}` : ""}`
+        })
+      : null;
+    return AiXDom.node("article", { className: "payment-history-card" }, [
+      AiXDom.node("div", { className: "payment-history-main" }, [
+        AiXDom.node("span", { className: "payment-history-icon" }, [AiXDom.node("i", { className: "fa-solid fa-receipt" })]),
+        AiXDom.node("div", {}, [
+          AiXDom.node("small", { text: paymentRecordStatusLabel(payment.status) }),
+          AiXDom.node("h3", { text: payment.productName || "AiX Member" }),
+          AiXDom.node("p", { text: `${formatDate(paidAt)} · ${paymentRecordMethodLabel(payment.paymentMethod)}` }),
+          discountNode
+        ])
+      ]),
+      AiXDom.node("div", { className: "payment-history-side" }, [
+        AiXDom.node("strong", { text: formatMoney(payment.amount, payment.currency) }),
+        receiptAction(payment, receiptUrl, discount)
+      ])
+    ]);
+  }));
 }
 
 function renderResources(paid, resources = []) {
   if (!paid) {
-    memberResources.innerHTML = [
+    AiXDom.replace(memberResources, [
       ["fa-solid fa-credit-card", "ชำระเงิน", "ปลดล็อกคอร์สและ Resource สำหรับสมาชิก", "/payment"],
       ["fa-solid fa-toolbox", "Tools Box", "ปลดล็อก Skill Set, Ebook, Prompt Pack และ Template", "/payment"],
       ["fa-solid fa-list-check", "ดูคอร์สทั้งหมด", "สำรวจคลาส AI ที่พร้อมเข้าเรียนหลังชำระเงิน", "/index.html#catalog"]
-    ].map(([icon, title, copy, href]) => `
-      <a class="member-resource-card" href="${href}">
-        <span><i class="${icon}"></i></span>
-        <strong>${title}</strong>
-        <small>${copy}</small>
-      </a>
-    `).join("");
+    ].map(([icon, title, copy, href]) => AiXDom.link({ href: AiXDom.safeUrl(href), className: "member-resource-card" }, [
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: icon })]),
+      AiXDom.node("strong", { text: title }),
+      AiXDom.node("small", { text: copy })
+    ])));
     return;
   }
 
-  const toolsBoxCard = `
-    <a class="member-resource-card tools-box-entry" href="/tools-box">
-      <span><i class="fa-solid fa-toolbox"></i></span>
-      <strong>เปิด Tools Box</strong>
-      <small>เข้า Skill Set, Ebook, Prompt Pack, Workflow Blueprint และ Template ทั้งหมด</small>
-    </a>
-  `;
+  const toolsBoxCard = AiXDom.link({ href: AiXDom.safeUrl("/tools-box"), className: "member-resource-card tools-box-entry" }, [
+    AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-solid fa-toolbox" })]),
+    AiXDom.node("strong", { text: "เปิด Tools Box" }),
+    AiXDom.node("small", { text: "เข้า Skill Set, Ebook, Prompt Pack, Workflow Blueprint และ Template ทั้งหมด" })
+  ]);
 
   if (!resources.length) {
-    memberResources.innerHTML = `${toolsBoxCard}<article class="resource-card"><h3>ยังไม่มี Resource เพิ่มเติม</h3><p>เริ่มใช้งานจาก Tools Box ได้เลย เมื่อ Admin เพิ่มไฟล์ใหม่ รายการจะแสดงตรงนี้</p></article>`;
+    AiXDom.replace(memberResources, [toolsBoxCard, AiXDom.node("article", { className: "resource-card" }, [
+      AiXDom.node("h3", { text: "ยังไม่มี Resource เพิ่มเติม" }),
+      AiXDom.node("p", { text: "เริ่มใช้งานจาก Tools Box ได้เลย เมื่อ Admin เพิ่มไฟล์ใหม่ รายการจะแสดงตรงนี้" })
+    ])]);
     return;
   }
 
-  memberResources.innerHTML = toolsBoxCard + resources.map((resource) => {
+  AiXDom.replace(memberResources, [toolsBoxCard, ...resources.map((resource) => {
     const rawHref = resource.url || resource.mediaUrl || "#";
     const href = rawHref === "/dashboard" ? "/tools-box#resources" : rawHref;
-    const external = /^https?:\/\//.test(href);
-    return `
-      <a class="member-resource-card" href="${href}" ${external ? 'target="_blank" rel="noopener"' : ""}>
-        <span><i class="${resourceIcon(resource.type)}"></i></span>
-        <strong>${resource.title}</strong>
-        <small>${resource.description || (resource.tags || []).join(", ") || "Resource สำหรับสมาชิก"}</small>
-      </a>
-    `;
-  }).join("");
+    const tags = Array.isArray(resource.tags) ? resource.tags : [];
+    return AiXDom.link({ href: AiXDom.safeUrl(href), className: "member-resource-card" }, [
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: resourceIcon(resource.type) })]),
+      AiXDom.node("strong", { text: resource.title }),
+      AiXDom.node("small", { text: resource.description || tags.join(", ") || "Resource สำหรับสมาชิก" })
+    ]);
+  })]);
 }
 
 function renderSchedule(paid, schedules = []) {
   if (!paid) {
-    memberSchedule.innerHTML = `<article class="resource-card"><h3>ยังไม่ปลดล็อกตารางเรียน</h3><p>ชำระเงินเพื่อดูตารางคลาสสดและลิงก์เข้าเรียน</p></article>`;
+    AiXDom.replace(memberSchedule, [AiXDom.node("article", { className: "resource-card" }, [
+      AiXDom.node("h3", { text: "ยังไม่ปลดล็อกตารางเรียน" }),
+      AiXDom.node("p", { text: "ชำระเงินเพื่อดูตารางคลาสสดและลิงก์เข้าเรียน" })
+    ])]);
     return;
   }
 
   if (!schedules.length) {
-    memberSchedule.innerHTML = `<article class="resource-card"><h3>ยังไม่มีตารางเรียนใหม่</h3><p>เมื่อมีตารางสอนใหม่ ระบบจะแจ้งเตือนใน Dashboard นี้</p></article>`;
+    AiXDom.replace(memberSchedule, [AiXDom.node("article", { className: "resource-card" }, [
+      AiXDom.node("h3", { text: "ยังไม่มีตารางเรียนใหม่" }),
+      AiXDom.node("p", { text: "เมื่อมีตารางสอนใหม่ ระบบจะแจ้งเตือนใน Dashboard นี้" })
+    ])]);
     return;
   }
 
-  memberSchedule.innerHTML = schedules.map((item) => {
+  AiXDom.replace(memberSchedule, schedules.map((item) => {
     const status = scheduleStatus(item.startsAt, item.endsAt);
-    return `
-    <article class="member-schedule-card live-class-card ${status.className}">
-      <div class="live-class-top">
-        <span class="live-class-badge"><i class="fa-solid fa-video"></i> สอนสดออนไลน์</span>
-        <strong>${escapeHtml(status.label)}</strong>
-      </div>
-      <h3>${escapeHtml(item.title)}</h3>
-      <p>${escapeHtml(item.description || item.courseTitle || "AiX Live Class")}</p>
-      <div class="live-class-meta">
-        <span><i class="fa-regular fa-calendar-check"></i>${formatDateTime(item.startsAt)}</span>
-        ${item.courseTitle ? `<span><i class="fa-solid fa-graduation-cap"></i>${escapeHtml(item.courseTitle)}</span>` : ""}
-        ${item.meetingUrl ? `<span><i class="fa-solid fa-video"></i>Google Meet พร้อม</span>` : `<span><i class="fa-solid fa-link-slash"></i>รอลิงก์ Meet</span>`}
-      </div>
-      <a class="primary-btn full" href="${escapeHtml(liveRoomUrl(item.id))}">${status.live ? "เข้าห้องสอนสดตอนนี้" : "เตรียมเข้าเรียนสด"}</a>
-    </article>
-  `;
-  }).join("");
+    return AiXDom.node("article", { className: `member-schedule-card live-class-card ${status.className}` }, [
+      AiXDom.node("div", { className: "live-class-top" }, [
+        AiXDom.node("span", { className: "live-class-badge" }, [AiXDom.node("i", { className: "fa-solid fa-video" }), " สอนสดออนไลน์"]),
+        AiXDom.node("strong", { text: status.label })
+      ]),
+      AiXDom.node("h3", { text: item.title }),
+      AiXDom.node("p", { text: item.description || item.courseTitle || "AiX Live Class" }),
+      AiXDom.node("div", { className: "live-class-meta" }, [
+        AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-regular fa-calendar-check" }), formatDateTime(item.startsAt)]),
+        item.courseTitle ? AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-solid fa-graduation-cap" }), item.courseTitle]) : null,
+        AiXDom.node("span", {}, [
+          AiXDom.node("i", { className: item.meetingUrl ? "fa-solid fa-video" : "fa-solid fa-link-slash" }),
+          item.meetingUrl ? "Google Meet พร้อม" : "รอลิงก์ Meet"
+        ])
+      ]),
+      AiXDom.link({ href: AiXDom.safeUrl(liveRoomUrl(item.id)), className: "primary-btn full" }, [status.live ? "เข้าห้องสอนสดตอนนี้" : "เตรียมเข้าเรียนสด"])
+    ]);
+  }));
 }
 
 function renderNotifications(paid, notifications = []) {
   if (!paid) {
-    memberAlerts.innerHTML = `<article class="member-alert-card"><span><i class="fa-solid fa-lock"></i></span><div><strong>แจ้งเตือนจะเปิดหลังชำระเงิน</strong><small>ระบบจะใช้ Dashboard นี้แจ้งตารางสอนและประกาศสำคัญ</small></div></article>`;
+    AiXDom.replace(memberAlerts, [AiXDom.node("article", { className: "member-alert-card" }, [
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-solid fa-lock" })]),
+      AiXDom.node("div", {}, [
+        AiXDom.node("strong", { text: "แจ้งเตือนจะเปิดหลังชำระเงิน" }),
+        AiXDom.node("small", { text: "ระบบจะใช้ Dashboard นี้แจ้งตารางสอนและประกาศสำคัญ" })
+      ])
+    ])]);
     return;
   }
 
   if (!notifications.length) {
-    memberAlerts.innerHTML = `<article class="member-alert-card"><span><i class="fa-regular fa-bell"></i></span><div><strong>ยังไม่มีแจ้งเตือนใหม่</strong><small>ตารางสอนใหม่จะขึ้นตรงนี้อัตโนมัติ</small></div></article>`;
+    AiXDom.replace(memberAlerts, [AiXDom.node("article", { className: "member-alert-card" }, [
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-regular fa-bell" })]),
+      AiXDom.node("div", {}, [
+        AiXDom.node("strong", { text: "ยังไม่มีแจ้งเตือนใหม่" }),
+        AiXDom.node("small", { text: "ตารางสอนใหม่จะขึ้นตรงนี้อัตโนมัติ" })
+      ])
+    ])]);
     return;
   }
 
-  memberAlerts.innerHTML = notifications.slice(0, 4).map((notice) => {
+  AiXDom.replace(memberAlerts, notifications.slice(0, 4).map((notice) => {
     const isLiveNotice = Boolean(notice.scheduleId) || /ตาราง|สอน|เรียนสด|live/i.test(`${notice.title} ${notice.message}`);
-    return `
-    <article class="member-alert-card ${notice.status === "unread" ? "unread" : ""} ${isLiveNotice ? "live-notice-card" : ""}">
-      <span><i class="${isLiveNotice ? "fa-solid fa-video" : "fa-regular fa-bell"}"></i></span>
-      <div>
-        ${isLiveNotice ? `<em>สอนสดออนไลน์</em>` : ""}
-        <strong>${escapeHtml(notice.title)}</strong>
-        <small>${escapeHtml(notice.message)}</small>
-      </div>
-      ${notice.status === "unread" ? `<button type="button" onclick="markNotificationRead('${notice.id}')">อ่านแล้ว</button>` : ""}
-    </article>
-  `;
-  }).join("");
+    const unread = notice.status === "unread";
+    const readButton = unread ? AiXDom.node("button", { text: "อ่านแล้ว", attrs: { type: "button" } }) : null;
+    readButton?.addEventListener("click", () => markNotificationRead(notice.id));
+    return AiXDom.node("article", { className: `member-alert-card ${unread ? "unread" : ""} ${isLiveNotice ? "live-notice-card" : ""}` }, [
+      AiXDom.node("span", {}, [AiXDom.node("i", { className: isLiveNotice ? "fa-solid fa-video" : "fa-regular fa-bell" })]),
+      AiXDom.node("div", {}, [
+        isLiveNotice ? AiXDom.node("em", { text: "สอนสดออนไลน์" }) : null,
+        AiXDom.node("strong", { text: notice.title }),
+        AiXDom.node("small", { text: notice.message })
+      ]),
+      readButton
+    ]);
+  }));
 }
 
 function formatDateTime(value) {
@@ -478,7 +499,7 @@ function renderDashboard(data) {
   const { member, payment, courses, resources = [], schedule = [], notifications = [], payments = [], progress = [] } = data;
   mergeServerProgress(progress);
 
-  memberAvatar.src = member.avatarUrl || "AiX%20logo/iconblack.png";
+  memberAvatar.src = AiXDom.safeUrl(member.avatarUrl, { fallback: "AiX%20logo/iconblack.png" });
   memberName.textContent = member.displayName || member.name || "AiX Member";
   memberEmail.textContent = member.email;
 
@@ -516,9 +537,12 @@ function renderDashboard(data) {
     : expired
       ? "ต่ออายุสมาชิกเพื่อปลดล็อกคอร์สอีกครั้ง"
     : "คอร์สจะถูกปลดล็อกทันทีหลังชำระเงิน";
-  memberCourses.innerHTML = paid
-    ? courses.map(renderCourseCard).join("")
-    : `<article class="resource-card"><h3>${expired ? "สมาชิกหมดอายุแล้ว" : "ยังไม่ได้ปลดล็อกคอร์ส"}</h3><p>${expired ? "ต่ออายุสมาชิกเพื่อกลับเข้าเรียนคอร์ส AiX Club" : "กดชำระเงินเพื่อเข้าเรียนคอร์ส AiX Club ทั้งหมดที่เปิดให้สมาชิก"}</p></article>`;
+  AiXDom.replace(memberCourses, paid
+    ? courses.map(renderCourseCard)
+    : [AiXDom.node("article", { className: "resource-card" }, [
+        AiXDom.node("h3", { text: expired ? "สมาชิกหมดอายุแล้ว" : "ยังไม่ได้ปลดล็อกคอร์ส" }),
+        AiXDom.node("p", { text: expired ? "ต่ออายุสมาชิกเพื่อกลับเข้าเรียนคอร์ส AiX Club" : "กดชำระเงินเพื่อเข้าเรียนคอร์ส AiX Club ทั้งหมดที่เปิดให้สมาชิก" })
+      ])]);
   renderSchedule(paid, schedule);
   renderPaymentHistory(payments, paid);
   renderResources(paid, resources);
