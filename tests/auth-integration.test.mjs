@@ -70,15 +70,17 @@ function clearedCookieValue(name, sameSite) {
 
 function assertRateLimitDirective(header, name, expected) {
   const requested = String(name).toLowerCase();
-  const values = String(header || "")
+  const exactKeySegments = String(header || "")
     .split(";")
     .slice(1)
-    .flatMap((segment) => {
-      const match = segment.trim().match(/^([a-z][a-z0-9_-]*)=(-?(?:0|[1-9]\d*))$/i);
-      if (!match || match[1].toLowerCase() !== requested) return [];
-      return [Number(match[2])];
+    .map((segment) => segment.trim())
+    .filter((segment) => {
+      const equalsAt = segment.indexOf("=");
+      const rawKey = (equalsAt === -1 ? segment : segment.slice(0, equalsAt)).trim();
+      return rawKey.toLowerCase() === requested;
     });
-  assert.deepEqual(values, [expected], `${requested} directive`);
+  assert.equal(exactKeySegments.length, 1, `${requested} directive count`);
+  assert.equal(exactKeySegments[0], `${requested}=${String(expected)}`, `${requested} directive value`);
 }
 
 async function registerMember(server, overrides = {}) {
@@ -121,8 +123,14 @@ test("no-bearer response guard rejects credential fields at every nesting depth"
   }
 });
 
-test("rate-limit directive guard rejects numeric prefixes and key suffixes", () => {
+test("rate-limit directive guard rejects malformed and duplicate exact-key parameters", () => {
   const falseMatches = [
+    { header: '"ignored"; q=05; q=5; w=900', name: "q", expected: 5 },
+    { header: '"ignored"; q=invalid; q=5; w=900', name: "q", expected: 5 },
+    { header: '"ignored"; q; q=5; w=900', name: "q", expected: 5 },
+    { header: '"ignored"; q=5; q=5; w=900', name: "q", expected: 5 },
+    { header: '"ignored"; q=5=6; w=900', name: "q", expected: 5 },
+    { header: '"ignored"; q=+5; q=5; w=900', name: "q", expected: 5 },
     { header: '"ignored"; r=01; t=731', name: "r", expected: 0 },
     { header: '"ignored"; q=50; w=900', name: "q", expected: 5 },
     { header: '"ignored"; q=5; w=9000', name: "w", expected: 900 },
@@ -132,7 +140,7 @@ test("rate-limit directive guard rejects numeric prefixes and key suffixes", () 
     assert.throws(
       () => assertRateLimitDirective(sample.header, sample.name, sample.expected),
       { name: "AssertionError" },
-      `${sample.name}=${sample.expected}`
+      sample.header
     );
   }
   assert.doesNotThrow(() => assertRateLimitDirective('"different label"; r=0; t=417', "r", 0));
