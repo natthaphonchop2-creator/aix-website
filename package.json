@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/*.test.mjs",
-    "test:security": "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs",
+    "test:security": "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs",
     "cf:prepare": "node scripts/prepare-cloudflare-assets.cjs",
     "cf:dev": "wrangler dev",
     "cf:check": "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"",
@@ -24,7 +24,7 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-rate-limit": "8.6.0",
-    "multer": "^2.1.1",
+    "multer": "^2.2.0",
     "pg": "^8.22.0",
     "stripe": "^22.2.0"
   },

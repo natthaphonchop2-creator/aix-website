@@ -4,6 +4,52 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-18 - Phase 0C Task 1 staged upload validation and safe lifecycle
+
+Scope:
+- Upgraded Multer from `^2.1.1` to `^2.2.0` without `--force` or an automatic audit fix. Added the upload-policy suite to the exact named `test:security` command and synchronized its package-script publication contract.
+- Added centralized replay and resource policies with exact 500 MB and 50 MB limits. Validation rejects missing or mismatched reported sizes, non-positive/non-finite values, actual oversize files, non-regular staged paths, symlinks, and a staged inode that changes during validation.
+- Added strict upload-name validation for both slash styles, NUL/control and bidirectional-control characters, dotfiles, traversal-like names, unsupported types, platform-reserved names, dangerous inner extensions, and allowed-type double-extension disguises. Generated server filenames retain a UTF-8-byte-bounded safe Unicode/alphanumeric basename behind a timestamp plus 128-bit random prefix and a canonical lowercase extension.
+- Added bounded format validation for a recognized PDF version header, PNG signature plus IHDR dimensions/CRC, JPEG, RIFF-sized WebP, bounded MP4 `ftyp`, and WebM EBML plus `webm` DocType; complete chunked UTF-8 validation for TXT/CSV with binary-control and leading-markup denial; and bounded ZIP central/local directory parsing. DOCX, XLSX, and PPTX additionally reject ZIP64 sentinels, preflight every entry against a 64 MB per-entry cap, 256 MB aggregate uncompressed cap, and 200x compression-ratio cap, then bounded-read/decompress and verify actual size plus CRC for every archive entry. Required metadata/main parts use tighter limits, are parsed as actual namespace-qualified XML tags/attributes, reject DTD/entity/CDATA/comment spoofing, and require the exact format-specific main XML root.
+- Added exact lexical containment, validated-object and inode binding, safe directory creation that rejects symlinked intermediates, bounded collision retries, and atomic no-clobber hard-link promotion. Placement verifies that the destination is the same validated regular inode before removing the staged name, so no partially copied final path is exposed. Contained deletion rejects traversal, symlinked roots/parents/targets, directories, and missing files with a safe boolean result.
+- Kept `server.js` unchanged. Route integration, staging middleware, and protected media delivery remain intentionally assigned to the next Phase 0C task.
+
+Version:
+- `1.0.1` unchanged.
+
+Changed files:
+- `security/upload-policy.cjs`
+- `tests/upload-policy.test.mjs`
+- `package.json`
+- `package-lock.json`
+- `tests/cloudflare-publication.test.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- Dependency upgrade: `npm install multer@2.2.0` completed successfully, changed only the declared/locked Multer release, and did not run `--force` or `npm audit fix`.
+- Initial module RED: `node --test tests/upload-policy.test.mjs` exited 1 with `MODULE_NOT_FOUND` for `../security/upload-policy.cjs`, proving the new contract ran before production code existed.
+- Initial GREEN cycle: the first implementation run passed 13 of 15 tests. It exposed uppercase-extension duplication in generated filenames and an invalid FileHandle prototype instrumentation assumption; after correcting the filename implementation and wrapping the actual handle close method, the suite passed 15 of 15.
+- Named-script RED/GREEN: the selected Cloudflare package-script contract failed 0 of 1 because `package.json` did not yet contain `tests/upload-policy.test.mjs`, then passed 1 of 1 after the exact script was updated.
+- Atomic-placement review RED: the inode regression failed 0 of 1 against the initial exclusive-copy placement because the destination had a different inode. Replacing that path with no-clobber `fs.link` promotion made the placement and collision regressions pass 2 of 2 and ensured the final path is never a visible partial copy.
+- Symlinked-destination RED/GREEN: an existing destination reached through a symlinked intermediate initially produced `Missing expected rejection`; walking from the staged/destination common ancestor and rejecting every symlinked component made the selected placement regressions pass 3 of 3.
+- Filename-boundary RED/GREEN: 200 Thai characters initially generated a 291-byte server filename and failed the exact 240-byte ceiling. UTF-8-aware basename truncation made the selected filename regression pass 1 of 1 without splitting a code point. Additional dangerous inner-extension cases for `.lnk` and `.ps1` first reached disk lookup and then failed before disk access after the denylist was completed.
+- Independent Office review RED/GREEN: required marker strings placed only in XML comments initially passed, proving substring matching did not establish an Office structure. New regressions also cover a wrong-namespace prefix, duplicate main overrides/relationships, garbage or entity-bearing main XML, mismatched CRC, excessive compression ratio, and an advertised `0xffffffff` main size. The selected valid/rejection matrix and all deflated DOCX/XLSX/PPTX fixtures passed 2 of 2 after structural parsing and bounded reads were added.
+- Office whole-archive re-review RED/GREEN: a DOCX with a CRC-corrupted extra media part initially produced `Missing expected rejection: extra-crc.docx`, proving validation was limited to the three required XML parts. The implementation now preflights all central entries before decompression, rejects ZIP64 size/offset/count sentinels, applies the documented per-entry/aggregate/ratio limits, and bounded-validates size and CRC for every entry while retaining only the required XML buffers. The selected matrix passed 2 of 2 with a valid extra media part and rejection of corrupted, `0xffffffff`-advertised, over-64-MB per-entry, and over-256-MB aggregate advertised extra parts; the focused suite passed 17 of 17.
+- Signature-review RED/GREEN: invalid PDF versions, PNG signature-only data, WebM signature-only data, and a Matroska DocType initially passed their shared magic prefixes. Recognized PDF versions, PNG IHDR/CRC, and bounded EBML DocType validation made the selected signature matrix pass 2 of 2.
+- Final focused suite: `node --test tests/upload-policy.test.mjs` passed 17 tests with 0 failures.
+- Production dependency audit: `npm audit --omit=dev` exited 0 with `found 0 vulnerabilities`; Multer has no remaining production high/critical finding.
+- Named security suite: `npm run test:security` passed 198 tests with 0 failures.
+- Full regression: `npm test` passed 230 tests with 0 failures.
+- Full dependency audit: `npm audit --audit-level=high` exited 1 with 5 known development findings (1 low, 4 high) in `esbuild`, `undici`, and `ws` through the Wrangler/Miniflare development chain. No dependency outside the authorized Multer upgrade and no automatic fix was applied.
+- Independent review history: the first Office review found substring-only structure validation and an explicitly documented same-UID local-race boundary; structural namespace-qualified XML checks and owner-only-root guidance resolved them. Re-review then found unverified extra Office entries; the whole-archive RED/GREEN fix added entry-wide limits, decompression, size, and CRC checks. The final read-only verdict was Approved with no remaining Critical, Important, or Minor finding.
+- No external provider call, production query, deployment, or other external-state mutation was performed. Pre-existing untracked user files remained outside the task scope.
+
+Unresolved risks:
+- Atomic hard-link promotion intentionally requires the staged and final upload directories to reside on the same filesystem. The next integration task must create staging beneath the upload root and clean staged/final files around database failures.
+- Portable Node path APIs cannot make the lstat/link/unlink sequence race-proof against a malicious same-UID local process without directory-file-descriptor `openat`/`linkat`/`unlinkat` primitives. Staging and upload roots are trusted application-owned paths; the next integration task must create them owner-only (`0700`) and must not claim a same-UID local-adversary boundary.
+- Signature and Office-container checks provide bounded type validation; they are not malware scanning or content-disarm services. Generic ZIP contents are never extracted by this module.
+- The 4 known high development-dependency advisories remain assigned to dependency hardening. `server.js` does not consume this policy until the separately reviewed upload-route task.
+
 ## 2026-07-18 - Phase 0B Task 5 real authentication integration and abuse proof
 
 Scope:
