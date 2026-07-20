@@ -170,8 +170,7 @@ let lastAuthTrigger = null;
 let lastClassTrigger = null;
 const pageEffects = {
   initialized: false,
-  progressRaf: 0,
-  revealObserver: null
+  progressRaf: 0
 };
 
 if (initialHash) {
@@ -784,7 +783,7 @@ function decorateRainbowButton(button) {
 
 function initRainbowButtons(root = document) {
   const selector = [
-    "button[data-open-signup]:not(.hover-gradient-nav-item):not(.hover-gradient-nav-primary):not([data-monthly-plan])",
+    "button[data-open-signup]:not(.hover-gradient-nav-item):not(.hover-gradient-nav-primary)",
     "button[data-course-signup]",
     "#memberForm .primary-btn[type='submit']"
   ].join(",");
@@ -1767,38 +1766,9 @@ function ensureScrollProgress() {
   document.body.prepend(progress);
 }
 
-function pageEffectTargets() {
-  return document.querySelectorAll([
-    ".aix-homepage-redesign section:not(.aix-stack-hero)",
-    ".aix-section-head",
-    ".aix-loop-head",
-    ".aix-stack-hero-copy",
-    ".aix-stack-orbit",
-    ".aix-path-card",
-    ".aix-resource-section .resource-card",
-    ".aix-catalog .course-card",
-    ".aix-business-card",
-    ".aix-workproof-compare",
-    ".aix-testimonial-card",
-    ".aix-single-pricing-card",
-    ".aix-faq-item"
-  ].join(", "));
-}
-
 function decoratePageEffects() {
   document.querySelectorAll(".aix-homepage-redesign section").forEach((section) => {
     section.classList.add("aix-section-ambient");
-  });
-
-  pageEffectTargets().forEach((target, index) => {
-    if (!target.classList.contains("aix-reveal")) {
-      target.classList.add("aix-reveal");
-      target.style.setProperty("--reveal-index", String(index % 6));
-    }
-
-    if (pageEffects.revealObserver && !target.classList.contains("is-visible")) {
-      pageEffects.revealObserver.observe(target);
-    }
   });
 }
 
@@ -1807,25 +1777,7 @@ function initPageEffects() {
   pageEffects.initialized = true;
   ensureScrollProgress();
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!reduceMotion && "IntersectionObserver" in window) {
-    pageEffects.revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      });
-    }, {
-      rootMargin: "0px 0px -12% 0px",
-      threshold: 0.08
-    });
-  }
-
   decoratePageEffects();
-
-  if (!pageEffects.revealObserver) {
-    document.querySelectorAll(".aix-reveal").forEach((target) => target.classList.add("is-visible"));
-  }
 
   updateScrollProgress();
   window.addEventListener("scroll", requestScrollProgressUpdate, { passive: true });
@@ -1835,9 +1787,6 @@ function initPageEffects() {
 function refreshPageEffects() {
   if (!pageEffects.initialized) return;
   decoratePageEffects();
-  if (!pageEffects.revealObserver) {
-    document.querySelectorAll(".aix-reveal").forEach((target) => target.classList.add("is-visible"));
-  }
 }
 
 renderClassFilters();

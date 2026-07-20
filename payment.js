@@ -68,7 +68,6 @@ function updatePaymentActionState() {
 function setPhoneVerificationVisible(visible) {
   if (!paymentPhoneVerify) return;
   paymentPhoneVerify.hidden = !visible;
-  document.querySelector(".payment-method-list")?.classList.toggle("disabled", visible);
 }
 
 function setOtpBusy(sending = false, verifying = false) {
@@ -106,19 +105,14 @@ async function loadPayment() {
     }
 
     const availableMethods = new Set(config.paymentMethods || []);
-    document.querySelectorAll(".payment-method").forEach((method) => {
-      const input = method.querySelector("input");
-      if (!input) return;
+    document.querySelectorAll("input[name='paymentMethod']").forEach((input) => {
       const enabled = availableMethods.size === 0 || availableMethods.has(input.value);
-      method.classList.toggle("disabled", !enabled);
       input.disabled = !enabled;
     });
     const selected = document.querySelector("input[name='paymentMethod']:checked");
     if (selected?.disabled) {
       const firstAvailable = document.querySelector("input[name='paymentMethod']:not(:disabled)");
-      firstAvailable?.click();
-      document.querySelectorAll(".payment-method").forEach((item) => item.classList.remove("active"));
-      firstAvailable?.closest(".payment-method")?.classList.add("active");
+      if (firstAvailable) firstAvailable.checked = true;
     }
   } catch (error) {
     if (error.status === 401) {
@@ -129,14 +123,6 @@ async function loadPayment() {
     showToast(error.message || "ไม่สามารถโหลดข้อมูลชำระเงินได้");
   }
 }
-
-document.querySelectorAll(".payment-method").forEach((method) => {
-  method.addEventListener("click", () => {
-    document.querySelectorAll(".payment-method").forEach((item) => item.classList.remove("active"));
-    method.classList.add("active");
-    method.querySelector("input")?.click();
-  });
-});
 
 confirmPaymentBtn?.addEventListener("click", async () => {
   if (!stripeReady) {

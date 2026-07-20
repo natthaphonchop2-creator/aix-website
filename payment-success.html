@@ -22,7 +22,7 @@
       } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="/styles.css?v=aix-hero-empty-state-polish-v68-20260703">
+  <link rel="stylesheet" href="/styles.css?v=aix-member-annual-v71-20260720">
 </head>
 <body>
   <header class="site-header">
@@ -40,14 +40,16 @@
   <main class="dashboard-page">
     <section class="section payment-page">
       <div class="container payment-result-shell">
-        <article class="payment-result-card" id="paymentResultCard">
+        <article class="payment-result-card" id="paymentResultCard" aria-busy="true">
           <span class="result-icon pending" id="paymentResultIcon"><i class="fa-solid fa-spinner"></i></span>
           <p class="eyebrow">Stripe Payment</p>
           <h1 id="paymentResultTitle">กำลังตรวจสอบการชำระเงิน</h1>
-          <p id="paymentResultCopy">ระบบกำลังตรวจสอบสถานะจาก Stripe และจะปลดล็อกคอร์สเมื่อชำระสำเร็จ</p>
+          <p id="paymentResultCopy">PromptPay อาจใช้เวลายืนยันสักครู่ หน้านี้จะตรวจสถานะซ้ำโดยอัตโนมัติและปลดล็อกคอร์สเมื่อชำระสำเร็จ</p>
+          <p class="payment-result-meta" id="paymentResultMeta" role="status" aria-live="polite">กำลังตรวจสอบครั้งแรก</p>
           <div class="dashboard-actions">
             <a class="primary-btn" id="dashboardLink" href="/dashboard">ไป Dashboard</a>
             <a class="secondary-btn" id="receiptLink" href="#" target="_blank" rel="noopener" hidden>ดูใบเสร็จ</a>
+            <button class="secondary-btn" id="paymentRetryButton" type="button" hidden>ตรวจอีกครั้ง</button>
             <a class="secondary-btn" href="/payment">กลับหน้าชำระเงิน</a>
           </div>
         </article>
@@ -58,6 +60,6 @@
   <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast"></div>
   <script src="/aix-api-client.js"></script>
-  <script src="/payment-success.js?v=payment-success-2"></script>
+  <script src="/payment-success.js?v=payment-success-4"></script>
 </body>
 </html>

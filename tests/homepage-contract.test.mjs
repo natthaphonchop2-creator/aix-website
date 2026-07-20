@@ -25,8 +25,8 @@ const authRegisterMascot = await readFile(join(root, "assets/mascot/aix-auth-mas
 const manusLogo = await readFile(join(root, "assets/ai-logos/manus.webp"));
 const workproofBefore = await readFile(join(root, "assets/generated/aix-real-work-before-generated.png"));
 const workproofAfter = await readFile(join(root, "assets/generated/aix-real-work-after-generated.png"));
-const currentCssCacheBust = /styles\.css\?v=aix-(?:hero-title-refined-v70|hero-empty-state-polish-v68)-20260703/;
-const currentScriptCacheBust = /script\.js\?v=aix-hero-empty-state-hardfix-v69-20260703/;
+const currentCssCacheBust = /styles\.css\?v=aix-(?:member-annual-v71-20260720|hero-title-refined-v70-20260703|hero-empty-state-polish-v68-20260703)/;
+const currentScriptCacheBust = /script\.js\?v=aix-(?:member-annual-v71-20260720|hero-empty-state-hardfix-v69-20260703)/;
 
 function cssRuleBlock(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -108,8 +108,9 @@ test("homepage rebuild has the new AiX brand surface and keeps runtime hooks", a
   assert.match(css, /\.brand-title\s*\{[\s\S]*?font-weight:\s*850;[\s\S]*?white-space:\s*nowrap;/);
   assert.match(css, /\.brand-tagline\s*\{[\s\S]*?color:\s*var\(--muted-foreground\);[\s\S]*?font-weight:\s*800;/);
   assert.match(css, /\.dark \.brand-lockup \.brand-icon\s*\{[\s\S]*?filter:\s*none;[\s\S]*?opacity:\s*1;/);
-  assert.match(html, /Build with[\s\S]*?Learn with[\s\S]*?Ai/);
-  assert.doesNotMatch(html, /เรียน AI ต่อเนื่องทั้งปี ด้วยระบบที่พาคุณใช้กับงานจริง/);
+  assert.doesNotMatch(html, /Build with|Learn with/);
+  assert.match(html, /เรียน <span class="aix-hero-ai-word">AI<\/span> ให้ทันงาน[\s\S]*?ใช้ได้จริงตลอดปี/);
+  assert.match(html, /สมาชิก AiX Club 1,999 บาทต่อปี รวม Live สอนสดทุกอาทิตย์ replay เส้นทางเรียน และ resource ที่นำกลับไปใช้กับงานจริงได้/);
   assert.match(html, /1,999 บาทต่อปี/);
   assert.match(html, /ไม่ต้องไล่ตาม <span class="aix-highlight-mark">AI คนเดียว<\/span>/);
   assert.match(html, /id="member-loop"/);
@@ -224,7 +225,7 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.match(serverScript, /res\.json\(\{ \.\.\.issueMemberSession\(res,\s*result\.member\),\s*profile,\s*created:\s*result\.created \}\)/);
 });
 
-test("homepage applies modern web guidance semantics for forms dialogs theme and offscreen rendering", () => {
+test("homepage applies modern semantics while keeping offscreen sections renderable", () => {
   assert.match(html, /<html lang="th" class="dark">/);
   assert.match(html, /<meta name="theme-color" content="#0a0a0a">/);
   assert.match(html, /<meta name="color-scheme" content="dark">/);
@@ -237,7 +238,7 @@ test("homepage applies modern web guidance semantics for forms dialogs theme and
   assert.match(html, /class="aix-pricing-benefits" role="list" aria-label="สิ่งที่รวมในสมาชิก"/);
   assert.match(html, /class="aix-pricing-features" role="list" aria-label="ฟีเจอร์สมาชิก AiX Club"/);
   assert.match(css, /\.visually-hidden\s*\{[\s\S]*?clip-path:\s*inset\(50%\);/);
-  assert.match(css, /\.aix-system,\s*[\s\S]*?\.aix-faq\s*\{[\s\S]*?content-visibility:\s*auto;[\s\S]*?contain-intrinsic-size:\s*auto 760px;/);
+  assert.doesNotMatch(css, /content-visibility:\s*auto|contain-intrinsic-size:\s*auto 760px/);
   assert.match(script, /const colorSchemeMeta = document\.querySelector\('meta\[name="color-scheme"\]'\);/);
   assert.match(script, /colorSchemeMeta\?\.setAttribute\("content",\s*"dark"\);/);
   assert.match(script, /function setDescribedBy\(input,\s*id,\s*enabled\)/);
@@ -365,19 +366,15 @@ test("homepage CSS includes responsive and motion safety rules", () => {
   assert.match(footer, /สมาชิกเรียน AI ต่อเนื่องทั้งปี พร้อม Live, replay/);
 });
 
-test("homepage adds full-page polish effects with responsive motion safeguards", () => {
+test("homepage polish keeps every section visible without scroll-triggered reveal gating", () => {
   assert.match(script, /const pageEffects = \{/);
   assert.match(script, /function updateScrollProgress\(\)/);
   assert.match(script, /document\.documentElement\.style\.setProperty\("--aix-scroll-progress",\s*progress\.toFixed\(4\)\)/);
   assert.match(script, /function ensureScrollProgress\(\)/);
   assert.match(script, /progress\.className = "aix-scroll-progress"/);
-  assert.match(script, /function pageEffectTargets\(\)/);
-  assert.match(script, /\.aix-catalog \.course-card/);
   assert.match(script, /function decoratePageEffects\(\)/);
   assert.match(script, /section\.classList\.add\("aix-section-ambient"\)/);
-  assert.match(script, /target\.classList\.add\("aix-reveal"\)/);
-  assert.match(script, /new IntersectionObserver/);
-  assert.match(script, /rootMargin:\s*"0px 0px -12% 0px"/);
+  assert.doesNotMatch(script, /pageEffectTargets|aix-reveal|revealObserver|new IntersectionObserver/);
   assert.match(script, /window\.addEventListener\("scroll",\s*requestScrollProgressUpdate,\s*\{ passive:\s*true \}\)/);
   assert.match(script, /refreshPageEffects\(\);/);
   assert.match(script, /initPageEffects\(\);/);
@@ -386,8 +383,8 @@ test("homepage adds full-page polish effects with responsive motion safeguards",
   assert.match(css, /\.aix-section-ambient::before\s*\{[\s\S]*?radial-gradient\(closest-side at 18% 50%,\s*rgba\(var\(--aix-polish-blue\),\s*0\.14\),\s*transparent 72%\)/);
   assert.match(css, /\.aix-homepage-redesign :where\([\s\S]*?\.aix-catalog \.course-card,[\s\S]*?\.aix-faq-item[\s\S]*?\):hover\s*\{[\s\S]*?box-shadow:/);
   assert.match(css, /\.aix-homepage-redesign \.primary-btn::after\s*\{[\s\S]*?linear-gradient\(110deg,[\s\S]*?transform:\s*translateX\(-70%\);/);
-  assert.match(css, /@media \(prefers-reduced-motion:\s*no-preference\)\s*\{[\s\S]*?\.aix-reveal\s*\{[\s\S]*?opacity:\s*0;[\s\S]*?transform:\s*translateY\(clamp\(14px,\s*2vw,\s*28px\)\) scale\(0\.985\);[\s\S]*?\.aix-reveal\.is-visible\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*translateY\(0\) scale\(1\);/);
-  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.aix-reveal\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*none;[\s\S]*?\.aix-section-ambient::before,[\s\S]*?\.aix-homepage-redesign \.primary-btn::after\s*\{[\s\S]*?display:\s*none;/);
+  assert.doesNotMatch(css, /\.aix-reveal/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.aix-section-ambient::before,[\s\S]*?\.aix-homepage-redesign \.primary-btn::after\s*\{[\s\S]*?display:\s*none;/);
   assert.match(css, /@media \(max-width:\s*760px\)\s*\{[\s\S]*?\.aix-scroll-progress\s*\{[\s\S]*?height:\s*2px;[\s\S]*?\.aix-section-ambient::before\s*\{[\s\S]*?inset-inline:\s*16px;/);
 });
 
@@ -482,7 +479,7 @@ test("member loop section ports the hero highlight treatment statically", () => 
 
 test("homepage sections use concise copy and tighter spacing", () => {
   for (const copy of [
-    "AiX คัดเรื่อง AI ที่ควรรู้ จัดเป็นเส้นทางเรียน",
+    "สมาชิก AiX Club 1,999 บาทต่อปี รวม Live สอนสดทุกอาทิตย์",
     "ใช้ AiX เป็นพื้นที่ประจำสำหรับเช็กเรื่องใหม่",
     "บทเรียนพร้อมคลัง resource",
     "เลือกจากงานที่อยากพัฒนา แล้วค่อยจับคู่เครื่องมือ AI",
@@ -663,25 +660,21 @@ test("homepage section notes render as plain text without badge decoration", () 
   assert.doesNotMatch(css, /\.dark \.aix-system \.aix-section-note,\s*\.dark \.aix-business \.aix-section-note\s*\{[^}]*background:\s*var\(--secondary\);/);
 });
 
-test("membership pricing closely ports the 21st.dev single pricing card layout", () => {
+test("membership pricing presents one clear annual plan without discount pressure", () => {
   assert.match(html, /<section class="aix-membership aix-pricing-section" id="membership" aria-labelledby="membershipTitle">/);
-  assert.match(html, /class="aix-status-pill aix-pricing-header-badge"[\s\S]*?fa-regular fa-credit-card[\s\S]*?<span>Simple Pricing<\/span>/);
-  assert.match(html, /<h2 id="membershipTitle">เลือกสมาชิก AiX Club<\/h2>/);
-  assert.match(html, /class="aix-single-pricing-card" data-pricing-card aria-label="ราคา AiX Club รายเดือนและรายปี"/);
+  assert.match(html, /class="aix-status-pill aix-pricing-header-badge"[\s\S]*?fa-regular fa-credit-card[\s\S]*?<span>สมาชิกปีเดียว<\/span>/);
+  assert.match(html, /<h2 id="membershipTitle">สมาชิกปีเดียว เรียนต่อเนื่องทั้งปี<\/h2>/);
+  assert.match(html, /class="aix-single-pricing-card" data-pricing-card aria-label="สมาชิก AiX Club 1,999 บาทต่อปี"/);
   assert.match(html, /class="aix-pricing-hover-wash" aria-hidden="true"/);
-  assert.match(html, /class="aix-pricing-badge"[\s\S]*?fa-solid fa-crown[\s\S]*?Premium Membership/);
+  assert.match(html, /class="aix-pricing-badge"[\s\S]*?fa-solid fa-crown[\s\S]*?สมาชิก AiX Club รายปี/);
   assert.match(html, /<strong>1,999 บาท<\/strong>\s*<span class="aix-price-period">ต่อปี<\/span>/);
   assert.match(css, /\.aix-price-period\s*\{[\s\S]*?border-radius:\s*999px;[\s\S]*?font-weight:\s*800;/);
   assert.match(css, /\.dark \.aix-price-period\s*\{[\s\S]*?color:\s*#bfdbfe;[\s\S]*?background:\s*rgba\(37,\s*99,\s*235,\s*0\.14\);/);
   for (const copy of [
-    "Simple Pricing",
-    "Premium Membership",
+    "สมาชิกปีเดียว",
+    "สมาชิก AiX Club รายปี",
     "1,999 บาทต่อปี",
-    "249 บาทต่อเดือน",
-    "หรือเริ่มรายเดือน 249 บาท / เดือน",
-    "ประหยัด 989 บาท",
-    "สมัครรายปี",
-    "เริ่มรายเดือน",
+    "สมัครสมาชิก 1 ปี",
     "AI update brief อ่านเร็ว",
     "Prompt และ SOP library",
     "Practice room ตามโจทย์จริง",
@@ -703,8 +696,7 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
   assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-check" aria-hidden="true"><\/i><strong>หัวข้อใหม่ \+ replay<\/strong><small>ดูซ้ำตอนต้องใช้จริง<\/small>/);
   assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-shield-heart" aria-hidden="true"><\/i><strong>Template \+ checklist<\/strong><small>เอาไปปรับใช้กับทีม<\/small>/);
   assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-heart" aria-hidden="true"><\/i><strong>สำหรับธุรกิจและทีม<\/strong><small>ขาย การตลาด operation<\/small>/);
-  assert.match(html, /<p class="aix-pricing-monthly-note">หรือเริ่มรายเดือน 249 บาท \/ เดือน<\/p>\s*<div class="aix-pricing-actions">/);
-  assert.match(html, /<\/div>\s*<div class="aix-pricing-live-note" aria-label="Live สอนสดทุกอาทิตย์">/);
+  assert.match(html, /<div class="aix-pricing-actions">[\s\S]*?<\/div>\s*<div class="aix-pricing-live-note" aria-label="Live สอนสดทุกอาทิตย์">/);
   assert.match(html, /class="aix-pricing-features" role="list" aria-label="ฟีเจอร์สมาชิก AiX Club"/);
   assert.match(html, /class="aix-pricing-separator" role="presentation"/);
   assert.match(html, /class="aix-pricing-testimonials" data-pricing-testimonials aria-label="สรุปเสียงจากผู้เรียน"/);
@@ -714,16 +706,12 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
   assert.match(html, /จากเดิมใช้ AI แค่ถามตอบ ตอนนี้เริ่มเห็นวิธีตั้งงานให้ AI ช่วยงานแทนเราได้จริง/);
   assert.match(html, /เหมาะกับคนไม่มีพื้นฐาน เพราะเริ่มจากภาพรวมก่อน แล้วค่อยต่อยอดด้วย replay กลับมาทวนได้/);
   assert.doesNotMatch(html, /class="aix-pricing-avatar"|class="aix-pricing-stars"|aria-label="5 ดาว"|AI work assistant|Beginner-friendly|Replay & template/);
-  assert.match(html, /class="primary-btn full aix-pricing-button" type="button" data-open-signup>[\s\S]*?fa-solid fa-cart-shopping[\s\S]*?สมัครรายปี[\s\S]*?fa-solid fa-chevron-right/);
-  assert.match(html, /class="secondary-btn full aix-pricing-button" type="button" data-open-signup data-monthly-plan>[\s\S]*?เริ่มรายเดือน[\s\S]*?fa-solid fa-arrow-up-right-from-square/);
+  assert.match(html, /class="primary-btn full aix-pricing-button" type="button" data-open-signup>[\s\S]*?สมัครสมาชิก 1 ปี[\s\S]*?fa-solid fa-arrow-right/);
   assert.match(html, /"name": "AiX Member รายปี"[\s\S]*?"price": "1999"/);
-  assert.match(html, /"name": "AiX Member รายเดือน"[\s\S]*?"price": "249"/);
-  assert.doesNotMatch(html, /<h2 id="membershipTitle">เรียน AI ทั้งปี 1,999 บาท<\/h2>/);
+  assert.doesNotMatch(html, /รายเดือน|2,988 บาท|ประหยัด 989 บาท|data-monthly-plan|aix-price-original|aix-price-discount|aix-pricing-monthly-note|"price": "249"/);
   assert.doesNotMatch(html, /class="aix-membership-lead"|class="aix-membership-points"|class="aix-price-panel"/);
   assert.doesNotMatch(html, /data-plan-option=|data-plan-price|data-plan-period|data-plan-note|data-pricing-primary/);
-  assert.doesNotMatch(html, /สมาชิกปีละ 1,999 บาท เข้าเรียน AI ต่อเนื่องทั้งปี/);
-  assert.doesNotMatch(html, /ราคาเดียวสำหรับ platform learning, resource และหัวข้อที่อัปเดตตามการเปลี่ยนแปลงของ AI/);
-  assert.doesNotMatch(html, /ออกแบบสำหรับเจ้าของธุรกิจและทีมที่ไม่ใช่สายเทคนิค/);
+  assert.match(html, /ราคาเดียวสำหรับ Live, replay, เส้นทางเรียน และ resource ที่อัปเดตต่อเนื่องตลอดปี/);
   assert.doesNotMatch(html, /<p class="aix-section-note">คำถามที่พบบ่อย<\/p>/);
   assert.doesNotMatch(html, /<details open>/);
   assert.match(css, /\/\* Static port of the 21st\.dev SinglePricingCard component for AiX membership pricing \*\//);
@@ -752,6 +740,7 @@ test("membership pricing closely ports the 21st.dev single pricing card layout",
   assert.match(css, /\.aix-pricing-quote-dots\s*\{[\s\S]*?justify-content:\s*flex-start;[\s\S]*?gap:\s*6px;[\s\S]*?min-height:\s*10px;/);
   assert.match(css, /\.aix-pricing-quote-dots button\s*\{[\s\S]*?width:\s*5px;[\s\S]*?height:\s*5px;[\s\S]*?min-width:\s*0;[\s\S]*?min-height:\s*0;[\s\S]*?font-size:\s*0;[\s\S]*?line-height:\s*0;[\s\S]*?opacity:\s*0\.78;/);
   assert.match(css, /\.aix-pricing-quote-dots button\.is-active\s*\{[\s\S]*?width:\s*7px;[\s\S]*?height:\s*7px;[\s\S]*?transform:\s*scale\(1\.08\);/);
+  assert.doesNotMatch(css, /\.aix-price-original|\.aix-price-discount|\.aix-pricing-monthly-note/);
   assert.match(css, /@media \(max-width:\s*899px\)\s*\{[\s\S]*?\.aix-single-pricing-card-inner\s*\{[\s\S]*?flex-direction:\s*column;/);
   assert.match(css, /@media \(max-width:\s*760px\)\s*\{[\s\S]*?\.aix-pricing-section\s*\{[\s\S]*?padding-block:\s*20px 24px;[\s\S]*?\.aix-pricing-wrap\s*\{[\s\S]*?gap:\s*24px;[\s\S]*?padding:\s*18px;/);
   assert.match(script, /function initPricingCard\(\)/);
@@ -783,8 +772,8 @@ test("homepage applies the rotating rainbow treatment only to signup buttons", (
   assert.doesNotMatch(script, /button\.closest\("\.aix-pricing-actions, \.aix-stack-hero-actions"\)/);
   assert.match(script, /button\.classList\.add\("aix-rainbow-button"\)/);
   assert.match(script, /function initRainbowButtons\(root = document\)/);
-  assert.match(script, /"button\[data-open-signup\]:not\(\.hover-gradient-nav-item\):not\(\.hover-gradient-nav-primary\):not\(\[data-monthly-plan\]\)"/);
-  assert.doesNotMatch(script, /"button\[data-open-signup\]:not\(\.hover-gradient-nav-item\):not\(\.hover-gradient-nav-primary\)"/);
+  assert.match(script, /"button\[data-open-signup\]:not\(\.hover-gradient-nav-item\):not\(\.hover-gradient-nav-primary\)"/);
+  assert.doesNotMatch(script, /data-monthly-plan/);
   assert.match(script, /"button\[data-course-signup\]"/);
   assert.match(script, /"#memberForm \.primary-btn\[type='submit'\]"/);
   assert.match(script, /button\.matches\("\.hover-gradient-nav-item, \.hover-gradient-nav-primary"\)/);
@@ -837,7 +826,7 @@ test("homepage uses the stack feature section hero from the 21st.dev direction",
   assert.match(html, /class="container aix-stack-hero-frame"/);
   assert.match(html, /class="aix-stack-orbit-stage"/);
   assert.doesNotMatch(html, /<div class="aix-stack-hero-copy">\s*<p class="aix-status-pill">/);
-  assert.doesNotMatch(html, /สมาชิก AiX Club, 1,999 บาทต่อปี/);
+  assert.match(html, /สมาชิก AiX Club 1,999 บาทต่อปี/);
   assert.doesNotMatch(html, /class="aix-meteor-field"|class="aix-site-meteor-field"/);
   assert.equal((html.match(/class="aix-orbit-ring/g) || []).length, 3);
   assert.equal((html.match(/class="aix-orbit-node/g) || []).length, 12);

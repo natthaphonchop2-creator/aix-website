@@ -22,7 +22,7 @@
       } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="/styles.css?v=aix-hero-empty-state-polish-v68-20260703">
+  <link rel="stylesheet" href="/styles.css?v=aix-member-annual-v71-20260720">
   <style>
     .payment-phone-verify[hidden] { display: none !important; }
     .payment-phone-verify { margin: 14px 0; }
@@ -109,20 +109,23 @@
               <button class="secondary-btn" id="paymentVerifyOtpBtn" type="button">ยืนยันรหัส</button>
             </div>
           </div>
-          <div class="payment-method-list" role="radiogroup" aria-label="Payment method">
-            <label class="payment-method active">
-              <input type="radio" name="paymentMethod" value="card" checked>
-              <span><i class="fa-solid fa-credit-card"></i></span>
-              <strong>บัตรเครดิต / เดบิต</strong>
-              <small>จ่ายผ่าน Stripe Checkout</small>
-            </label>
-            <label class="payment-method">
-              <input type="radio" name="paymentMethod" value="promptpay">
-              <span><i class="fa-solid fa-qrcode"></i></span>
-              <strong>PromptPay QR</strong>
-              <small>จ่ายพร้อมเพย์ผ่าน Stripe</small>
-            </label>
-          </div>
+          <fieldset class="payment-method-group">
+            <legend class="visually-hidden">วิธีชำระเงิน</legend>
+            <div class="payment-method-list">
+              <label class="payment-method">
+                <input class="visually-hidden" type="radio" name="paymentMethod" value="card" aria-describedby="cardPaymentDescription" checked>
+                <span aria-hidden="true"><i class="fa-solid fa-credit-card"></i></span>
+                <strong>บัตรเครดิต / เดบิต</strong>
+                <small id="cardPaymentDescription">จ่ายผ่าน Stripe Checkout</small>
+              </label>
+              <label class="payment-method">
+                <input class="visually-hidden" type="radio" name="paymentMethod" value="promptpay" aria-describedby="promptPayDescription">
+                <span aria-hidden="true"><i class="fa-solid fa-qrcode"></i></span>
+                <strong>PromptPay QR</strong>
+                <small id="promptPayDescription">จ่ายพร้อมเพย์ผ่าน Stripe</small>
+              </label>
+            </div>
+          </fieldset>
           <button class="primary-btn full large" id="confirmPaymentBtn" type="button">ไปยัง Stripe Checkout</button>
           <a class="secondary-btn full" href="/dashboard">กลับ Dashboard</a>
         </article>
@@ -133,6 +136,6 @@
   <script src="/site-footer.js?v=site-footer-responsive-v61-20260624"></script>
   <div class="toast" id="toast"></div>
   <script src="/aix-api-client.js"></script>
-  <script src="/payment.js?v=phone-verify-before-payment-20260702"></script>
+  <script src="/payment.js?v=payment-a11y-v2-20260720"></script>
 </body>
 </html>
