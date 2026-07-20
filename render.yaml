@@ -9,6 +9,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: APP_ENV
+        value: production
       - key: AUTH_SESSION_TTL_MS
         value: "604800000"
       - key: MEMBER_PRICE

@@ -4,6 +4,52 @@ This file is the required update record for ongoing development.
 
 Rule: every meaningful code, asset, dependency, deployment, or documentation change must add a new dated entry here before commit. Keep the latest entry at the top.
 
+## 2026-07-20 - Phase 0C Task 5 browser policy, deployment parity, and responsive closeout
+
+Scope:
+- Added one shared browser-header policy for Express and Worker-generated responses: report-only CSP, `nosniff`, strict referrer policy, frame denial, restricted browser permissions, popup-compatible COOP, and production-only HSTS. Express disables framework disclosure, keeps the Stripe raw-body route ahead of JSON parsing, and applies the policy before CORS.
+- Made HSTS fail closed unless both `NODE_ENV=production` and `APP_ENV=production`; Render now declares the application environment explicitly. Local development binds to `127.0.0.1`, production defaults to `0.0.0.0`, and the project-specific `AIX_LISTEN_HOST` override is covered by contract tests.
+- Added Cloudflare parity without publishing server internals: the preparation step generates a validated root `_headers` file only inside the prepared asset tree, assigns HSTS only to the canonical production host, and retains atomic preparation and path/symlink checks. The Worker adds the shared policy only to responses it generates and leaves static asset responses unchanged.
+- Updated Helmet to `8.3.0` and Wrangler to `4.112.0`; retained Multer `2.2.0` and exact LinkeDOM `0.18.13`. The resolved Wrangler chain now uses esbuild `0.28.1`, Miniflare `4.20260714.0`, Undici `7.28.0`, and ws `8.21.0`.
+- Added a responsive Admin drawer at 768px and below with a 44px menu control, backdrop, reachable logout, exact expanded/hidden state, inert background content, focus transfer into the drawer, focus restoration on ordinary close, and visible login-email focus after logout/session transitions. Desktop behavior remains unchanged.
+- Added deterministic contracts for the browser policy, Render/HSTS behavior, listen-host defaults, Cloudflare generation/Worker parity, and Admin mobile accessibility. The exact named verification script includes all new suites.
+
+Changed files:
+- `security/browser-headers.cjs`
+- `server.js`
+- `render.yaml`
+- `cloudflare/worker.js`
+- `scripts/prepare-cloudflare-assets.cjs`
+- `admin.html`
+- `admin.css`
+- `admin.js`
+- `package.json`
+- `package-lock.json`
+- `tests/browser-headers.test.mjs`
+- `tests/server-listen-contract.test.mjs`
+- `tests/admin-mobile-contract.test.mjs`
+- `tests/cloudflare-publication.test.mjs`
+- `tests/helpers/server-harness.mjs`
+- `docs/development/UPDATE_LOG.MD`
+
+Validation:
+- TDD RED/GREEN evidence was recorded for the missing header module, absent runtime headers/order, Cloudflare `_headers` and Worker parity, production-environment HSTS gating, explicit loopback binding, and Admin mobile drawer/focus behavior. The final focused group passed 30 tests with 0 failures.
+- Named verification: `npm run test:security` passed 261 tests with 0 failures.
+- Full regression: `npm test` passed 293 tests with 0 failures.
+- Dependency resolution matched Helmet `8.3.0`, Multer `2.2.0`, LinkeDOM `0.18.13`, Wrangler `4.112.0`, esbuild `0.28.1`, Miniflare `4.20260714.0`, Undici `7.28.0`, and ws `8.21.0`.
+- Production-only and full dependency audits both returned `found 0 vulnerabilities`.
+- `npm run cf:check` prepared 102 manifest-approved assets, Wrangler read 109 files, and the deployment dry-run exited successfully. No deployment occurred.
+- Desktop browser QA covered the public homepage, class detail, generic login failure, member registration, unpaid Dashboard, unavailable-payment fallback, authenticated Admin Dashboard, UI-based member entitlement update, active-member Dashboard, Tools Box, course start/content/learning, and member logout.
+- Mobile browser QA at 390x844 covered the public homepage, active-member Dashboard, Tools Box, course learning, and logout. Every checked route reported `scrollWidth === innerWidth` with no page-level horizontal overflow. Evidence is retained under `output/playwright/phase0-local/` and remains outside the tracked publication set.
+- Local browser console noise was limited to expected anonymous `/api/auth/me` `401` responses and an unapproved `/favicon.ico` `404`; no page-script warning was observed. Further Admin/adversarial browser probing was intentionally skipped at the operator's request after the normal Admin mutation flow had passed.
+- Final independent read-only review approved the browser-policy/deployment diff and the corrected Admin drawer semantics with no remaining finding. Syntax checks and `git diff --check` passed.
+- A scalar-only read-only query found 2 local member records with neither a password hash nor Google subject. No account or production data was changed.
+
+Current boundaries:
+- Real Google OAuth and external Stripe Checkout were not exercised because the isolated environment intentionally had no provider credentials. Disabled/unavailable UI states and automated provider-boundary tests passed; this is not a claim of live provider success.
+- Cloudflare validation remained a dry-run. The current Worker is a static-preview boundary and does not replace the Express/SQLite origin for authenticated API flows.
+- No deploy, push, pull request, production query, customer-data mutation, credential rotation, CDN purge, or external notification occurred. Pre-existing untracked user files remained outside this task.
+
 ## 2026-07-18 - Phase 0C Task 4 safe DOM rendering boundary
 
 Scope:

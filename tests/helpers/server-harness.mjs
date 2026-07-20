@@ -38,6 +38,7 @@ export async function startTestServer(overrides = {}) {
     env: {
       ...process.env,
       AIX_SKIP_LOCAL_ENV: "1",
+      AIX_LISTEN_HOST: "127.0.0.1",
       NODE_ENV: "test",
       PORT: String(port),
       DATA_DIR: dataDir,

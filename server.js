@@ -4,6 +4,7 @@
    ============================================================ */
 
 const express = require('express');
+const helmet = require('helmet');
 const path = require('path');
 const crypto = require('crypto');
 const cors = require('cors');
@@ -14,6 +15,10 @@ const Stripe = require('stripe');
 const multer = require('multer');
 const { Worker } = require('worker_threads');
 const { resolvePublicPath } = require('./security/publication-manifest.cjs');
+const {
+  browserHeaderValues,
+  helmetOptions
+} = require('./security/browser-headers.cjs');
 const {
   DEVELOPMENT_SIGNING_SECRETS,
   validateSecurityConfig
@@ -367,9 +372,20 @@ loadLocalEnv();
 
 const SECURITY_CONFIG = validateSecurityConfig(process.env);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const SEND_HSTS = IS_PRODUCTION && process.env.APP_ENV === 'production';
 const app = express();
+app.disable('x-powered-by');
 if (IS_PRODUCTION) app.set('trust proxy', 1);
+app.use(helmet(helmetOptions(SEND_HSTS)));
+app.use((req, res, next) => {
+  for (const [name, value] of Object.entries(browserHeaderValues(SEND_HSTS))) {
+    res.setHeader(name, value);
+  }
+  next();
+});
 const PORT = Number(process.env.PORT || 3000);
+const DEFAULT_LISTEN_HOST = IS_PRODUCTION ? '0.0.0.0' : '127.0.0.1';
+const LISTEN_HOST = String(process.env.AIX_LISTEN_HOST || '').trim() || DEFAULT_LISTEN_HOST;
 const DATA_DIR = path.resolve(process.env.DATA_DIR || __dirname);
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -4537,7 +4553,7 @@ app.use((req, res) => {
 // ============================================================
 // START SERVER
 // ============================================================
-app.listen(PORT, () => {
+app.listen(PORT, LISTEN_HOST, () => {
   console.log(`\n🚀 AiX Club Server running at http://localhost:${PORT}`);
   console.log(`📊 Admin Panel: http://localhost:${PORT}/admin.html`);
   console.log(`🗄️  Database: ${db.kind === 'supabase-postgres' ? 'Supabase Postgres' : path.join(DATA_DIR, 'data.db')}`);

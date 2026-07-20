@@ -9,10 +9,24 @@ const {
   classifyPublicPath,
   resolvePublicPath
 } = require("../security/publication-manifest.cjs");
+const { browserHeaderValues } = require("../security/browser-headers.cjs");
 
 const LOCK_NAME = ".prepare-cloudflare-assets.lock";
 const STAGE_PREFIX = ".assets-stage-";
 const BACKUP_PREFIX = ".assets-backup-";
+const GENERATED_HEADERS_NAME = "_headers";
+const CANONICAL_PRODUCTION_PATTERN = "https://www.aixclub.co/*";
+
+function generatedHeadersValue() {
+  return [
+    "/*",
+    ...Object.entries(browserHeaderValues(false)).map(([name, value]) => `  ${name}: ${value}`),
+    "",
+    CANONICAL_PRODUCTION_PATTERN,
+    `  Strict-Transport-Security: ${browserHeaderValues(true)["Strict-Transport-Security"]}`,
+    ""
+  ].join("\n");
+}
 
 function isContainedBy(parent, candidate) {
   const relative = path.relative(parent, candidate);
@@ -321,6 +335,31 @@ function isApprovedAssetDirectory(relative) {
     && parts.every((part) => part && part !== "." && part !== ".." && !part.startsWith("."));
 }
 
+async function assertExactGeneratedHeadersFile(filename, expectedStats, expectedCanonical, canonicalDestination) {
+  let handle;
+  try {
+    handle = await fs.open(filename, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW);
+    const handleStats = await handle.stat();
+    if (!handleStats.isFile() || !hasSameInode(handleStats, expectedStats)) {
+      throw new Error(`Generated _headers identity changed during validation: ${filename}`);
+    }
+    const contents = await handle.readFile({ encoding: "utf8" });
+    const afterStats = await lstatIfPresent(filename);
+    if (!afterStats || afterStats.isSymbolicLink() || !afterStats.isFile() || !hasSameInode(afterStats, handleStats)) {
+      throw new Error(`Generated _headers identity changed during validation: ${filename}`);
+    }
+    const afterCanonical = await fs.realpath(filename);
+    if (afterCanonical !== expectedCanonical || !isContainedBy(canonicalDestination, afterCanonical)) {
+      throw new Error(`Generated _headers canonical path changed during validation: ${filename}`);
+    }
+    if (contents !== generatedHeadersValue()) {
+      throw new Error("Generated _headers content does not match the browser-header policy");
+    }
+  } finally {
+    await handle?.close();
+  }
+}
+
 async function assertSafePreparedTree(destination) {
   const resolvedDestination = path.resolve(destination);
   const destinationStats = await lstatIfPresent(resolvedDestination);
@@ -352,7 +391,9 @@ async function assertSafePreparedTree(destination) {
         }
         await walk(full);
       } else if (stats.isFile()) {
-        if (!classifyPublicPath(`/${relative}`)) {
+        if (relative === GENERATED_HEADERS_NAME) {
+          await assertExactGeneratedHeadersFile(full, stats, canonical, canonicalDestination);
+        } else if (!classifyPublicPath(`/${relative}`)) {
           throw new Error(`Unlisted Cloudflare asset: ${relative}`);
         }
         fileCount += 1;
@@ -434,6 +475,13 @@ async function prepareCloudflareAssets(root, destination, options = {}) {
         context.canonicalRoot
       );
     }
+
+    await fs.writeFile(
+      path.join(stageArtifact.path, GENERATED_HEADERS_NAME),
+      generatedHeadersValue(),
+      { flag: "wx", mode: 0o644 }
+    );
+    copiedFiles += 1;
 
     await callHook(options, "beforeStageValidation", { ...hookPayload, stage: stageArtifact.path });
     const stagedFiles = await assertSafePreparedTree(stageArtifact.path);

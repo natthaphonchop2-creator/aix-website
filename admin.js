@@ -36,14 +36,50 @@ const adminApi = window.AiXApi.createClient({ sessionPath: '/api/admin/session' 
 let adminLoggedIn = false;
 const adminEmail = document.getElementById('adminEmail');
 const adminPassword = document.getElementById('adminPassword');
+const adminMobileQuery = window.matchMedia('(max-width: 768px)');
+const sidebar = document.getElementById('sidebar');
+const adminMobileMenu = document.getElementById('adminMobileMenu');
+const adminSidebarBackdrop = document.getElementById('adminSidebarBackdrop');
+const adminMainContent = document.getElementById('adminMainContent');
+
+function setAdminSidebarOpen(open) {
+  if (!sidebar || !adminMobileMenu || !adminSidebarBackdrop) return;
+  const wasOpen = adminMobileMenu.getAttribute('aria-expanded') === 'true';
+  const shouldOpen = adminMobileQuery.matches && Boolean(open);
+  const sidebarHidden = adminMobileQuery.matches && !shouldOpen;
+  sidebar.classList.toggle('open', shouldOpen);
+  adminMobileMenu.setAttribute('aria-expanded', String(shouldOpen));
+  sidebar.inert = sidebarHidden;
+  if (sidebarHidden) sidebar.setAttribute('aria-hidden', 'true');
+  else sidebar.removeAttribute('aria-hidden');
+  adminSidebarBackdrop.hidden = !shouldOpen;
+  adminSidebarBackdrop.classList.toggle('open', shouldOpen);
+  adminSidebarBackdrop.setAttribute('aria-hidden', String(!shouldOpen));
+
+  if (shouldOpen) {
+    sidebar.querySelector('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')
+      ?.focus({ preventScroll: true });
+  }
+  if (adminMainContent) {
+    adminMainContent.inert = shouldOpen;
+    if (shouldOpen) adminMainContent.setAttribute('aria-hidden', 'true');
+    else adminMainContent.removeAttribute('aria-hidden');
+  }
+  if (!shouldOpen && wasOpen && adminMobileQuery.matches) {
+    adminMobileMenu.focus({ preventScroll: true });
+  }
+}
 
 function showAdminLogin() {
+  setAdminSidebarOpen(false);
   adminPassword.value = '';
   document.getElementById('adminLayout')?.style.setProperty('display', 'none');
   document.getElementById('loginPage')?.style.setProperty('display', '');
+  adminEmail?.focus({ preventScroll: true });
 }
 
 function showAdminLayout() {
+  setAdminSidebarOpen(false);
   adminPassword.value = '';
   document.getElementById('loginPage')?.style.setProperty('display', 'none');
   document.getElementById('adminLayout')?.style.setProperty('display', 'flex');
@@ -101,6 +137,7 @@ async function adminLogout() {
     return false;
   }
   adminLoggedIn = false;
+  setAdminSidebarOpen(false);
   showAdminLogin();
   return true;
 }
@@ -123,6 +160,11 @@ async function restoreAdminSession() {
 adminPassword?.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') adminLogin();
 });
+adminMobileMenu?.addEventListener('click', () => {
+  setAdminSidebarOpen(adminMobileMenu.getAttribute('aria-expanded') !== 'true');
+});
+adminSidebarBackdrop?.addEventListener('click', () => setAdminSidebarOpen(false));
+adminMobileQuery.addEventListener('change', () => setAdminSidebarOpen(false));
 
 // ---- Section Navigation ----
 const sectionTitles = {
@@ -137,6 +179,7 @@ const sectionTitles = {
 };
 
 function switchSection(name) {
+  setAdminSidebarOpen(false);
   // Hide all sections
   document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
   // Show target
@@ -194,6 +237,7 @@ document.querySelectorAll('.admin-modal-overlay').forEach(ov => {
 // ESC to close
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    setAdminSidebarOpen(false);
     document.querySelectorAll('.admin-modal-overlay.open').forEach(m => m.classList.remove('open'));
   }
 });
@@ -1425,5 +1469,6 @@ async function confirmDelete() {
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
+  setAdminSidebarOpen(false);
   restoreAdminSession();
 });

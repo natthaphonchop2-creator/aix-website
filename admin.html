@@ -102,17 +102,22 @@
             <div class="su-role">Super Admin</div>
           </div>
         </div>
-        <button class="btn-logout" onclick="adminLogout()">
+        <button class="btn-logout" id="adminLogoutBtn" onclick="adminLogout()">
           <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
         </button>
       </div>
     </aside>
 
+    <div id="adminSidebarBackdrop" aria-hidden="true" hidden></div>
+
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" id="adminMainContent">
       <div class="top-header">
         <h2 id="sectionTitle">📊 Dashboard</h2>
         <div class="top-header-actions">
+          <button id="adminMobileMenu" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="เปิดเมนูผู้ดูแล">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+          </button>
           <a href="index.html" class="header-back-link">
             <i class="fas fa-external-link-alt"></i> เปิดหน้าเว็บ
           </a>

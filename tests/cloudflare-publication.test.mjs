@@ -14,12 +14,37 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRequire } from "node:module";
+import { startTestServer } from "./helpers/server-harness.mjs";
 
 const require = createRequire(import.meta.url);
+const { browserHeaderValues } = require("../security/browser-headers.cjs");
+const { PUBLIC_ROOT_FILES } = require("../security/publication-manifest.cjs");
 const {
   prepareCloudflareAssets,
   assertSafePreparedTree
 } = require("../scripts/prepare-cloudflare-assets.cjs");
+
+const HSTS_VALUE = "max-age=31536000; includeSubDomains";
+
+function expectedStaticHeadersFile() {
+  return [
+    "/*",
+    ...Object.entries(browserHeaderValues(false)).map(([name, value]) => `  ${name}: ${value}`),
+    "",
+    "https://www.aixclub.co/*",
+    `  Strict-Transport-Security: ${HSTS_VALUE}`,
+    ""
+  ].join("\n");
+}
+
+function assertWorkerBrowserHeaders(response, isProduction, label) {
+  for (const [name, value] of Object.entries(browserHeaderValues(isProduction))) {
+    assert.equal(response.headers.get(name), value, `${label}: ${name}`);
+  }
+  if (!isProduction) {
+    assert.equal(response.headers.get("strict-transport-security"), null, `${label}: staging HSTS`);
+  }
+}
 
 async function createSandbox(t) {
   const sandbox = await mkdtemp(join(tmpdir(), "aix-cf-publication-"));
@@ -55,6 +80,7 @@ test("copies approved regular files and excludes sensitive or executable files",
   await writeFile(join(root, "assets", "vendor", "bad.js"), "code");
   await writeFile(join(root, "assets", "proposal.pdf"), "document");
   await writeFile(join(root, "assets", ".hidden.png"), "hidden");
+  await writeFile(join(root, "_headers"), "attacker supplied policy");
 
   const destination = join(root, "cloudflare", "assets");
   await prepareCloudflareAssets(root, destination);
@@ -63,12 +89,21 @@ test("copies approved regular files and excludes sensitive or executable files",
   assert.equal(await readFile(join(destination, "styles.css"), "utf8"), "style");
   assert.equal(await readFile(join(destination, "safe-dom.js"), "utf8"), "safe helper");
   assert.equal(await readFile(join(destination, "assets", "logo.png"), "utf8"), "image");
+  assert.equal(await readFile(join(destination, "_headers"), "utf8"), expectedStaticHeadersFile());
   await assertMissing(join(destination, "server.js"));
   await assertMissing(join(destination, "dashboard.html"));
   await assertMissing(join(destination, "content"));
   await assertMissing(join(destination, "assets", "vendor", "bad.js"));
   await assertMissing(join(destination, "assets", "proposal.pdf"));
   await assertMissing(join(destination, "assets", ".hidden.png"));
+});
+
+test("keeps generated _headers outside the public manifest and Express publication", async (t) => {
+  assert.equal(PUBLIC_ROOT_FILES.has("_headers"), false);
+  const server = await startTestServer();
+  t.after(() => server.stop());
+  const response = await fetch(`${server.origin}/_headers`, { redirect: "manual" });
+  assert.equal(response.status, 404);
 });
 
 test("never follows approved root-file or asset symlinks", async (t) => {
@@ -155,7 +190,23 @@ test("prepared-tree scan rejects unsafe files and destination or path symlinks",
   await mkdir(join(destination, "assets"), { recursive: true });
   await writeFile(join(destination, "index.html"), "public");
   await writeFile(join(destination, "assets", "safe.svg"), "safe");
-  await assertSafePreparedTree(destination);
+  const headersPath = join(destination, "_headers");
+  await writeFile(headersPath, expectedStaticHeadersFile());
+  assert.equal(await assertSafePreparedTree(destination), 3);
+
+  await writeFile(headersPath, "/*\n  X-Frame-Options: SAMEORIGIN\n");
+  await assert.rejects(assertSafePreparedTree(destination), /_headers|header/i);
+  await writeFile(headersPath, expectedStaticHeadersFile());
+
+  const hiddenRoot = join(destination, ".attacker");
+  await writeFile(hiddenRoot, "hidden");
+  await assert.rejects(assertSafePreparedTree(destination), /Unlisted Cloudflare asset/);
+  await rm(hiddenRoot);
+
+  const unlistedRoot = join(destination, "server.js");
+  await writeFile(unlistedRoot, "private");
+  await assert.rejects(assertSafePreparedTree(destination), /Unlisted Cloudflare asset/);
+  await rm(unlistedRoot);
 
   const unsafeFile = join(destination, "assets", "bad.js");
   await writeFile(unsafeFile, "unsafe");
@@ -295,10 +346,12 @@ test("successful atomic regeneration leaves no stage backup or lock artifacts", 
 
 async function loadWorker() {
   const source = await readFile(join(process.cwd(), "cloudflare", "worker.js"), "utf8");
-  const executable = source.replace(/\bexport default\b/, "return");
+  const executable = source
+    .replace(/^import browserHeadersPolicy from ["']\.\.\/security\/browser-headers\.cjs["'];\s*/m, "")
+    .replace(/\bexport default\b/, "return");
   return {
     source,
-    worker: new Function(executable)()
+    worker: new Function("browserHeadersPolicy", executable)({ browserHeaderValues })
   };
 }
 
@@ -309,7 +362,13 @@ function createAssetBinding(status = 200) {
     binding: {
       async fetch(request) {
         requests.push(request.url);
-        return new Response("asset", { status });
+        return new Response("asset", {
+          status,
+          headers: {
+            "cache-control": "public, max-age=3600",
+            "x-static-asset": "preserved"
+          }
+        });
       }
     }
   };
@@ -318,7 +377,9 @@ function createAssetBinding(status = 200) {
 test("Worker normalizes auth routes and fails closed for every private or API family", async () => {
   const { source, worker } = await loadWorker();
   const assets = createAssetBinding();
-  const env = { ASSETS: assets.binding };
+  const env = { ASSETS: assets.binding, APP_ENV: "staging" };
+
+  assert.match(source, /^import browserHeadersPolicy from ["']\.\.\/security\/browser-headers\.cjs["'];/m);
 
   for (const [pathname, mode] of [
     ["/login", "login"],
@@ -333,6 +394,7 @@ test("Worker normalizes auth routes and fails closed for every private or API fa
       `https://preview.example/index.html?auth=${mode}`,
       pathname
     );
+    assertWorkerBrowserHeaders(response, false, pathname);
   }
 
   for (const pathname of [
@@ -359,6 +421,8 @@ test("Worker normalizes auth routes and fails closed for every private or API fa
     const response = await worker.fetch(new Request(`https://preview.example${pathname}`), env);
     assert.equal(response.status, 503, pathname);
     assert.match(response.headers.get("content-type") || "", /application\/json/, pathname);
+    assert.equal(response.headers.get("cache-control"), "no-store", pathname);
+    assertWorkerBrowserHeaders(response, false, pathname);
   }
 
   assert.deepEqual(assets.requests, []);
@@ -368,21 +432,49 @@ test("Worker normalizes auth routes and fails closed for every private or API fa
 test("Worker rejects malformed paths and passes marketing requests through unchanged", async () => {
   const { worker } = await loadWorker();
   const assets = createAssetBinding(200);
-  const env = { ASSETS: assets.binding };
+  const env = { ASSETS: assets.binding, APP_ENV: "staging" };
 
   for (const pathname of ["/%", "/%ZZ", "/%E0%A4%A"]) {
     const response = await worker.fetch(new Request(`https://preview.example${pathname}`), env);
     assert.equal(response.status, 400, pathname);
+    assert.equal(response.headers.get("cache-control"), "no-store", pathname);
+    assertWorkerBrowserHeaders(response, false, pathname);
   }
 
   const marketingUrl = "https://preview.example/styles.css?v=manifest";
   const response = await worker.fetch(new Request(marketingUrl), env);
   assert.equal(response.status, 200);
+  assert.equal(await response.text(), "asset");
+  assert.equal(response.headers.get("cache-control"), "public, max-age=3600");
+  assert.equal(response.headers.get("x-static-asset"), "preserved");
+  assert.equal(response.headers.get("content-security-policy-report-only"), null);
   assert.deepEqual(assets.requests, [marketingUrl]);
+});
+
+test("Worker sends HSTS only for generated production responses", async () => {
+  const { worker } = await loadWorker();
+  const assets = createAssetBinding();
+
+  for (const [appEnv, expectedHsts] of [
+    [undefined, null],
+    ["staging", null],
+    ["production", HSTS_VALUE]
+  ]) {
+    const env = { ASSETS: assets.binding, APP_ENV: appEnv };
+    const apiResponse = await worker.fetch(new Request("https://preview.example/api/health"), env);
+    assertWorkerBrowserHeaders(apiResponse, appEnv === "production", `API ${String(appEnv)}`);
+    assert.equal(apiResponse.headers.get("strict-transport-security"), expectedHsts);
+
+    const redirect = await worker.fetch(new Request("https://preview.example/login"), env);
+    assertWorkerBrowserHeaders(redirect, appEnv === "production", `redirect ${String(appEnv)}`);
+    assert.equal(redirect.headers.get("strict-transport-security"), expectedHsts);
+  }
+  assert.deepEqual(assets.requests, []);
 });
 
 test("Wrangler sends every dynamic private family through the Worker first", async () => {
   const config = JSON.parse(await readFile(join(process.cwd(), "wrangler.jsonc"), "utf8"));
+  assert.equal(Array.isArray(config.assets?.run_worker_first), true);
   const workerFirst = new Set(config.assets?.run_worker_first || []);
   for (const pattern of [
     "/api",
@@ -417,7 +509,7 @@ test("package scripts use the manifest builder and preserve the dry-run boundary
   assert.equal(packageJson.scripts.test, "node --test tests/*.test.mjs");
   assert.equal(
     packageJson.scripts["test:security"],
-    "node --test tests/safe-dom.test.mjs tests/safe-render-contract.test.mjs tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs tests/protected-media.test.mjs tests/tools-protection.test.mjs"
+    "node --test tests/publication-manifest.test.mjs tests/publication-boundary.test.mjs tests/api-route-policy.test.mjs tests/cloudflare-publication.test.mjs tests/config-security.test.mjs tests/session-security.test.mjs tests/http-security.test.mjs tests/client-auth-contract.test.mjs tests/auth-integration.test.mjs tests/upload-policy.test.mjs tests/protected-media.test.mjs tests/tools-protection.test.mjs tests/safe-dom.test.mjs tests/safe-render-contract.test.mjs tests/browser-headers.test.mjs tests/server-listen-contract.test.mjs tests/admin-mobile-contract.test.mjs"
   );
   assert.equal(packageJson.scripts["cf:prepare"], "node scripts/prepare-cloudflare-assets.cjs");
   assert.equal(packageJson.scripts["cf:check"], "npm run cf:prepare && wrangler deploy --dry-run --env=\"\"");
@@ -427,4 +519,7 @@ test("package scripts use the manifest builder and preserve the dry-run boundary
   assert.equal(packageJson.scripts["cf:deploy"], "npm run cf:prepare && wrangler deploy --env=\"\"");
   assert.equal(packageJson.devDependencies.acorn, "8.15.0");
   assert.equal(packageJson.devDependencies.linkedom, "0.18.13");
+  assert.equal(packageJson.devDependencies.wrangler, "^4.112.0");
+  assert.equal(packageJson.dependencies.helmet, "^8.3.0");
+  assert.equal(packageJson.dependencies.multer, "^2.2.0");
 });
