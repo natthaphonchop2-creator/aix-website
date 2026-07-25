@@ -12,14 +12,14 @@ const courses = [
     rating: "4.9",
     lessons: "8 modules",
     skills: ["AI Agent", "Workflow Automation", "Prompt Engineering"],
-    description: "สร้าง AI Agent สำหรับตอบลูกค้า สรุปรายงาน วางแผนคอนเทนต์ และจัด workflow ธุรกิจ",
+    description: "เริ่มตั้งผู้ช่วย AI ให้รับโจทย์ สรุปข้อมูล และส่งต่องานในรูปแบบที่ทีมใช้ต่อได้",
     topics: [
       "เข้าใจว่า AI Agent เหมาะกับงานธุรกิจแบบไหน",
       "สร้าง Agent ตัวแรกด้วย Manus AI",
       "ออกแบบ Prompt Engineering สำหรับงานซับซ้อน",
       "ทำ Deep Research และสรุปรายงานธุรกิจ",
       "วางระบบ Content, Sales และ Customer Service ด้วย AI",
-      "ออกแบบ workflow automation จากงานจริง",
+      "ออกแบบระบบลดงานซ้ำจากงานจริง",
       "สร้าง AI Business System ที่นำกลับไปใช้กับธุรกิจของตัวเอง"
     ]
   },
@@ -36,8 +36,8 @@ const courses = [
     rating: "New",
     lessons: "4 modules",
     skills: ["Vibe Coding", "Prototype", "AI Coding"],
-    description: "ใช้ Claude และ Codex ทำ prototype เว็บ แอป และ workflow จาก prompt กับสเปกที่ชัดเจน",
-    topics: ["Vibe Coding workflow", "เปลี่ยน Prompt เป็น Prototype", "Debug กับ AI", "เขียนสเปกส่งต่อให้ Developer"]
+    description: "เปลี่ยนไอเดียให้เป็นต้นแบบเว็บหรือระบบ พร้อมสเปกที่คุยกับ AI และส่งต่อให้ทีมได้",
+    topics: ["ลำดับงาน Vibe Coding", "เปลี่ยนชุดคำสั่งเป็นต้นแบบ", "ตรวจข้อผิดพลาดกับ AI", "เขียนสเปกส่งต่อให้ทีมพัฒนา"]
   },
   {
     id: "claude-deep-dive",
@@ -52,7 +52,7 @@ const courses = [
     rating: "New",
     lessons: "5 modules",
     skills: ["Deep Research", "Prompt Chain", "Business Strategy"],
-    description: "ใช้ Claude ทำ Deep Research วิเคราะห์เอกสาร และสร้าง Prompt Chain สำหรับงานธุรกิจ",
+    description: "ใช้ Claude อ่านข้อมูลยาว จับประเด็น และช่วยร่างเอกสารให้พร้อมตรวจและนำไปใช้ต่อ",
     topics: ["Deep Research สำหรับธุรกิจ", "Project Knowledge", "Prompt Chain", "Workflow Documentation"]
   },
   {
@@ -68,7 +68,7 @@ const courses = [
     rating: "New",
     lessons: "6 modules",
     skills: ["Image AI", "AI Video", "Content Marketing"],
-    description: "สร้างภาพ วิดีโอ กราฟิก และคอนเทนต์การตลาดด้วย AI ตั้งแต่ไอเดียจนพร้อมเผยแพร่",
+    description: "วางทิศทางภาพและวิดีโอด้วย AI ตั้งแต่โจทย์เริ่มต้น จนได้ชิ้นงานที่สื่อสารตรงกับแบรนด์",
     topics: ["AI Image Generation", "AI Video Workflow", "Brand Style Prompt", "Content Repurpose"]
   },
   {
@@ -84,37 +84,52 @@ const courses = [
     rating: "New",
     lessons: "7 modules",
     skills: ["Agent Design", "Business Operations", "Customer Service"],
-    description: "ออกแบบ AI Agent สำหรับ operation ตอบลูกค้า สรุปเอกสาร และประสานงานหลายเครื่องมือ",
+    description: "วางผู้ช่วย AI สำหรับงานประจำ ตั้งขอบเขตให้ชัด และมีจุดให้คนตรวจสอบก่อนใช้งานจริง",
     topics: ["Agent Architecture", "Tool Connection", "Human Approval", "Monitoring & Improvement"]
   }
 ];
 
 const resources = [
   {
-    title: "AI Update Brief",
-    category: "Update",
+    title: "สรุป AI ที่ควรรู้",
+    category: "อัปเดต",
     icon: "fa-arrows-rotate",
-    description: "สรุป AI ที่ควรรู้และผลกระทบกับงานทีม"
+    description: "รู้ว่ามีอะไรเปลี่ยน และเรื่องไหนเกี่ยวกับงานของคุณ"
   },
   {
-    title: "Job-based Roadmap",
-    category: "Path",
+    title: "เส้นทางตามงาน",
+    category: "แนวทาง",
     icon: "fa-route",
-    description: "เลือกหัวข้อถัดไปจากงานที่อยากพัฒนา"
+    description: "เลือกเรื่องถัดไปจากงานที่อยากทำให้ดีขึ้น"
   },
   {
-    title: "Prompt & SOP Library",
-    category: "Resource",
+    title: "คลังพร้อมใช้",
+    category: "เครื่องมือ",
     icon: "fa-folder-open",
-    description: "รวม prompt, checklist และ blueprint"
+    description: "รวมชุดคำสั่ง แม่แบบ และเช็กลิสต์ไว้ในที่เดียว"
   },
   {
-    title: "Replay + Practice Room",
-    category: "Member",
+    title: "ดูย้อนหลังและฝึกต่อ",
+    category: "ทบทวน",
     icon: "fa-circle-play",
-    description: "ทบทวนบทเรียนและฝึกกับโจทย์ธุรกิจ"
+    description: "กลับมาดูบทเรียนและลองกับโจทย์ของตัวเอง"
   }
 ];
+
+const homepageCourseDescriptions = Object.freeze({
+  "manus-ai": "เริ่มตั้งผู้ช่วย AI ให้รับโจทย์ สรุปข้อมูล และส่งต่องานในรูปแบบที่ทีมใช้ต่อได้",
+  "claude-manus-vibe-coding": "เปลี่ยนไอเดียให้เป็นต้นแบบเว็บหรือระบบ พร้อมสเปกที่คุยกับ AI และส่งต่อให้ทีมได้",
+  "claude-deep-dive": "ใช้ Claude อ่านข้อมูลยาว จับประเด็น และช่วยร่างเอกสารให้พร้อมตรวจและนำไปใช้ต่อ",
+  "ai-video-graphic": "วางทิศทางภาพและวิดีโอด้วย AI ตั้งแต่โจทย์เริ่มต้น จนได้ชิ้นงานที่สื่อสารตรงกับแบรนด์",
+  "ai-agent-business": "วางผู้ช่วย AI สำหรับงานประจำ ตั้งขอบเขตให้ชัด และมีจุดให้คนตรวจสอบก่อนใช้งานจริง"
+});
+
+function homepageCourseDescription(course) {
+  return homepageCourseDescriptions[course?.id]
+    || course?.description
+    || course?.subtitle
+    || "";
+}
 
 const state = {
   activeFilter: "ทั้งหมด",
@@ -220,7 +235,7 @@ function normalizeCourseCard(course) {
     rating: course.rating || "New",
     lessons: course.lessons || "",
     skills: Array.isArray(course.skills) ? course.skills : [],
-    description: course.description || course.subtitle || "",
+    description: homepageCourseDescription(course),
     topics: Array.isArray(course.outcomes) ? course.outcomes : []
   };
 }
@@ -589,7 +604,7 @@ function syncHomepageAuthActions() {
 function updateMemberUi() {
   const loginBtn = document.getElementById("loginBtn");
   const mobileLoginBtn = document.getElementById("mobileLoginBtn");
-  const label = state.member ? "Dashboard" : "เข้าสู่ระบบ";
+  const label = state.member ? "พื้นที่สมาชิก" : "เข้าสู่ระบบ";
 
   if (loginBtn) {
     if (loginBtn.classList.contains("hover-gradient-nav-item")) {
@@ -668,6 +683,105 @@ function initThemeToggle() {
   setThemeMode("dark", true);
 }
 
+function revealComponentOnce(element, visibleClass, options = {}) {
+  if (!(element instanceof HTMLElement)) return null;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    element.classList.add(visibleClass);
+    return null;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    element.classList.add(visibleClass);
+    observer.disconnect();
+  }, {
+    threshold: options.threshold ?? 0.18,
+    rootMargin: options.rootMargin ?? "0px 0px -8% 0px"
+  });
+
+  observer.observe(element);
+  return observer;
+}
+
+function initHoverGradientNav() {
+  const nav = document.querySelector(".aix-home-header .hover-gradient-nav-bar");
+  if (!nav || nav.dataset.navRuntimeReady === "true") return;
+
+  nav.dataset.navRuntimeReady = "true";
+  const items = [...nav.querySelectorAll(".hover-gradient-nav-item")];
+  const sectionItems = items
+    .map((item) => ({
+      item,
+      section: document.getElementById(item.dataset.scroll || "")
+    }))
+    .filter((entry) => entry.section);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pressTimers = new WeakMap();
+
+  const setCurrentItem = (currentItem) => {
+    items.forEach((item) => {
+      const isCurrent = item === currentItem;
+      item.classList.toggle("is-nav-current", isCurrent);
+      if (isCurrent) {
+        item.setAttribute("aria-current", "page");
+      } else {
+        item.removeAttribute("aria-current");
+      }
+    });
+  };
+
+  items.forEach((item) => {
+    item.addEventListener("pointermove", (event) => {
+      if (reduceMotion) return;
+      const rect = item.getBoundingClientRect();
+      item.style.setProperty("--nav-pointer-x", `${event.clientX - rect.left}px`);
+      item.style.setProperty("--nav-pointer-y", `${event.clientY - rect.top}px`);
+    }, { passive: true });
+
+    item.addEventListener("pointerleave", () => {
+      item.style.setProperty("--nav-pointer-x", "50%");
+      item.style.setProperty("--nav-pointer-y", "50%");
+      item.classList.remove("is-nav-pressed");
+    });
+
+    item.addEventListener("pointerdown", () => {
+      item.classList.add("is-nav-pressed");
+      window.clearTimeout(pressTimers.get(item));
+      pressTimers.set(item, window.setTimeout(() => {
+        item.classList.remove("is-nav-pressed");
+      }, 520));
+    });
+
+    item.addEventListener("click", () => {
+      if (item.dataset.scroll) setCurrentItem(item);
+    });
+  });
+
+  if (!sectionItems.length || !("IntersectionObserver" in window)) {
+    setCurrentItem(sectionItems[0]?.item || null);
+    return;
+  }
+
+  const sectionRatios = new Map(sectionItems.map(({ section }) => [section, 0]));
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      sectionRatios.set(entry.target, entry.isIntersecting ? entry.intersectionRatio : 0);
+    });
+
+    const current = [...sectionItems]
+      .sort((a, b) => (sectionRatios.get(b.section) || 0) - (sectionRatios.get(a.section) || 0))
+      .find(({ section }) => (sectionRatios.get(section) || 0) > 0);
+    if (current) setCurrentItem(current.item);
+  }, {
+    threshold: [0, 0.2, 0.45, 0.7],
+    rootMargin: "-12% 0px -58% 0px"
+  });
+
+  sectionItems.forEach(({ section }) => sectionObserver.observe(section));
+}
+
 function initAnimatedHero() {
   const wordSlot = document.querySelector("[data-animated-words]");
   if (!wordSlot) return;
@@ -675,28 +789,92 @@ function initAnimatedHero() {
   const words = [...wordSlot.querySelectorAll(".aix-animated-word")];
   if (words.length < 2) return;
 
+  const section = wordSlot.closest(".aix-animated-hero");
+  section?.classList.add("is-component-ready");
+  section?.setAttribute("data-animated-hero-ready", "true");
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion) return;
-
   let activeIndex = Math.max(0, words.findIndex((word) => word.classList.contains("is-active")));
+  let cycleTimer = 0;
+  let exitTimer = 0;
+  let isVisible = false;
+  let hasEntered = false;
+
   words.forEach((word, index) => {
     word.classList.toggle("is-active", index === activeIndex);
     word.classList.remove("is-exit");
+    word.setAttribute("aria-hidden", String(index !== activeIndex));
   });
 
-  window.setInterval(() => {
+  const stopCycle = () => {
+    if (!cycleTimer) return;
+    window.clearInterval(cycleTimer);
+    cycleTimer = 0;
+    section?.removeAttribute("data-animated-running");
+  };
+
+  const advanceWord = () => {
     const previousIndex = activeIndex;
     activeIndex = activeIndex === words.length - 1 ? 0 : activeIndex + 1;
 
     words.forEach((word, index) => {
-      word.classList.toggle("is-active", index === activeIndex);
-      word.classList.toggle("is-exit", index === previousIndex);
+      const isActive = index === activeIndex;
+      word.classList.toggle("is-active", isActive);
+      word.classList.toggle("is-exit", index === previousIndex && !isActive);
+      word.setAttribute("aria-hidden", String(!isActive));
     });
 
-    window.setTimeout(() => {
+    window.clearTimeout(exitTimer);
+    exitTimer = window.setTimeout(() => {
       words[previousIndex]?.classList.remove("is-exit");
     }, 650);
-  }, 2200);
+  };
+
+  const startCycle = () => {
+    if (cycleTimer || prefersReducedMotion || !isVisible || document.hidden) return;
+    section?.setAttribute("data-animated-running", "true");
+    cycleTimer = window.setInterval(() => {
+      advanceWord();
+    }, 2200);
+  };
+
+  const setVisible = (nextVisible) => {
+    isVisible = nextVisible;
+    if (isVisible) {
+      if (!hasEntered) {
+        hasEntered = true;
+        activeIndex = 0;
+        words.forEach((word, index) => {
+          word.classList.toggle("is-active", index === 0);
+          word.classList.remove("is-exit");
+          word.setAttribute("aria-hidden", String(index !== 0));
+        });
+      }
+      section?.classList.add("is-entered");
+      startCycle();
+    } else {
+      stopCycle();
+    }
+  };
+
+  if (prefersReducedMotion || !section || !("IntersectionObserver" in window)) {
+    setVisible(true);
+  } else {
+    const observer = new IntersectionObserver((entries) => {
+      setVisible(entries.some((entry) => entry.isIntersecting));
+    }, {
+      threshold: 0.28,
+      rootMargin: "0px 0px -8% 0px"
+    });
+    observer.observe(section);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopCycle();
+    } else {
+      startCycle();
+    }
+  });
 }
 
 function initFaqAccordion() {
@@ -706,12 +884,22 @@ function initFaqAccordion() {
   const items = [...accordion.querySelectorAll(".aix-faq-item")];
   if (!items.length) return;
 
+  accordion.classList.add("is-component-ready");
+  accordion.setAttribute("data-faq-runtime-ready", "true");
+  revealComponentOnce(accordion, "is-faq-in-view", {
+    threshold: 0.12,
+    rootMargin: "0px 0px -6% 0px"
+  });
+
   const setItemOpen = (item, shouldOpen) => {
     const trigger = item.querySelector(".aix-faq-trigger");
     const answer = item.querySelector(".aix-faq-answer");
     item.classList.toggle("is-open", shouldOpen);
+    item.dataset.state = shouldOpen ? "open" : "closed";
     trigger?.setAttribute("aria-expanded", String(shouldOpen));
+    trigger?.setAttribute("data-state", shouldOpen ? "open" : "closed");
     answer?.setAttribute("aria-hidden", String(!shouldOpen));
+    answer?.setAttribute("data-state", shouldOpen ? "open" : "closed");
   };
 
   items.forEach((item, index) => {
@@ -731,14 +919,32 @@ function initPricingCard() {
   const indicators = [...card.querySelectorAll("[data-pricing-testimonial]")];
   if (!quotes.length) return;
 
+  card.classList.add("is-component-ready");
+  card.setAttribute("data-pricing-runtime-ready", "true");
   let activeQuote = Math.max(0, quotes.findIndex((quote) => quote.classList.contains("is-active")));
+  let rotationTimer = 0;
+  let exitTimer = 0;
+  let isInView = false;
+  let isPaused = false;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   const setQuote = (nextIndex) => {
-    activeQuote = ((nextIndex % quotes.length) + quotes.length) % quotes.length;
+    const previousQuote = activeQuote;
+    const nextQuote = ((nextIndex % quotes.length) + quotes.length) % quotes.length;
+    activeQuote = nextQuote;
+
     quotes.forEach((quote, index) => {
       const isActive = index === activeQuote;
       quote.classList.toggle("is-active", isActive);
+      quote.classList.toggle("is-exiting", index === previousQuote && previousQuote !== activeQuote);
       quote.setAttribute("aria-hidden", String(!isActive));
     });
+
+    window.clearTimeout(exitTimer);
+    exitTimer = window.setTimeout(() => {
+      quotes.forEach((quote) => quote.classList.remove("is-exiting"));
+    }, 440);
+
     indicators.forEach((button, index) => {
       const isActive = index === activeQuote;
       button.classList.toggle("is-active", isActive);
@@ -746,17 +952,83 @@ function initPricingCard() {
     });
   };
 
+  const stopRotation = () => {
+    if (!rotationTimer) return;
+    window.clearInterval(rotationTimer);
+    rotationTimer = 0;
+    card.removeAttribute("data-pricing-running");
+  };
+
+  const startRotation = () => {
+    if (rotationTimer || quotes.length < 2 || reduceMotion || !isInView || isPaused || document.hidden) return;
+    card.setAttribute("data-pricing-running", "true");
+    rotationTimer = window.setInterval(() => {
+      setQuote(activeQuote + 1);
+    }, 5000);
+  };
+
+  const restartRotation = () => {
+    stopRotation();
+    startRotation();
+  };
+
   indicators.forEach((button) => {
     button.addEventListener("click", () => {
       setQuote(Number(button.dataset.pricingTestimonial || 0));
+      restartRotation();
     });
   });
 
   setQuote(activeQuote);
 
-  if (quotes.length > 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    window.setInterval(() => setQuote(activeQuote + 1), 5200);
+  card.addEventListener("pointerenter", () => {
+    isPaused = true;
+    stopRotation();
+  });
+
+  card.addEventListener("pointerleave", () => {
+    isPaused = false;
+    startRotation();
+  });
+
+  card.addEventListener("focusin", () => {
+    isPaused = true;
+    stopRotation();
+  });
+
+  card.addEventListener("focusout", (event) => {
+    if (event.relatedTarget instanceof Node && card.contains(event.relatedTarget)) return;
+    isPaused = false;
+    startRotation();
+  });
+
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    isInView = true;
+    card.classList.add("is-pricing-in-view");
+    startRotation();
+  } else {
+    const observer = new IntersectionObserver((entries) => {
+      isInView = entries.some((entry) => entry.isIntersecting);
+      if (isInView) {
+        card.classList.add("is-pricing-in-view");
+        startRotation();
+      } else {
+        stopRotation();
+      }
+    }, {
+      threshold: 0.3,
+      rootMargin: "0px 0px -6% 0px"
+    });
+    observer.observe(card);
   }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopRotation();
+    } else {
+      startRotation();
+    }
+  });
 }
 
 let rainbowButtonMutationObserver = null;
@@ -813,6 +1085,11 @@ function initHeroHighlight() {
   highlights.forEach((highlight) => {
     if (highlight.dataset.heroHighlightReady === "true") return;
     highlight.dataset.heroHighlightReady = "true";
+    highlight.classList.add("is-component-ready");
+    revealComponentOnce(highlight, "is-highlight-in-view", {
+      threshold: 0.2,
+      rootMargin: "0px 0px -8% 0px"
+    });
 
     let frame = 0;
     let nextX = 50;
@@ -842,6 +1119,49 @@ function initHeroHighlight() {
   });
 }
 
+function initBentoGrid() {
+  const grid = document.querySelector(".aix-bento-grid");
+  if (!grid || grid.dataset.bentoRuntimeReady === "true") return;
+
+  grid.dataset.bentoRuntimeReady = "true";
+  grid.classList.add("is-component-ready");
+  revealComponentOnce(grid, "is-bento-in-view", {
+    threshold: 0.12,
+    rootMargin: "0px 0px -6% 0px"
+  });
+
+  const cards = [...grid.querySelectorAll(".aix-bento-card")];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  cards.forEach((card) => {
+    card.addEventListener("pointermove", (event) => {
+      if (reduceMotion) return;
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty("--bento-x", `${event.clientX - rect.left}px`);
+      card.style.setProperty("--bento-y", `${event.clientY - rect.top}px`);
+    }, { passive: true });
+
+    card.addEventListener("pointerenter", () => {
+      card.classList.add("is-bento-active");
+    });
+
+    card.addEventListener("pointerleave", () => {
+      card.classList.remove("is-bento-active");
+      card.style.setProperty("--bento-x", "50%");
+      card.style.setProperty("--bento-y", "50%");
+    });
+
+    card.addEventListener("focusin", () => {
+      card.classList.add("is-bento-active");
+    });
+
+    card.addEventListener("focusout", (event) => {
+      if (event.relatedTarget instanceof Node && card.contains(event.relatedTarget)) return;
+      card.classList.remove("is-bento-active");
+    });
+  });
+}
+
 function initWorkproofCompare() {
   document.querySelectorAll("[data-workproof-compare]").forEach((compare) => {
     if (compare.dataset.workproofReady === "true") return;
@@ -851,6 +1171,11 @@ function initWorkproofCompare() {
     if (!stage || !handle) return;
 
     compare.dataset.workproofReady = "true";
+    compare.classList.add("is-component-ready");
+    revealComponentOnce(compare, "is-workproof-in-view", {
+      threshold: 0.16,
+      rootMargin: "0px 0px -6% 0px"
+    });
     let isDragging = false;
     let inset = Number.parseFloat(handle.getAttribute("aria-valuenow") || "50");
 
@@ -858,6 +1183,7 @@ function initWorkproofCompare() {
       inset = Math.min(94, Math.max(6, nextInset));
       compare.style.setProperty("--aix-compare-inset", `${inset}%`);
       handle.setAttribute("aria-valuenow", String(Math.round(inset)));
+      handle.setAttribute("aria-valuetext", `แสดงผลลัพธ์หลังใช้ AI ${Math.round(100 - inset)} เปอร์เซ็นต์`);
     };
 
     const updateFromClientX = (clientX) => {
@@ -867,7 +1193,7 @@ function initWorkproofCompare() {
     };
 
     stage.addEventListener("pointerdown", (event) => {
-      event.preventDefault();
+      if (event.pointerType !== "touch") event.preventDefault();
       isDragging = true;
       compare.classList.add("is-dragging");
       stage.setPointerCapture?.(event.pointerId);
@@ -875,7 +1201,7 @@ function initWorkproofCompare() {
     });
 
     stage.addEventListener("pointermove", (event) => {
-      if (!isDragging) return;
+      if (!isDragging && event.pointerType !== "mouse") return;
       updateFromClientX(event.clientX);
     });
 
@@ -1035,7 +1361,7 @@ function prefillSignupFromGoogle(profile) {
   memberForm.elements.email.value = profile.email || "";
   memberForm.elements.firstName.value = profile.given_name || profile.name?.split(" ")[0] || "";
   memberForm.elements.email.readOnly = Boolean(profile.email);
-  document.getElementById("googleSignupStatus").textContent = "เชื่อม Google แล้ว สามารถสร้างบัญชีสมาชิกได้ทันที";
+  document.getElementById("googleSignupStatus").textContent = "เชื่อมต่อ Google แล้ว กรอกเบอร์โทรเพื่อสร้างบัญชีต่อ";
 }
 
 async function handleGoogleCredential(response) {
@@ -1285,9 +1611,19 @@ document.querySelectorAll("[data-filter-shortcut]").forEach((button) => {
 });
 
 function renderClassFilters() {
-  const filters = ["ทั้งหมด", "Live", "Coming Soon", "Agent", "Automation", "Creative", "Coding", "Prompt", "Business"];
+  const filters = [
+    { value: "ทั้งหมด", label: "ทั้งหมด" },
+    { value: "Live", label: "คลาสสด" },
+    { value: "Coming Soon", label: "เร็ว ๆ นี้" },
+    { value: "Agent", label: "ผู้ช่วย AI" },
+    { value: "Automation", label: "ลดงานซ้ำ" },
+    { value: "Creative", label: "คอนเทนต์" },
+    { value: "Coding", label: "สร้างเว็บ" },
+    { value: "Prompt", label: "ชุดคำสั่ง" },
+    { value: "Business", label: "ธุรกิจ" }
+  ];
   classFilters.innerHTML = filters.map((filter) => (
-    `<button class="filter-tab ${filter === state.activeFilter ? "active" : ""}" type="button" data-filter="${filter}" aria-pressed="${filter === state.activeFilter}" aria-controls="classesGrid">${filter}</button>`
+    `<button class="filter-tab ${filter.value === state.activeFilter ? "active" : ""}" type="button" data-filter="${filter.value}" aria-pressed="${filter.value === state.activeFilter}" aria-controls="classesGrid">${filter.label}</button>`
   )).join("");
 
   classFilters.querySelectorAll("[data-filter]").forEach((button) => {
@@ -1337,15 +1673,15 @@ function courseCta(course) {
     return AiXDom.link({
       href: AiXDom.safeUrl(`class-detail.html?id=${encodeURIComponent(course.id)}`),
       className: "secondary-btn"
-    }, ["ดูรายละเอียด"]);
+    }, ["ดูหัวข้อนี้"]);
   }
   if (state.member.paymentStatus === "paid") {
     return AiXDom.link({
       href: AiXDom.safeUrl(`/course/${encodeURIComponent(course.id)}/start`),
       className: "primary-btn full"
-    }, ["เข้าเรียน"]);
+    }, ["เริ่มเรียน"]);
   }
-  return AiXDom.link({ href: AiXDom.safeUrl("/payment"), className: "primary-btn full" }, ["ชำระเงินเพื่อเข้าเรียน"]);
+  return AiXDom.link({ href: AiXDom.safeUrl("/payment"), className: "primary-btn full" }, ["เปิดสิทธิ์สมาชิก"]);
 }
 
 function courseVisualIcon(course) {
@@ -1452,7 +1788,7 @@ function renderCourses() {
     });
     const skills = Array.isArray(course.skills) ? course.skills.slice(0, 2) : [];
     const detailAction = state.member
-      ? AiXDom.link({ href: AiXDom.safeUrl(`class-detail.html?id=${encodeURIComponent(course.id)}`), className: "secondary-btn" }, ["รายละเอียด"])
+      ? AiXDom.link({ href: AiXDom.safeUrl(`class-detail.html?id=${encodeURIComponent(course.id)}`), className: "secondary-btn" }, ["ข้อมูลเพิ่มเติม"])
       : null;
 
     return AiXDom.node("article", { className: `course-card aix-topic-card aix-topic-tone-${topicTone}` }, [
@@ -1460,7 +1796,7 @@ function renderCourses() {
       AiXDom.node("div", { className: "course-body aix-topic-body" }, [
         AiXDom.node("span", { className: "course-badge aix-topic-badge", text: courseTopicBadge(course) }),
         AiXDom.node("h3", { text: course.title }),
-        AiXDom.node("p", { text: course.description }),
+        AiXDom.node("p", { text: homepageCourseDescription(course) }),
         AiXDom.node("div", { className: "skill-row aix-topic-skills" }, skills.map((skill) => AiXDom.node("span", { text: skill }))),
         AiXDom.node("div", { className: "course-meta aix-topic-meta" }, [
           AiXDom.node("span", {}, [AiXDom.node("i", { className: "fa-regular fa-clock" }), course.duration]),
@@ -1472,8 +1808,8 @@ function renderCourses() {
   });
   AiXDom.replace(classesGrid, cards.length ? cards : [
     AiXDom.node("div", { className: "resource-card catalog-empty-state" }, [
-      AiXDom.node("h3", { text: "ไม่พบคอร์ส" }),
-      AiXDom.node("p", { text: "ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ใหม่" })
+      AiXDom.node("h3", { text: "ยังไม่พบหัวข้อที่ตรงกัน" }),
+      AiXDom.node("p", { text: "ลองค้นจากชื่องาน เครื่องมือ หรือเลือกหมวดอื่น" })
     ])
   ]);
 
@@ -1512,7 +1848,7 @@ function openClassModal(id) {
   ];
   const signupButton = AiXDom.node("button", {
     className: "primary-btn",
-    text: "สมัคร AiX Member",
+    text: "เข้าร่วม AiX Club",
     attrs: { type: "button", "data-course-signup": "" }
   });
   const closeButton = AiXDom.node("button", { className: "secondary-btn", text: "ปิด", attrs: { type: "button" } });
@@ -1531,7 +1867,7 @@ function openClassModal(id) {
     AiXDom.node("div", { className: "course-meta" }, meta.map(([icon, label]) => (
       AiXDom.node("span", {}, [AiXDom.node("i", { className: icon }), label])
     ))),
-    AiXDom.node("h3", { text: "สิ่งที่จะได้เรียน" }),
+    AiXDom.node("h3", { text: "สิ่งที่คุณจะทำได้" }),
     AiXDom.node("div", { className: "modal-topics" }, (Array.isArray(course.topics) ? course.topics : []).map((topic) => (
       AiXDom.node("div", { text: topic })
     ))),
@@ -1796,6 +2132,8 @@ renderResources();
 restoreSession();
 initGoogleLogin();
 initThemeToggle();
+initHoverGradientNav();
+initBentoGrid();
 initAnimatedHero();
 initFaqAccordion();
 initPricingCard();

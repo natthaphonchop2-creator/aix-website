@@ -26,7 +26,7 @@ const manusLogo = await readFile(join(root, "assets/ai-logos/manus.webp"));
 const workproofBefore = await readFile(join(root, "assets/generated/aix-real-work-before-generated.png"));
 const workproofAfter = await readFile(join(root, "assets/generated/aix-real-work-after-generated.png"));
 const currentCssCacheBust = /styles\.css\?v=aix-(?:member-annual-v71-20260720|hero-title-refined-v70-20260703|hero-empty-state-polish-v68-20260703)/;
-const currentScriptCacheBust = /script\.js\?v=aix-(?:member-annual-v71-20260720|hero-empty-state-hardfix-v69-20260703)/;
+const currentScriptCacheBust = /script\.js\?v=aix-(?:homepage-copy-v73-20260725|hero-empty-state-hardfix-v69-20260703)/;
 
 function cssRuleBlock(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -99,7 +99,7 @@ test("homepage rebuild has the new AiX brand surface and keeps runtime hooks", a
   assert.match(html, /class="brand brand-lockup"/);
   assert.match(html, /src="AiX%20logo\/iconwhite_bgblack\.png"/);
   assert.match(html, /<span class="brand-title">AiX Club<\/span>/);
-  assert.match(html, /<span class="brand-tagline">AI for business teams<\/span>/);
+  assert.match(html, /<span class="brand-tagline">AI ที่ใช้กับงานจริง<\/span>/);
   assert.doesNotMatch(html, /<a class="brand" href="#home" aria-label="AiX Club home">\s*<img src="AiX%20logo\/textblack\.png"/);
   assert.match(css, /\.brand-lockup\s*\{[\s\S]*?gap:\s*9px;[\s\S]*?text-decoration:\s*none;/);
   assert.match(css, /\.aix-home-header \.brand-lockup\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;/);
@@ -109,10 +109,10 @@ test("homepage rebuild has the new AiX brand surface and keeps runtime hooks", a
   assert.match(css, /\.brand-tagline\s*\{[\s\S]*?color:\s*var\(--muted-foreground\);[\s\S]*?font-weight:\s*800;/);
   assert.match(css, /\.dark \.brand-lockup \.brand-icon\s*\{[\s\S]*?filter:\s*none;[\s\S]*?opacity:\s*1;/);
   assert.doesNotMatch(html, /Build with|Learn with/);
-  assert.match(html, /เรียน <span class="aix-hero-ai-word">AI<\/span> ให้ทันงาน[\s\S]*?ใช้ได้จริงตลอดปี/);
-  assert.match(html, /สมาชิก AiX Club 1,999 บาทต่อปี รวม Live สอนสดทุกอาทิตย์ replay เส้นทางเรียน และ resource ที่นำกลับไปใช้กับงานจริงได้/);
+  assert.match(html, /ใช้ <span class="aix-hero-ai-word">AI<\/span> กับงานจริง[\s\S]*?ได้อย่างมั่นใจ/);
+  assert.match(html, /AiX Club ช่วยคัดเรื่องที่ควรรู้ อธิบายให้เข้าใจง่าย และพาลงมือจากตัวอย่างใกล้ตัว/);
   assert.match(html, /1,999 บาทต่อปี/);
-  assert.match(html, /ไม่ต้องไล่ตาม <span class="aix-highlight-mark">AI คนเดียว<\/span>/);
+  assert.match(html, /เริ่มจากงานของคุณ <span class="aix-highlight-mark">ไม่ใช่ชื่อเครื่องมือ<\/span>/);
   assert.match(html, /id="member-loop"/);
   assert.match(html, /id="learning-system"/);
   assert.match(html, /id="catalog"/);
@@ -137,13 +137,13 @@ test("homepage auth modal uses the shadcn-style sign-in card port without breaki
   assert.equal((html.match(/assets\/mascot\/aix-auth-mascot\.png/g) || []).length, 1);
   assert.equal((html.match(/assets\/mascot\/aix-auth-mascot-register-peek-no-panel\.png/g) || []).length, 1);
   assert.equal((html.match(/class="auth-mascot-speech"/g) || []).length, 1);
-  assert.match(html, /class="auth-mascot-speech">ยินดีต้อนรับ<br>กลับมาครับ!<\/p>/);
-  assert.match(html, /class="auth-copy auth-copy-login">[\s\S]*?<h2 id="loginModalTitle">AiX Club<\/h2>[\s\S]*?เข้าสู่ระบบเพื่อเรียน AI และจัดการ resource ของคุณ/);
-  assert.match(html, /class="auth-copy auth-copy-register">[\s\S]*?<h2 id="signupModalTitle">สมัครสมาชิก AiX Club<\/h2>[\s\S]*?สร้างบัญชีก่อน แล้วระบบจะให้ยืนยันเบอร์ก่อนเข้าสู่ขั้นตอนชำระเงิน/);
+  assert.match(html, /class="auth-mascot-speech">กลับมาเรียน<br>ต่อกันครับ!<\/p>/);
+  assert.match(html, /class="auth-copy auth-copy-login">[\s\S]*?<h2 id="loginModalTitle">กลับเข้าสู่พื้นที่สมาชิก<\/h2>[\s\S]*?ดูบทเรียน วิดีโอย้อนหลัง และไฟล์ที่คุณบันทึกไว้/);
+  assert.match(html, /class="auth-copy auth-copy-register">[\s\S]*?<h2 id="signupModalTitle">สร้างบัญชี AiX Club<\/h2>[\s\S]*?กรอกข้อมูลและยืนยันเบอร์โทร จากนั้นจึงเลือกชำระเงินเพื่อเปิดสิทธิ์สมาชิก 1 ปี/);
   assert.deepEqual([...authMascot.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
   assert.deepEqual([...authRegisterMascot.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
   assert.doesNotMatch(html, /id="googleLoginStatus"|เข้าสู่ระบบด้วย Google เป็นช่องทางหลัก/);
-  assert.match(html, /id="googleSignupStatus">สมัครด้วย Google แล้วค่อยยืนยันเบอร์ก่อนชำระเงิน<\/p>/);
+  assert.match(html, /id="googleSignupStatus">ใช้ Google เพื่อเริ่มสร้างบัญชี แล้วจึงยืนยันเบอร์โทร<\/p>/);
   assert.match(html, /id="memberForm" class="member-form auth-form"/);
   assert.match(html, /id="loginForm" class="member-form auth-form"/);
   assert.match(html, /<section class="auth-pane active" id="loginPane">/);
@@ -232,7 +232,7 @@ test("homepage applies modern semantics while keeping offscreen sections rendera
   assert.match(html, /document\.documentElement\.classList\.add\("dark"\);/);
   assert.match(html, /document\.documentElement\.style\.colorScheme = "dark";/);
   assert.match(html, /localStorage\.setItem\("aix-theme",\s*"dark"\);/);
-  assert.match(html, /<span class="visually-hidden">ค้นหาหัวข้อเรียน<\/span>[\s\S]*?<input id="catalogSearch" type="search" placeholder="ค้นหาหัวข้อ">/);
+  assert.match(html, /<span class="visually-hidden">ค้นหาจากงานหรือเครื่องมือ<\/span>[\s\S]*?<input id="catalogSearch" type="search" placeholder="ค้นหาจากงานหรือเครื่องมือ">/);
   assert.match(html, /<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><\/div>/);
   assert.match(html, /class="aix-review-stats" role="list" aria-label="สรุปรีวิวผู้เรียน AiX"/);
   assert.match(html, /class="aix-pricing-benefits" role="list" aria-label="สิ่งที่รวมในสมาชิก"/);
@@ -244,7 +244,7 @@ test("homepage applies modern semantics while keeping offscreen sections rendera
   assert.match(script, /function setDescribedBy\(input,\s*id,\s*enabled\)/);
   assert.match(script, /input\.setAttribute\("aria-describedby",\s*nextValue\);/);
   assert.match(script, /error\.setAttribute\("role",\s*"alert"\);/);
-  assert.match(script, /type="button" data-filter="\$\{filter\}" aria-pressed="\$\{filter === state\.activeFilter\}" aria-controls="classesGrid"/);
+  assert.match(script, /type="button" data-filter="\$\{filter\.value\}" aria-pressed="\$\{filter\.value === state\.activeFilter\}" aria-controls="classesGrid">\$\{filter\.label\}/);
 });
 
 test("public website no longer references mascot or companion assets", async () => {
@@ -362,11 +362,11 @@ test("homepage CSS includes responsive and motion safety rules", () => {
   assert.doesNotMatch(html, />03</);
   assert.match(html, /aix-stack-hero/);
   assert.match(html, /aix-stack-orbit/);
-  assert.match(script, /Job-based Roadmap/);
-  assert.match(footer, /สมาชิกเรียน AI ต่อเนื่องทั้งปี พร้อม Live, replay/);
+  assert.match(script, /เส้นทางตามงาน/);
+  assert.match(footer, /พื้นที่สมาชิกที่ช่วยคัดเรื่อง AI ให้เข้าใจง่าย/);
 });
 
-test("homepage polish keeps every section visible without scroll-triggered reveal gating", () => {
+test("homepage polish keeps generic sections visible and scopes reveal motion to enhanced components", () => {
   assert.match(script, /const pageEffects = \{/);
   assert.match(script, /function updateScrollProgress\(\)/);
   assert.match(script, /document\.documentElement\.style\.setProperty\("--aix-scroll-progress",\s*progress\.toFixed\(4\)\)/);
@@ -374,7 +374,8 @@ test("homepage polish keeps every section visible without scroll-triggered revea
   assert.match(script, /progress\.className = "aix-scroll-progress"/);
   assert.match(script, /function decoratePageEffects\(\)/);
   assert.match(script, /section\.classList\.add\("aix-section-ambient"\)/);
-  assert.doesNotMatch(script, /pageEffectTargets|aix-reveal|revealObserver|new IntersectionObserver/);
+  assert.doesNotMatch(script, /pageEffectTargets|aix-reveal|revealObserver/);
+  assert.match(script, /function revealComponentOnce\(element,\s*visibleClass,\s*options = \{\}\)/);
   assert.match(script, /window\.addEventListener\("scroll",\s*requestScrollProgressUpdate,\s*\{ passive:\s*true \}\)/);
   assert.match(script, /refreshPageEffects\(\);/);
   assert.match(script, /initPageEffects\(\);/);
@@ -418,18 +419,18 @@ test("homepage hero uses the shared meteor page background without the old gray 
 
 test("learning system section uses the static animated hero port", () => {
   assert.match(html, /<section class="aix-system aix-animated-hero" id="learning-system" aria-labelledby="learningSystemTitle">/);
-  assert.match(html, /<h2 id="learningSystemTitle" class="aix-animated-title" aria-label="เรื่องใหม่ใน AI สู่ขั้นตอนที่ทีมใช้ได้">/);
-  assert.match(html, /<span>เรื่องใหม่ใน AI<\/span>/);
-  assert.match(html, /<span>สู่ขั้นตอนที่ทีม<\/span>/);
+  assert.match(html, /<h2 id="learningSystemTitle" class="aix-animated-title" aria-label="เรื่อง AI ที่ดูยาก กลายเป็นขั้นตอนที่ทีมเข้าใจและเริ่มทำได้">/);
+  assert.match(html, /<span>เรื่อง AI ที่ดูยาก<\/span>/);
+  assert.match(html, /<span>กลายเป็นขั้นตอนที่ทีม<\/span>/);
   assert.match(html, /class="aix-animated-word-slot" data-animated-words aria-live="polite"/);
   for (const copy of [
-    "ใช้ได้",
-    "ทำซ้ำได้",
-    "สอนต่อได้",
-    "วัดผลได้",
-    "ดูหัวข้อที่เปิดใน Platform",
-    "เริ่มด้วยสมาชิก 1 ปี",
-    "AiX แปลงข่าว เครื่องมือ และ workflow ใหม่ให้เป็นบทเรียนสั้น"
+    "เข้าใจได้",
+    "เริ่มทำได้",
+    "ใช้ร่วมกันได้",
+    "พัฒนาต่อได้",
+    "ดูหัวข้อทั้งหมด",
+    "เข้าร่วม AiX Club",
+    "ทุกหัวข้อถูกย่อยให้เห็นว่าเรื่องนี้สำคัญอย่างไร"
   ]) {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -458,7 +459,7 @@ test("learning system section uses the static animated hero port", () => {
 
 test("member loop section ports the hero highlight treatment statically", () => {
   assert.match(html, /<section class="aix-loop aix-hero-highlight" id="member-loop" aria-labelledby="memberLoopTitle" data-hero-highlight>/);
-  assert.match(html, /<h2 id="memberLoopTitle">ไม่ต้องไล่ตาม <span class="aix-highlight-mark">AI คนเดียว<\/span><\/h2>/);
+  assert.match(html, /<h2 id="memberLoopTitle">เริ่มจากงานของคุณ <span class="aix-highlight-mark">ไม่ใช่ชื่อเครื่องมือ<\/span><\/h2>/);
   assert.match(css, /\/\* Static port of the HeroHighlight component for the member loop section \*\//);
   assert.match(css, /\.aix-hero-highlight\s*\{[\s\S]*?--highlight-x:\s*50%;[\s\S]*?--highlight-y:\s*50%;[\s\S]*?isolation:\s*isolate;[\s\S]*?overflow:\s*hidden;/);
   assert.match(css, /\.aix-hero-highlight::before,\s*[\s\S]*?\.aix-hero-highlight::after\s*\{[\s\S]*?background-size:\s*16px 16px;[\s\S]*?radial-gradient\(circle,\s*rgb\(212 212 212\) 1px,\s*transparent 1px\);/);
@@ -479,12 +480,12 @@ test("member loop section ports the hero highlight treatment statically", () => 
 
 test("homepage sections use concise copy and tighter spacing", () => {
   for (const copy of [
-    "สมาชิก AiX Club 1,999 บาทต่อปี รวม Live สอนสดทุกอาทิตย์",
-    "ใช้ AiX เป็นพื้นที่ประจำสำหรับเช็กเรื่องใหม่",
-    "บทเรียนพร้อมคลัง resource",
-    "เลือกจากงานที่อยากพัฒนา แล้วค่อยจับคู่เครื่องมือ AI",
-    "หัวข้อในแพลตฟอร์ม",
-    "เรียนจากงานจริง"
+    "สมาชิก 1,999 บาทต่อปี พร้อม Live ทุกสัปดาห์",
+    "เราเลือกเฉพาะเรื่องที่มีผลกับงาน",
+    "ทุกอย่างที่ต้องใช้ อยู่กับบทเรียน",
+    "ไม่ต้องรู้ชื่อเครื่องมือ เพียงเลือกงานที่อยากทำให้ดีขึ้น",
+    "หัวข้อสำหรับสมาชิก",
+    "เปลี่ยนงานประจำให้ชัดและทำต่อได้"
   ]) {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -608,7 +609,7 @@ test("class detail pages use real AI logo assets and updated course copy", () =>
 
 test("job path section ports the attached bento grid component statically", () => {
   assert.match(html, /<section class="aix-paths" id="paths" aria-labelledby="pathsTitle">/);
-  assert.match(html, /<div class="aix-path-grid aix-bento-grid" aria-label="เลือกหัวข้อตามงานที่อยากพัฒนา">/);
+  assert.match(html, /<div class="aix-path-grid aix-bento-grid" aria-label="เลือกเส้นทางจากงานที่อยากพัฒนา">/);
   assert.equal((html.match(/class="aix-path-card aix-bento-card/g) || []).length, 4);
   assert.equal((html.match(/aix-path-card-wide/g) || []).length, 2);
 
@@ -629,13 +630,14 @@ test("job path section ports the attached bento grid component statically", () =
   }
 
   for (const copy of [
-    "เจ้าของธุรกิจ",
-    "ระบบหลังบ้าน",
-    "ทีมและองค์กร",
-    "ทำ playbook กลาง SOP และ prompt มาตรฐานให้ทีมใช้ซ้ำ",
-    "#Prompt",
-    "#Template",
-    "#Team"
+    "บริหารงานให้เห็นภาพ",
+    "ทำการตลาดได้เร็วขึ้น",
+    "ลดงานซ้ำหลังบ้าน",
+    "ให้ทีมใช้ AI ไปทางเดียวกัน",
+    "สร้างชุดคำสั่ง แม่แบบ และแนวทางตรวจงาน",
+    "#ชุดคำสั่ง",
+    "#แม่แบบ",
+    "#ทีม"
   ]) {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -662,8 +664,8 @@ test("homepage section notes render as plain text without badge decoration", () 
 
 test("membership pricing presents one clear annual plan without discount pressure", () => {
   assert.match(html, /<section class="aix-membership aix-pricing-section" id="membership" aria-labelledby="membershipTitle">/);
-  assert.match(html, /class="aix-status-pill aix-pricing-header-badge"[\s\S]*?fa-regular fa-credit-card[\s\S]*?<span>สมาชิกปีเดียว<\/span>/);
-  assert.match(html, /<h2 id="membershipTitle">สมาชิกปีเดียว เรียนต่อเนื่องทั้งปี<\/h2>/);
+  assert.match(html, /class="aix-status-pill aix-pricing-header-badge"[\s\S]*?fa-regular fa-credit-card[\s\S]*?<span>สมาชิก AiX Club<\/span>/);
+  assert.match(html, /<h2 id="membershipTitle">สมัครครั้งเดียว ใช้พื้นที่สมาชิกได้ 1 ปี<\/h2>/);
   assert.match(html, /class="aix-single-pricing-card" data-pricing-card aria-label="สมาชิก AiX Club 1,999 บาทต่อปี"/);
   assert.match(html, /class="aix-pricing-hover-wash" aria-hidden="true"/);
   assert.match(html, /class="aix-pricing-badge"[\s\S]*?fa-solid fa-crown[\s\S]*?สมาชิก AiX Club รายปี/);
@@ -671,21 +673,21 @@ test("membership pricing presents one clear annual plan without discount pressur
   assert.match(css, /\.aix-price-period\s*\{[\s\S]*?border-radius:\s*999px;[\s\S]*?font-weight:\s*800;/);
   assert.match(css, /\.dark \.aix-price-period\s*\{[\s\S]*?color:\s*#bfdbfe;[\s\S]*?background:\s*rgba\(37,\s*99,\s*235,\s*0\.14\);/);
   for (const copy of [
-    "สมาชิกปีเดียว",
+    "สมาชิก AiX Club",
     "สมาชิก AiX Club รายปี",
     "1,999 บาทต่อปี",
     "สมัครสมาชิก 1 ปี",
-    "AI update brief อ่านเร็ว",
-    "Prompt และ SOP library",
-    "Practice room ตามโจทย์จริง",
-    "Live สอนสดทุกอาทิตย์",
-    "มีรอบสด ถามตอบ และ replay ย้อนหลังให้ตามเรื่องใหม่",
-    "หัวข้อใหม่ + replay",
-    "ดูซ้ำตอนต้องใช้จริง",
-    "Template + checklist",
-    "เอาไปปรับใช้กับทีม",
-    "สำหรับธุรกิจและทีม",
-    "ขาย การตลาด operation"
+    "สรุปเรื่อง AI ที่กระทบงาน",
+    "ชุดคำสั่งพร้อมแนวทางปรับใช้",
+    "ตัวอย่างจากงานธุรกิจจริง",
+    "Live กับทีม AiX ทุกสัปดาห์",
+    "อัปเดตเรื่องใหม่ ดูตัวอย่าง และถามสิ่งที่ติดจากงานของคุณ",
+    "ตามเรื่องใหม่",
+    "รู้ว่าอะไรสำคัญกับงาน",
+    "มีไฟล์พร้อมใช้",
+    "ชุดคำสั่ง แม่แบบ และเช็กลิสต์",
+    "กลับมาทบทวน",
+    "วิดีโอย้อนหลังและคลังสมาชิก"
   ]) {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -693,25 +695,25 @@ test("membership pricing presents one clear annual plan without discount pressur
   assert.equal((html.match(/fa-solid fa-check/g) || []).length, 13);
   assert.match(html, /class="aix-pricing-benefits" role="list" aria-label="สิ่งที่รวมในสมาชิก"/);
   assert.equal((html.match(/class="aix-pricing-benefit-item" role="listitem"/g) || []).length, 3);
-  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-check" aria-hidden="true"><\/i><strong>หัวข้อใหม่ \+ replay<\/strong><small>ดูซ้ำตอนต้องใช้จริง<\/small>/);
-  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-shield-heart" aria-hidden="true"><\/i><strong>Template \+ checklist<\/strong><small>เอาไปปรับใช้กับทีม<\/small>/);
-  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-heart" aria-hidden="true"><\/i><strong>สำหรับธุรกิจและทีม<\/strong><small>ขาย การตลาด operation<\/small>/);
-  assert.match(html, /<div class="aix-pricing-actions">[\s\S]*?<\/div>\s*<div class="aix-pricing-live-note" aria-label="Live สอนสดทุกอาทิตย์">/);
+  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-check" aria-hidden="true"><\/i><strong>ตามเรื่องใหม่<\/strong><small>รู้ว่าอะไรสำคัญกับงาน<\/small>/);
+  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-shield-heart" aria-hidden="true"><\/i><strong>มีไฟล์พร้อมใช้<\/strong><small>ชุดคำสั่ง แม่แบบ และเช็กลิสต์<\/small>/);
+  assert.match(html, /class="aix-pricing-benefit-item" role="listitem"><i class="fa-solid fa-heart" aria-hidden="true"><\/i><strong>กลับมาทบทวน<\/strong><small>วิดีโอย้อนหลังและคลังสมาชิก<\/small>/);
+  assert.match(html, /<div class="aix-pricing-actions">[\s\S]*?<\/div>\s*<div class="aix-pricing-live-note" aria-label="Live กับทีม AiX ทุกสัปดาห์">/);
   assert.match(html, /class="aix-pricing-features" role="list" aria-label="ฟีเจอร์สมาชิก AiX Club"/);
   assert.match(html, /class="aix-pricing-separator" role="presentation"/);
   assert.match(html, /class="aix-pricing-testimonials" data-pricing-testimonials aria-label="สรุปเสียงจากผู้เรียน"/);
   assert.equal((html.match(/class="aix-pricing-quote-meta"/g) || []).length, 3);
   assert.equal((html.match(/สรุปจากรีวิวผู้เรียน/g) || []).length, 3);
-  assert.match(html, /ได้เรียนรู้แบบนำไปใช้กับงานจริง เห็นตัวอย่างชัด และเข้าใจภาพรวม automation มากขึ้น/);
-  assert.match(html, /จากเดิมใช้ AI แค่ถามตอบ ตอนนี้เริ่มเห็นวิธีตั้งงานให้ AI ช่วยงานแทนเราได้จริง/);
-  assert.match(html, /เหมาะกับคนไม่มีพื้นฐาน เพราะเริ่มจากภาพรวมก่อน แล้วค่อยต่อยอดด้วย replay กลับมาทวนได้/);
+  assert.match(html, /ตัวอย่างใกล้กับงานจริง เลยเห็นทันทีว่าจะนำไปปรับตรงไหน/);
+  assert.match(html, /จากที่เคยใช้ AI แค่ถามคำถาม ตอนนี้มองเห็นวิธีมอบหมายงานให้ชัดขึ้น/);
+  assert.match(html, /ไม่มีพื้นฐานก็เริ่มตามได้ และมีวิดีโอย้อนหลังให้กลับมาทบทวน/);
   assert.doesNotMatch(html, /class="aix-pricing-avatar"|class="aix-pricing-stars"|aria-label="5 ดาว"|AI work assistant|Beginner-friendly|Replay & template/);
   assert.match(html, /class="primary-btn full aix-pricing-button" type="button" data-open-signup>[\s\S]*?สมัครสมาชิก 1 ปี[\s\S]*?fa-solid fa-arrow-right/);
   assert.match(html, /"name": "AiX Member รายปี"[\s\S]*?"price": "1999"/);
   assert.doesNotMatch(html, /รายเดือน|2,988 บาท|ประหยัด 989 บาท|data-monthly-plan|aix-price-original|aix-price-discount|aix-pricing-monthly-note|"price": "249"/);
   assert.doesNotMatch(html, /class="aix-membership-lead"|class="aix-membership-points"|class="aix-price-panel"/);
   assert.doesNotMatch(html, /data-plan-option=|data-plan-price|data-plan-period|data-plan-note|data-pricing-primary/);
-  assert.match(html, /ราคาเดียวสำหรับ Live, replay, เส้นทางเรียน และ resource ที่อัปเดตต่อเนื่องตลอดปี/);
+  assert.match(html, /1,999 บาทต่อปี สำหรับ Live ทุกสัปดาห์ วิดีโอย้อนหลัง หัวข้อใหม่ และคลังไฟล์ที่หยิบไปใช้กับงานได้/);
   assert.doesNotMatch(html, /<p class="aix-section-note">คำถามที่พบบ่อย<\/p>/);
   assert.doesNotMatch(html, /<details open>/);
   assert.match(css, /\/\* Static port of the 21st\.dev SinglePricingCard component for AiX membership pricing \*\//);
@@ -796,7 +798,7 @@ test("homepage FAQ uses the static FAQ accordion port", () => {
   const faqStart = html.indexOf('<section class="aix-faq aix-faq-section"');
   const faqHtml = html.slice(faqStart, html.indexOf("</section>", faqStart) + "</section>".length);
   assert.match(faqHtml, /<section class="aix-faq aix-faq-section" id="faq" aria-labelledby="faqTitle">/);
-  assert.match(faqHtml, /<div class="aix-faq-head">[\s\S]*?<h2 id="faqTitle">คำถามที่พบบ่อย<\/h2>[\s\S]*?<p>เรื่องที่ควรรู้ก่อนสมัคร AiX Club<\/p>/);
+  assert.match(faqHtml, /<div class="aix-faq-head">[\s\S]*?<h2 id="faqTitle">ก่อนเข้าร่วม AiX Club<\/h2>[\s\S]*?<p>คำตอบสั้น ๆ สำหรับเรื่องที่คนมักถามก่อนสมัครสมาชิก<\/p>/);
   assert.match(faqHtml, /class="faq-grid aix-faq-list" data-faq-accordion/);
   assert.equal((faqHtml.match(/class="aix-faq-item/g) || []).length, 5);
   assert.equal((faqHtml.match(/class="aix-faq-trigger"/g) || []).length, 5);
@@ -804,7 +806,16 @@ test("homepage FAQ uses the static FAQ accordion port", () => {
   assert.match(faqHtml, /<article class="aix-faq-item is-open">[\s\S]*?aria-expanded="true" aria-controls="faqAnswer1" id="faqQuestion1"/);
   assert.equal((faqHtml.match(/class="aix-faq-answer"[^>]*aria-hidden="true"/g) || []).length, 4);
   assert.match(faqHtml, /role="region" aria-labelledby="faqQuestion3" aria-hidden="true"/);
-  assert.match(faqHtml, /<div class="aix-faq-contact">[\s\S]*?ยังมีคำถามอยู่ไหม\?[\s\S]*?data-open-login>เข้าสู่ระบบเพื่อติดต่อทีม<\/button>/);
+  for (const question of [
+    "AiX Club ช่วยอะไร?",
+    "ไม่เก่งเทคโนโลยี เริ่มได้ไหม?",
+    "1,999 บาทต่อปีรวมอะไรบ้าง?",
+    "ต้องเรียนตามเวลาไหม?",
+    "สมัครและชำระเงินอย่างไร?"
+  ]) {
+    assert.match(faqHtml, new RegExp(question.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  assert.match(faqHtml, /<div class="aix-faq-contact">[\s\S]*?ยังไม่แน่ใจว่าเหมาะกับงานคุณไหม\?[\s\S]*?data-open-login>เข้าสู่ระบบและติดต่อทีม<\/button>/);
   assert.doesNotMatch(faqHtml, /<details|<summary|<\/details>/);
   assert.match(css, /\/\* Static port of the 21st\.dev FAQ accordion for AiX \*\//);
   assert.match(css, /\.aix-faq-section\s*\{[\s\S]*?linear-gradient\(180deg,\s*transparent 0%,\s*rgba\(244,\s*244,\s*245,\s*0\.72\)\s+46%,\s*transparent 100%\)/);
@@ -870,20 +881,21 @@ test("homepage uses the stack feature section hero from the 21st.dev direction",
 
 test("homepage includes learner reviews and 40+ social proof", () => {
   assert.match(html, /<section class="aix-reviews" id="reviews" aria-labelledby="reviewsTitle">/);
-  assert.match(html, /40\+ คนเริ่มใช้ AI กับงานจริง/);
-  assert.match(html, /ข้อความบางส่วนจากผู้เรียน AiX/);
+  assert.match(html, /<h2 id="reviewsTitle">คนเริ่มต้นก็เอาไปใช้ต่อได้<\/h2>/);
+  assert.match(html, /ผู้เรียนพูดถึงตัวอย่างที่เห็นภาพ การอธิบายที่เข้าใจง่าย/);
   assert.match(html, /<strong>40\+<\/strong>/);
-  assert.match(html, /<strong>6 ชม\.<\/strong>/);
-  assert.match(html, /<strong>Replay<\/strong>/);
+  assert.match(html, /<strong>ลงมือทำ<\/strong>/);
+  assert.match(html, /<strong>ดูย้อนหลัง<\/strong>/);
   assert.equal((html.match(/class="aix-testimonial-card/g) || []).length, 12);
   assert.doesNotMatch(html, /<span>ตัวอย่างงานจริง<\/span>/);
   assert.doesNotMatch(html, /class="aix-review-screenshots"|class="aix-review-shot"|assets\/reviews\//);
   assert.doesNotMatch(css, /\.aix-review-screenshots|\.aix-review-shot/);
   for (const copy of [
-    "นำไปประยุกต์ใช้งานได้จริง",
-    "AI กลายเป็นผู้ช่วยทำงาน",
-    "ผู้สอนตอบคำถามได้ดี",
-    "วิดีโอย้อนหลัง"
+    "ตัวอย่างใกล้กับงานจริง",
+    "มองเห็นวิธีมอบหมายงานให้ชัดขึ้น",
+    "ไม่มีพื้นฐานก็เริ่มตามได้",
+    "ถามผู้สอนได้ระหว่างคลาส",
+    "มีวิดีโอย้อนหลัง"
   ]) {
     assert.match(html, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -921,10 +933,10 @@ test("neutral theme tokens are installed and documented", () => {
 });
 
 test("site footer uses a minimal background-free design", () => {
-  assert.match(footer, /AiX Weekly/);
-  assert.match(footer, /Live, replay, template/);
-  assert.match(footer, /<strong>Platform<\/strong>/);
-  assert.match(footer, /<strong>ติดต่อทีม<\/strong>/);
+  assert.match(footer, /พื้นที่สมาชิกที่ช่วยคัดเรื่อง AI ให้เข้าใจง่าย/);
+  assert.match(footer, /Live ทุกสัปดาห์ · วิดีโอย้อนหลัง · ไฟล์พร้อมใช้/);
+  assert.match(footer, /<strong>สำรวจ AiX<\/strong>/);
+  assert.match(footer, /<strong>บัญชีสมาชิก<\/strong>/);
   assert.doesNotMatch(footer, /AiX Learning OS/);
   assert.doesNotMatch(footer, /แพลตฟอร์มสมาชิกเรียน AI ต่อเนื่องทั้งปี สำหรับผู้ประกอบการ/);
   assert.match(
@@ -1076,7 +1088,13 @@ test("homepage runs as a dark-only theme and hides legacy theme toggles", () => 
 
 test("real-work section uses clear image comparison assets", () => {
   assert.match(html, /<section class="aix-business aix-workproof" id="business-cases" aria-labelledby="businessTitle">/);
-  assert.match(html, /ดูตัวอย่างงานจริงจากแชท รายงาน และโน้ตที่กระจัดกระจาย/);
+  assert.match(html, /ฝึกจากตัวอย่างใกล้ตัว เช่น บทสนทนาลูกค้า รายงาน และโน้ตหลายแหล่ง/);
+  assert.match(html, /เปรียบเทียบงานก่อนและหลังจัดข้อมูลด้วย AI/);
+  assert.match(html, /ก่อนจัดระบบ/);
+  assert.match(html, /หลังใช้ AI/);
+  assert.match(html, /ตัวอย่างงานก่อนจัดระบบ มีบทสนทนาลูกค้า รายงาน และโน้ตอยู่หลายแหล่ง/);
+  assert.match(html, /ตัวอย่างงานหลังใช้ AI จัดข้อมูล เป็นสรุป ขั้นตอนทำงาน และรายการสิ่งที่ต้องทำต่อ/);
+  assert.match(script, /แสดงผลลัพธ์หลังใช้ AI/);
   assert.match(html, /data-workproof-compare/);
   assert.match(html, /role="slider"[\s\S]*?aria-valuenow="50"[\s\S]*?data-workproof-handle/);
   assert.match(html, /assets\/generated\/aix-real-work-before-generated\.png/);

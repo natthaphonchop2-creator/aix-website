@@ -14,6 +14,8 @@ const PUBLIC_ROOT_FILES = new Set([
   "member-resource-glow.js",
   "google-auth-fix.css",
   "reviews-color-polish.css",
+  "homepage-color-theme.css",
+  "homepage-component-fidelity.css",
   "robots.txt",
   "sitemap.xml"
 ]);

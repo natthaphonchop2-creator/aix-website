@@ -18,8 +18,12 @@ test("publishes only approved anonymous root files", () => {
   assert.equal(PUBLIC_ROOT_FILES.has("index.html"), true);
   assert.equal(PUBLIC_ROOT_FILES.has("class-detail.html"), true);
   assert.equal(PUBLIC_ROOT_FILES.has("safe-dom.js"), true);
+  assert.equal(PUBLIC_ROOT_FILES.has("homepage-color-theme.css"), true);
+  assert.equal(PUBLIC_ROOT_FILES.has("homepage-component-fidelity.css"), true);
   assert.equal(PUBLIC_ROOT_FILES.has("server.js"), false);
   assert.equal(classifyPublicPath("/styles.css")?.relativePath, "styles.css");
+  assert.equal(classifyPublicPath("/homepage-color-theme.css")?.relativePath, "homepage-color-theme.css");
+  assert.equal(classifyPublicPath("/homepage-component-fidelity.css")?.relativePath, "homepage-component-fidelity.css");
   assert.deepEqual(classifyPublicPath("/safe-dom.js"), { kind: "root", relativePath: "safe-dom.js" });
   assert.equal(classifyPublicPath("/dashboard.html"), null);
 });

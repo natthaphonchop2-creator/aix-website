@@ -211,24 +211,24 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <img class="footer-logo" src="/AiX%20logo/textblack.png" alt="AiX Club" width="232" height="92" loading="lazy" decoding="async">
-        <p>สมาชิกเรียน AI ต่อเนื่องทั้งปี พร้อม Live, replay และ resource ที่กลับมาใช้กับงานจริงได้ทันที</p>
-        <div class="footer-brand-note" aria-label="AiX learning system">
+        <p>พื้นที่สมาชิกที่ช่วยคัดเรื่อง AI ให้เข้าใจง่าย พร้อมตัวอย่างและไฟล์ที่หยิบไปปรับกับงานได้ตลอดปี</p>
+        <div class="footer-brand-note" aria-label="สิ่งที่รวมในสมาชิก AiX Club">
           <div>
-            <strong>AiX Weekly</strong>
-            <span>Live, replay, template</span>
+            <strong>เรียนตามงานของคุณ</strong>
+            <span>Live ทุกสัปดาห์ · วิดีโอย้อนหลัง · ไฟล์พร้อมใช้</span>
           </div>
         </div>
       </div>
       <div>
-        <strong>Platform</strong>
-        <a href="${sectionHref("member-loop")}">สมาชิกได้อะไร</a>
-        <a href="${sectionHref("learning-system")}">วิธีเรียน</a>
-        <a href="${sectionHref("catalog")}">หัวข้อเรียน</a>
+        <strong>สำรวจ AiX</strong>
+        <a href="${sectionHref("member-loop")}">AiX ช่วยอะไร</a>
+        <a href="${sectionHref("learning-system")}">เรียนอย่างไร</a>
+        <a href="${sectionHref("catalog")}">เลือกหัวข้อ</a>
       </div>
       <div>
-        <strong>สมาชิก</strong>
-        <a href="${sectionHref("membership")}">สมัครสมาชิก</a>
-        <a href="/dashboard">เข้าสู่ระบบ</a>
+        <strong>บัญชีสมาชิก</strong>
+        <a href="${sectionHref("membership")}">เข้าร่วม AiX Club</a>
+        <a href="/dashboard">เข้าสู่พื้นที่สมาชิก</a>
         <a href="/payment">ชำระเงิน</a>
       </div>
       <div>

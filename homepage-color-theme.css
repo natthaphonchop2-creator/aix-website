@@ -1,0 +1,308 @@
+/*
+ * AiX homepage unified decorative palette
+ * Keep decorative color within blue -> indigo -> violet.
+ * Product logos and semantic feedback colors remain untouched.
+ */
+
+body.aix-top-nav-active,
+.aix-home-header,
+.aix-homepage-redesign {
+  --aix-accent-blue: #60a5fa;
+  --aix-accent-indigo: #6366f1;
+  --aix-accent-violet: #a78bfa;
+  --aix-accent-blue-rgb: 96, 165, 250;
+  --aix-accent-indigo-rgb: 99, 102, 241;
+  --aix-accent-violet-rgb: 167, 139, 250;
+  --aix-accent-gradient: linear-gradient(
+    135deg,
+    #bae6fd 0%,
+    var(--aix-accent-blue) 38%,
+    var(--aix-accent-indigo) 68%,
+    var(--aix-accent-violet) 100%
+  );
+  --aix-accent-gradient-strong: linear-gradient(
+    135deg,
+    #2563eb 0%,
+    var(--aix-accent-indigo) 54%,
+    #8b5cf6 100%
+  );
+  --aix-accent-glow: 0 18px 42px rgba(var(--aix-accent-indigo-rgb), 0.2);
+}
+
+/* Keep the hero headline typographic; remove the tinted panel behind it. */
+.aix-stack-hero .aix-hero-title::before {
+  content: none;
+}
+
+/* Header navigation: three neighboring tones from one palette. */
+.aix-home-header .hover-gradient-nav-item {
+  --nav-accent-rgb: var(--aix-accent-blue-rgb);
+  --nav-hover-color: rgb(var(--nav-accent-rgb));
+  --nav-glow: radial-gradient(
+    circle,
+    rgba(var(--nav-accent-rgb), 0.2) 0%,
+    rgba(var(--nav-accent-rgb), 0.09) 50%,
+    rgba(var(--nav-accent-rgb), 0) 100%
+  );
+}
+
+.aix-home-header .hover-gradient-nav-list li:nth-child(3n + 2) .hover-gradient-nav-item {
+  --nav-accent-rgb: var(--aix-accent-indigo-rgb);
+}
+
+.aix-home-header .hover-gradient-nav-list li:nth-child(3n) .hover-gradient-nav-item {
+  --nav-accent-rgb: var(--aix-accent-violet-rgb);
+}
+
+.aix-home-header .hover-gradient-nav-primary {
+  --nav-accent-rgb: var(--aix-accent-violet-rgb);
+}
+
+/* CTA gradients stay inside the same blue-indigo-violet family. */
+.aix-homepage-redesign .primary-btn,
+.aix-home-header .primary-btn,
+.aix-stack-hero-actions .aix-rainbow-shell > .aix-rainbow-button.primary-btn,
+.aix-homepage-redesign .aix-animated-actions .aix-rainbow-shell > .aix-rainbow-button.primary-btn,
+.aix-pricing-actions .aix-rainbow-shell > .aix-pricing-button.primary-btn {
+  color: #ffffff;
+  background: var(--aix-accent-gradient-strong);
+  border-color: rgba(var(--aix-accent-indigo-rgb), 0.7);
+  box-shadow: var(--aix-accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.aix-homepage-redesign .primary-btn:hover,
+.aix-homepage-redesign .primary-btn:focus-visible,
+.aix-home-header .primary-btn:hover,
+.aix-home-header .primary-btn:focus-visible,
+.aix-stack-hero-actions .aix-rainbow-shell:hover > .aix-rainbow-button.primary-btn,
+.aix-stack-hero-actions .aix-rainbow-shell:focus-within > .aix-rainbow-button.primary-btn,
+.aix-homepage-redesign .aix-animated-actions .aix-rainbow-shell:hover > .aix-rainbow-button.primary-btn,
+.aix-homepage-redesign .aix-animated-actions .aix-rainbow-shell:focus-within > .aix-rainbow-button.primary-btn,
+.aix-pricing-actions .aix-rainbow-shell:hover > .aix-pricing-button.primary-btn,
+.aix-pricing-actions .aix-rainbow-shell:focus-within > .aix-pricing-button.primary-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #a78bfa 100%);
+  border-color: rgba(var(--aix-accent-violet-rgb), 0.82);
+  box-shadow: 0 20px 48px rgba(var(--aix-accent-indigo-rgb), 0.26);
+}
+
+.dark .aix-homepage-redesign .primary-btn,
+.dark .aix-home-header .primary-btn,
+.dark .aix-stack-hero-actions .aix-rainbow-shell > .aix-rainbow-button.primary-btn,
+.dark .aix-homepage-redesign .aix-animated-actions .aix-rainbow-shell > .aix-rainbow-button.primary-btn,
+.dark .aix-pricing-actions .aix-rainbow-shell > .aix-pricing-button.primary-btn {
+  color: #07111f;
+  background: var(--aix-accent-gradient);
+  border-color: rgba(186, 230, 253, 0.68);
+}
+
+.dark .aix-homepage-redesign .primary-btn:hover,
+.dark .aix-homepage-redesign .primary-btn:focus-visible,
+.dark .aix-home-header .primary-btn:hover,
+.dark .aix-home-header .primary-btn:focus-visible,
+.dark .aix-stack-hero-actions .aix-rainbow-shell:hover > .aix-rainbow-button.primary-btn,
+.dark .aix-stack-hero-actions .aix-rainbow-shell:focus-within > .aix-rainbow-button.primary-btn,
+.dark .aix-homepage-redesign .aix-animated-actions .aix-rainbow-shell:hover > .aix-rainbow-button.primary-btn,
+.dark .aix-homepage-redesign .aix-animated-actions .aix-rainbow-shell:focus-within > .aix-rainbow-button.primary-btn,
+.dark .aix-pricing-actions .aix-rainbow-shell:hover > .aix-pricing-button.primary-btn,
+.dark .aix-pricing-actions .aix-rainbow-shell:focus-within > .aix-pricing-button.primary-btn {
+  color: #050b18;
+  background: linear-gradient(135deg, #dbeafe 0%, #7dd3fc 34%, #818cf8 68%, #c4b5fd 100%);
+  border-color: rgba(224, 242, 254, 0.82);
+}
+
+/* Highlight, progress, and ambient section light. */
+.aix-scroll-progress,
+.dark .aix-scroll-progress {
+  background: linear-gradient(90deg, var(--aix-accent-blue), var(--aix-accent-indigo) 50%, var(--aix-accent-violet));
+  box-shadow: 0 0 18px rgba(var(--aix-accent-indigo-rgb), 0.42);
+}
+
+.aix-highlight-mark,
+.dark .aix-highlight-mark {
+  background-image: linear-gradient(90deg, var(--aix-accent-indigo), var(--aix-accent-violet));
+}
+
+.aix-section-ambient::before,
+.aix-section-ambient:nth-of-type(even)::before,
+.dark .aix-section-ambient::before {
+  background:
+    radial-gradient(closest-side at 18% 50%, rgba(var(--aix-accent-blue-rgb), 0.17), transparent 72%),
+    radial-gradient(closest-side at 82% 52%, rgba(var(--aix-accent-violet-rgb), 0.13), transparent 72%);
+}
+
+/* Job paths and catalog topics use palette variations, not unrelated hues. */
+.aix-path-tone-agent {
+  --path-accent-rgb: var(--aix-accent-blue-rgb);
+}
+
+.aix-path-tone-creative {
+  --path-accent-rgb: var(--aix-accent-violet-rgb);
+}
+
+.aix-path-tone-automation {
+  --path-accent-rgb: var(--aix-accent-indigo-rgb);
+}
+
+.aix-path-tone-prompt {
+  --path-accent-rgb: 139, 92, 246;
+}
+
+.aix-catalog .aix-topic-tone-manus,
+.aix-catalog .aix-topic-tone-codex,
+.aix-catalog .aix-topic-tone-deepseek {
+  --topic-accent-rgb: var(--aix-accent-blue-rgb);
+}
+
+.aix-catalog .aix-topic-tone-claude,
+.aix-catalog .aix-topic-tone-perplexity {
+  --topic-accent-rgb: var(--aix-accent-indigo-rgb);
+}
+
+.aix-catalog .aix-topic-tone-higgsfield,
+.aix-catalog .aix-topic-tone-antigravity {
+  --topic-accent-rgb: var(--aix-accent-violet-rgb);
+}
+
+/* Member resource glow: replace rainbow border and teal wash with brand light. */
+.aix-member-glow-section::before,
+.dark .aix-member-glow-section::before {
+  background:
+    radial-gradient(circle at 16% 20%, rgba(var(--aix-accent-blue-rgb), 0.18), transparent 34%),
+    radial-gradient(circle at 86% 18%, rgba(var(--aix-accent-violet-rgb), 0.14), transparent 30%),
+    radial-gradient(circle at 70% 88%, rgba(var(--aix-accent-indigo-rgb), 0.12), transparent 36%);
+}
+
+.aix-member-glow-section .aix-resource-stack article,
+.aix-member-glow-section .resource-card {
+  --aix-glow-gradient:
+    radial-gradient(circle, #60a5fa 10%, rgba(96, 165, 250, 0) 20%),
+    radial-gradient(circle at 40% 40%, #6366f1 5%, rgba(99, 102, 241, 0) 15%),
+    radial-gradient(circle at 60% 60%, #a78bfa 10%, rgba(167, 139, 250, 0) 20%),
+    radial-gradient(circle at 40% 60%, #818cf8 10%, rgba(129, 140, 248, 0) 20%),
+    repeating-conic-gradient(
+      from 236.84deg at 50% 50%,
+      #60a5fa 0%,
+      #6366f1 5%,
+      #a78bfa 10%,
+      #818cf8 15%,
+      #60a5fa 20%
+    );
+}
+
+/* Real-work comparison keeps contrast while using one accent family. */
+.aix-workproof-points span,
+.aix-workproof-points span:nth-child(2),
+.aix-workproof-points span:nth-child(3) {
+  background:
+    linear-gradient(135deg, rgba(var(--aix-accent-blue-rgb), 0.24), rgba(var(--aix-accent-indigo-rgb), 0.12)),
+    rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 14px 34px rgba(var(--aix-accent-indigo-rgb), 0.13);
+}
+
+.aix-workproof-points i,
+.aix-workproof-points span:nth-child(2) i,
+.aix-workproof-points span:nth-child(3) i {
+  color: #bfdbfe;
+}
+
+.aix-workproof-compare {
+  background:
+    radial-gradient(circle at var(--aix-compare-inset) 42%, rgba(var(--aix-accent-blue-rgb), 0.24), transparent 34%),
+    radial-gradient(circle at 12% 16%, rgba(var(--aix-accent-indigo-rgb), 0.16), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(var(--aix-accent-violet-rgb), 0.18), transparent 30%),
+    radial-gradient(circle at 82% 88%, rgba(var(--aix-accent-blue-rgb), 0.12), transparent 28%),
+    rgba(15, 23, 42, 0.58);
+}
+
+html:not(.dark) .aix-workproof-compare {
+  background:
+    radial-gradient(circle at var(--aix-compare-inset) 42%, rgba(var(--aix-accent-blue-rgb), 0.2), transparent 34%),
+    radial-gradient(circle at 12% 16%, rgba(var(--aix-accent-indigo-rgb), 0.12), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(var(--aix-accent-violet-rgb), 0.14), transparent 30%),
+    radial-gradient(circle at 82% 88%, rgba(var(--aix-accent-blue-rgb), 0.1), transparent 28%),
+    rgba(255, 255, 255, 0.76);
+}
+
+.aix-workproof-labels span:first-child {
+  color: #e2e8f0;
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.94), rgba(30, 41, 59, 0.9));
+}
+
+.aix-workproof-labels span:last-child,
+.aix-workproof-handle {
+  color: #f8fafc;
+  background: var(--aix-accent-gradient-strong);
+}
+
+.aix-workproof-divider {
+  background: linear-gradient(180deg, var(--aix-accent-blue), var(--aix-accent-indigo) 50%, var(--aix-accent-violet));
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.22), 0 0 28px rgba(var(--aix-accent-indigo-rgb), 0.5);
+}
+
+/* Reviews and membership benefits use blue, indigo, and violet in sequence. */
+.aix-reviews::before,
+html:not(.dark) .aix-reviews::before {
+  background:
+    radial-gradient(circle at 14% 16%, rgba(var(--aix-accent-blue-rgb), 0.14), transparent 28%),
+    radial-gradient(circle at 84% 20%, rgba(var(--aix-accent-violet-rgb), 0.11), transparent 24%),
+    linear-gradient(135deg, rgba(var(--aix-accent-indigo-rgb), 0.05), transparent 56%);
+}
+
+.aix-reviews::after {
+  background: radial-gradient(circle, rgba(var(--aix-accent-indigo-rgb), 0.11), transparent 68%);
+}
+
+.aix-reviews.aix-section-ambient::before,
+.dark .aix-reviews.aix-section-ambient::before,
+html:not(.dark) .aix-reviews.aix-section-ambient::before {
+  background:
+    radial-gradient(closest-side at 18% 42%, rgba(var(--aix-accent-blue-rgb), 0.14), transparent 74%),
+    radial-gradient(closest-side at 82% 58%, rgba(var(--aix-accent-violet-rgb), 0.11), transparent 72%);
+}
+
+.aix-reviews-copy h2::after {
+  background: linear-gradient(90deg, #bfdbfe, var(--aix-accent-blue) 42%, var(--aix-accent-violet));
+}
+
+.aix-review-stats div::before,
+.aix-testimonial-card::before {
+  background: linear-gradient(180deg, var(--aix-accent-blue), var(--aix-accent-indigo));
+}
+
+.aix-review-stats div:nth-child(2)::before,
+.aix-testimonial-card:nth-child(3n + 2)::before {
+  background: linear-gradient(180deg, var(--aix-accent-indigo), var(--aix-accent-violet));
+}
+
+.aix-review-stats div:nth-child(3)::before,
+.aix-testimonial-card:nth-child(3n)::before {
+  background: linear-gradient(180deg, var(--aix-accent-violet), var(--aix-accent-blue));
+}
+
+.aix-review-stats div::after,
+.aix-review-stats div:nth-child(2)::after,
+.aix-review-stats div:nth-child(3)::after,
+.aix-testimonial-card::after,
+.aix-testimonial-card:nth-child(3n + 2)::after,
+.aix-testimonial-card:nth-child(3n)::after {
+  background: radial-gradient(circle at 12% 4%, rgba(var(--aix-accent-indigo-rgb), 0.14), transparent 40%);
+}
+
+.aix-pricing-benefits .aix-pricing-benefit-item i,
+.aix-pricing-benefits .aix-pricing-benefit-item:nth-child(2) i,
+.aix-pricing-benefits .aix-pricing-benefit-item:nth-child(3) i {
+  color: #f8fafc;
+  background: var(--aix-accent-gradient-strong);
+  box-shadow: 0 10px 24px rgba(var(--aix-accent-indigo-rgb), 0.2);
+}
+
+@media (forced-colors: active) {
+  .aix-homepage-redesign :where(.primary-btn, .aix-highlight-mark),
+  .aix-home-header .hover-gradient-nav-item,
+  .aix-workproof-handle {
+    outline: 1px solid ButtonText;
+  }
+}
