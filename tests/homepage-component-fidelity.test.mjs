@@ -12,7 +12,7 @@ const glowScript = await readFile(join(root, "member-resource-glow.js"), "utf8")
 
 test("homepage loads the component fidelity layer and fresh runtimes", () => {
   assert.match(html, /homepage-component-fidelity\.css\?v=aix-component-fidelity-v1-20260725/);
-  assert.match(html, /script\.js\?v=aix-homepage-copy-v73-20260725/);
+  assert.match(html, /script\.js\?v=aix-purchase-cta-v74-20260726/);
   assert.match(html, /member-resource-glow\.js\?v=aix-member-glow-v2-20260725/);
 });
 

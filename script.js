@@ -576,6 +576,36 @@ function syncMobileAccountAction(isMember) {
   if (icon) icon.className = `fa-solid ${isMember ? "fa-right-from-bracket" : "fa-user"}`;
 }
 
+function membershipPurchaseUi(member) {
+  if (!member) {
+    return { label: "สั่งซื้อสมาชิก 1 ปี", destination: "signup" };
+  }
+  if (member.paymentStatus === "paid") {
+    return { label: "ไปที่พื้นที่สมาชิก", destination: "dashboard" };
+  }
+  return { label: "ชำระเงิน 1,999 บาท", destination: "payment" };
+}
+
+function syncMembershipPurchaseAction() {
+  const purchaseUi = membershipPurchaseUi(state.member);
+  document.querySelectorAll("[data-membership-purchase]").forEach((button) => {
+    const labelNode = button.querySelector("[data-membership-purchase-label]");
+    button.dataset.membershipDestination = purchaseUi.destination;
+    button.setAttribute("aria-label", purchaseUi.label);
+    setAuthActionHidden(button, false);
+    if (labelNode) labelNode.textContent = purchaseUi.label;
+  });
+}
+
+function handleMembershipPurchase(button) {
+  const destination = button.dataset.membershipDestination;
+  if (destination === "signup") {
+    openAuthModal("signup");
+    return;
+  }
+  window.location.href = destination === "dashboard" ? "/dashboard" : "/payment";
+}
+
 function syncHomepageAuthActions() {
   const isMember = Boolean(state.member);
   const navSignupButton = document.querySelector(".hover-gradient-nav-primary[data-open-signup]");
@@ -599,6 +629,7 @@ function syncHomepageAuthActions() {
   }
 
   syncMobileAccountAction(isMember);
+  syncMembershipPurchaseAction();
 }
 
 function updateMemberUi() {
@@ -1056,6 +1087,7 @@ function decorateRainbowButton(button) {
 function initRainbowButtons(root = document) {
   const selector = [
     "button[data-open-signup]:not(.hover-gradient-nav-item):not(.hover-gradient-nav-primary)",
+    "button[data-membership-purchase]",
     "button[data-course-signup]",
     "#memberForm .primary-btn[type='submit']"
   ].join(",");
@@ -1586,6 +1618,10 @@ document.querySelectorAll("[data-open-signup]").forEach((button) => {
     }
     openAuthModal("signup");
   });
+});
+
+document.querySelectorAll("[data-membership-purchase]").forEach((button) => {
+  button.addEventListener("click", () => handleMembershipPurchase(button));
 });
 
 document.querySelectorAll("[data-open-login]").forEach((button) => {

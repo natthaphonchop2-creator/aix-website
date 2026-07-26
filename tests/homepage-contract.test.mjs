@@ -26,7 +26,7 @@ const manusLogo = await readFile(join(root, "assets/ai-logos/manus.webp"));
 const workproofBefore = await readFile(join(root, "assets/generated/aix-real-work-before-generated.png"));
 const workproofAfter = await readFile(join(root, "assets/generated/aix-real-work-after-generated.png"));
 const currentCssCacheBust = /styles\.css\?v=aix-(?:member-annual-v71-20260720|hero-title-refined-v70-20260703|hero-empty-state-polish-v68-20260703)/;
-const currentScriptCacheBust = /script\.js\?v=aix-(?:homepage-copy-v73-20260725|hero-empty-state-hardfix-v69-20260703)/;
+const currentScriptCacheBust = /script\.js\?v=aix-(?:purchase-cta-v74-20260726|hero-empty-state-hardfix-v69-20260703)/;
 
 function cssRuleBlock(selector) {
   const start = css.indexOf(`${selector} {`);
@@ -676,7 +676,7 @@ test("membership pricing presents one clear annual plan without discount pressur
     "สมาชิก AiX Club",
     "สมาชิก AiX Club รายปี",
     "1,999 บาทต่อปี",
-    "สมัครสมาชิก 1 ปี",
+    "สั่งซื้อสมาชิก 1 ปี",
     "สรุปเรื่อง AI ที่กระทบงาน",
     "ชุดคำสั่งพร้อมแนวทางปรับใช้",
     "ตัวอย่างจากงานธุรกิจจริง",
@@ -708,7 +708,13 @@ test("membership pricing presents one clear annual plan without discount pressur
   assert.match(html, /จากที่เคยใช้ AI แค่ถามคำถาม ตอนนี้มองเห็นวิธีมอบหมายงานให้ชัดขึ้น/);
   assert.match(html, /ไม่มีพื้นฐานก็เริ่มตามได้ และมีวิดีโอย้อนหลังให้กลับมาทบทวน/);
   assert.doesNotMatch(html, /class="aix-pricing-avatar"|class="aix-pricing-stars"|aria-label="5 ดาว"|AI work assistant|Beginner-friendly|Replay & template/);
-  assert.match(html, /class="primary-btn full aix-pricing-button" type="button" data-open-signup>[\s\S]*?สมัครสมาชิก 1 ปี[\s\S]*?fa-solid fa-arrow-right/);
+  assert.match(html, /class="primary-btn full aix-pricing-button" type="button" data-membership-purchase>[\s\S]*?data-membership-purchase-label>สั่งซื้อสมาชิก 1 ปี<\/span>[\s\S]*?fa-solid fa-arrow-right/);
+  assert.match(script, /function membershipPurchaseUi\(member\)[\s\S]*?สั่งซื้อสมาชิก 1 ปี[\s\S]*?ไปที่พื้นที่สมาชิก[\s\S]*?ชำระเงิน 1,999 บาท/);
+  assert.match(script, /function syncMembershipPurchaseAction\(\)/);
+  assert.match(script, /button\.dataset\.membershipDestination = purchaseUi\.destination/);
+  assert.match(script, /function handleMembershipPurchase\(button\)[\s\S]*?openAuthModal\("signup"\)[\s\S]*?window\.location\.href = destination === "dashboard" \? "\/dashboard" : "\/payment"/);
+  assert.match(script, /button\.addEventListener\("click", \(\) => handleMembershipPurchase\(button\)\)/);
+  assert.doesNotMatch(html, /aix-pricing-button" type="button" data-open-signup/);
   assert.match(html, /"name": "AiX Member รายปี"[\s\S]*?"price": "1999"/);
   assert.doesNotMatch(html, /รายเดือน|2,988 บาท|ประหยัด 989 บาท|data-monthly-plan|aix-price-original|aix-price-discount|aix-pricing-monthly-note|"price": "249"/);
   assert.doesNotMatch(html, /class="aix-membership-lead"|class="aix-membership-points"|class="aix-price-panel"/);
@@ -752,7 +758,7 @@ test("membership pricing presents one clear annual plan without discount pressur
   assert.doesNotMatch(css, /\.aix-membership-points|\.aix-price-panel|\.aix-membership-grid|\.aix-plan-toggle|\.aix-plan-option/);
 });
 
-test("homepage applies the rotating rainbow treatment only to signup buttons", () => {
+test("homepage applies the rotating rainbow treatment only to signup and purchase CTAs", () => {
   assert.match(css, /\/\* Static port of the rotating rainbow wrapper for signup buttons \*\//);
   assert.match(css, /\.aix-rainbow-shell\s*\{[\s\S]*?--rainbow-shell-bg:\s*rgba\(255,\s*255,\s*255,\s*0\.15\);[\s\S]*?display:\s*inline-flex;[\s\S]*?padding:\s*2px;[\s\S]*?overflow:\s*hidden;[\s\S]*?border-radius:\s*999px;[\s\S]*?transition:\s*transform 300ms ease;/);
   assert.match(css, /\.aix-rainbow-shell::before\s*\{[\s\S]*?left:\s*-50%;[\s\S]*?top:\s*-50%;[\s\S]*?width:\s*200%;[\s\S]*?height:\s*200%;[\s\S]*?background-size:\s*50% 30%;[\s\S]*?filter:\s*blur\(6px\);[\s\S]*?animation:\s*aixRainbowRotate 4s linear infinite;/);
@@ -775,6 +781,7 @@ test("homepage applies the rotating rainbow treatment only to signup buttons", (
   assert.match(script, /button\.classList\.add\("aix-rainbow-button"\)/);
   assert.match(script, /function initRainbowButtons\(root = document\)/);
   assert.match(script, /"button\[data-open-signup\]:not\(\.hover-gradient-nav-item\):not\(\.hover-gradient-nav-primary\)"/);
+  assert.match(script, /"button\[data-membership-purchase\]"/);
   assert.doesNotMatch(script, /data-monthly-plan/);
   assert.match(script, /"button\[data-course-signup\]"/);
   assert.match(script, /"#memberForm \.primary-btn\[type='submit'\]"/);
